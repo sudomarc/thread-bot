@@ -3,11 +3,10 @@ import smtplib
 import requests
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from google import genai
 
 # --- CONFIG ---
 NEWS_API_KEY = os.environ["NEWS_API_KEY"]
-GEMINI_API_KEY = os.environ["GEMINI_API_KEY"]
+OPENROUTER_API_KEY = os.environ["OPENROUTER_API_KEY"]
 GMAIL_USER = os.environ["GMAIL_USER"]
 GMAIL_APP_PASSWORD = os.environ["GMAIL_APP_PASSWORD"]
 TO_EMAIL = "elom.karl.patrick@gmail.com"
@@ -32,8 +31,6 @@ def fetch_articles():
 
 # --- GENERATE THREADS ---
 def generate_threads(articles_text):
-    client = genai.Client(api_key=GEMINI_API_KEY)
-
     prompt = f"""Tu es un créateur de contenu tech/cybersec francophone.
 À partir de ces actualités, génère exactement 3 threads Twitter/Threads en français.
 Chaque thread = 5 tweets max, percutants, informatifs, ton humain pas corporate.
@@ -54,11 +51,20 @@ Format :
 Actualités :
 {articles_text}
 """
-    response = client.models.generate_content(
-        model="gemini-2.0-flash",
-        contents=prompt
+    response = requests.post(
+        "https://openrouter.ai/api/v1/chat/completions",
+        headers={
+            "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+            "Content-Type": "application/json"
+        },
+        json={
+            "model": "meta-llama/llama-3.3-8b-instruct:free",
+            "messages": [{"role": "user", "content": prompt}]
+        },
+        timeout=30
     )
-    return response.text
+    data = response.json()
+    return data["choices"][0]["message"]["content"]
 
 # --- SEND EMAIL ---
 def send_email(threads_content):
