@@ -55,15 +55,25 @@ Actualités :
         "https://openrouter.ai/api/v1/chat/completions",
         headers={
             "Authorization": f"Bearer {OPENROUTER_API_KEY}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            # OpenRouter recommande fortement ces headers pour les modèles gratuits
+            "HTTP-Referer": "https://github.com/Patrickk2/thread-bot",
+            "X-Title": "Thread Bot GitHub Action"
         },
         json={
-            "model": "meta-llama/llama-3.3-8b-instruct:free",
+            # Correction ici : Utilisation du modèle Llama 3.3 70B qui est bien gratuit sur OpenRouter
+            "model": "meta-llama/llama-3.3-70b-instruct:free",
             "messages": [{"role": "user", "content": prompt}]
         },
         timeout=30
     )
     data = response.json()
+    
+    # Sécurité : on affiche l'erreur brute dans les logs GitHub si l'API échoue
+    if "choices" not in data:
+        print("Erreur retournée par l'API OpenRouter :", data)
+        return None
+        
     return data["choices"][0]["message"]["content"]
 
 # --- SEND EMAIL ---
@@ -86,6 +96,12 @@ if __name__ == "__main__":
     if not articles:
         print("No articles fetched.")
         exit(0)
+        
     threads = generate_threads(articles)
-    send_email(threads)
-    print("Email sent.")
+    
+    if threads:
+        send_email(threads)
+        print("Email sent.")
+    else:
+        print("Échec de la génération. L'email n'a pas été envoyé.")
+        exit(1)
