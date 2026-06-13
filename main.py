@@ -10,15 +10,15 @@ from email.mime.multipart import MIMEMultipart
 def safe_encode(text):
     """
     Force la conversion en ASCII pur (élimine tout caractère dont le code est >= 128).
-    Cela neutralise les espaces insécables (\xa0) et autres caractères invisibles
-    qui provoquent les UnicodeEncodeError dans les bibliothèques SMTP.
+    C'est la méthode la plus robuste pour éviter les erreurs d'encodage (UnicodeEncodeError)
+    lors de la transmission SMTP et l'envoi vers des serveurs externes.
     """
     if not isinstance(text, str):
         text = str(text)
     return "".join(char for char in text if ord(char) < 128)
 
-# --- CONFIG ---
-# Récupération des secrets avec nettoyage immédiat
+# --- CONFIGURATION ---
+# Nettoyage systématique des variables d'environnement dès le chargement
 NEWS_API_KEY = os.environ.get("NEWS_API_KEY", "")
 OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY", "")
 GMAIL_USER = safe_encode(os.environ.get("GMAIL_USER", ""))
@@ -47,15 +47,24 @@ def fetch_articles():
                     articles.append(f"- {title}: {desc}")
         except Exception as e:
             print(f"Erreur lors de la récupération des news pour {topic}: {e}")
-    # On limite à 9 articles pour éviter de surcharger le prompt
+    # On limite à 9 articles pour garantir la stabilité de la génération
     return "\n".join(articles[:9])
 
 # --- GENERATE THREADS ---
 def generate_threads(articles_text):
+    # Prompt renforcé avec des contraintes négatives strictes pour supprimer les parasites
     prompt = f"""Tu es un créateur de contenu tech/cybersec francophone.
 À partir de ces actualités, génère exactement 3 threads Twitter/Threads en français.
 Chaque thread = 5 tweets max, percutants, informatifs, ton humain pas corporate.
-Format :
+
+RÈGLES ABSOLUES ET STRICTES :
+1. NE DONNE QUE LE CONTENU DES THREADS.
+2. PAS D'INTRODUCTION, PAS DE CONCLUSION.
+3. PAS DE LABELS DE SECURITE (Ex: NE PAS ECRIRE 'User Safety').
+4. PAS DE COMMENTAIRES MÉTADONNÉES.
+5. SORTIE BRUTE UNIQUEMENT.
+
+Format attendu :
 
 THREAD 1 — [Sujet]
 1/
@@ -67,7 +76,7 @@ Actualités :
 {articles_text}
 """
     
-    # Liste des modèles à tester en cas d'échec
+    # Liste des modèles disponibles en cas d'échec de la requête
     models_to_try = [
         "openrouter/free",
         "deepseek/deepseek-chat-v3-0324:free",
@@ -96,7 +105,9 @@ Actualités :
             
             if "choices" in data:
                 print(f"✅ Succès avec {model} !")
-                return data["choices"][0]["message"]["content"]
+                # Extraction du contenu pur
+                raw_content = data["choices"][0]["message"]["content"]
+                return safe_encode(raw_content)
             
             print(f"⚠️ Échec avec {model} : {data.get('error', {}).get('message', 'Erreur inconnue')}")
             time.sleep(3) 
@@ -109,7 +120,7 @@ Actualités :
 
 # --- SEND EMAIL ---
 def send_email(threads_content):
-    # Nettoyage radical final du contenu
+    # Nettoyage radical final du contenu avant envoi
     clean_content = safe_encode(threads_content)
 
     msg = MIMEMultipart()
@@ -119,7 +130,7 @@ def send_email(threads_content):
     msg["Date"] = email.utils.formatdate(localtime=True)
     msg["Message-ID"] = email.utils.make_msgid()
 
-    # Utilisation explicite de 'us-ascii' pour garantir la compatibilité SMTP stricte
+    # Utilisation explicite de 'us-ascii' pour éviter toute interprétation erronée par SMTP
     msg.attach(MIMEText(clean_content, "plain", "us-ascii"))
 
     try:
@@ -127,7 +138,7 @@ def send_email(threads_content):
         with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=30) as server:
             server.ehlo()
             server.login(GMAIL_USER, GMAIL_APP_PASSWORD)
-            # Envoi des bytes directement pour contourner les codecs de Python (Fix majeur)
+            # Envoi des bytes directement pour contourner les codecs Python
             server.sendmail(GMAIL_USER, TO_EMAIL, msg.as_bytes())
         print("✅ Email envoyé avec succès.")
     except Exception as e:
@@ -136,6 +147,11 @@ def send_email(threads_content):
 
 # --- MAIN ---
 if __name__ == "__main__":
+    # Vérification des credentials avant exécution
+    if not GMAIL_USER or not GMAIL_APP_PASSWORD:
+        print("Erreur : Credentials Gmail manquants.")
+        exit(1)
+        
     articles = fetch_articles()
     if not articles:
         print("No articles fetched.")
@@ -146,5 +162,5 @@ if __name__ == "__main__":
     if threads:
         send_email(threads)
     else:
-        print("❌ Échec de la génération.")
+        print("❌ Échec total de la génération.")
         exit(1)
