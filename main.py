@@ -47,32 +47,7 @@ def fetch_articles():
             print(f"Error fetching news for {topic}: {e}")
     return "\n".join(articles[:9])
 
-# ─── IMAGE LINKS ──────────────────────────────────────────────────────────────
-TOPIC_KEYWORDS = {
-    "cybersecurity": "hacker+cybersecurity",
-    "artificial intelligence": "artificial+intelligence",
-    "anthropic": "artificial+intelligence+robot",
-    "breach": "data+breach+security",
-    "hack": "hacker+dark",
-    "surveillance": "surveillance+camera",
-    "water": "water+infrastructure",
-    "military": "cyber+warfare",
-    "bank": "banking+finance+security",
-    "privacy": "privacy+digital",
-    "ai": "artificial+intelligence",
-    "tech": "technology+future",
-}
-
-def get_image_links(thread_text):
-    thread_lower = thread_text.lower()
-    keyword = "cybersecurity+technology"
-    for key, val in TOPIC_KEYWORDS.items():
-        if key in thread_lower:
-            keyword = val
-            break
-    link1 = f"https://unsplash.com/s/photos/{keyword}"
-    link2 = f"https://www.pexels.com/search/{keyword.replace('+', '%20')}/"
-    return link1, link2
+# ─── IMAGE LINKS (removed) ───────────────────────────────────────────────────
 
 # ─── GENERATE THREADS ─────────────────────────────────────────────────────────
 def generate_threads(articles_text):
@@ -244,35 +219,19 @@ def add_overlay(image_bytes, title_text):
         print(f"Overlay error: {e} — sending raw image")
         return image_bytes
 
-# ─── INJECT IMAGE LINKS ───────────────────────────────────────────────────────
-def inject_image_links(threads_content):
+# ─── CLEAN TEXT (strip IMAGE_PROMPT / KEYWORDS from email body) ───────────────
+def clean_threads_text(threads_content):
+    """Keep only POST headers and post body lines. Strip metadata."""
     lines = threads_content.split("\n")
     output = []
-    post_buffer = []
-
+    skip_next = False
     for line in lines:
-        if line.strip().startswith("IMAGE_PROMPT:"):
-            post_buffer.append(line)
-            post_buffer.append("=" * 50)
-            output.extend(post_buffer)
-            post_buffer = []
-        elif line.strip().startswith("KEYWORDS:"):
-            kw = line.strip().replace("KEYWORDS:", "").strip().split(",")[0].strip().replace(" ", "+")
-            img1 = f"https://unsplash.com/s/photos/{kw}"
-            img2 = f"https://www.pexels.com/search/{kw.replace('+', '%20')}/"
-            post_buffer.append(line)
-            post_buffer.append(f"\n[IMAGES]\nUnsplash: {img1}\nPexels:   {img2}")
-        elif line.strip().startswith("POST "):
-            if post_buffer:
-                output.extend(post_buffer)
-                post_buffer = []
-            post_buffer.append(line)
-        else:
-            post_buffer.append(line)
-
-    if post_buffer:
-        output.extend(post_buffer)
-    return "\n".join(output)
+        stripped = line.strip()
+        if stripped.startswith("KEYWORDS:") or stripped.startswith("IMAGE_PROMPT:") or stripped == "=" * 50:
+            continue
+        output.append(line)
+    # Remove trailing blank lines between posts
+    return "\n".join(output).strip()
 
 # ─── SEND EMAIL ───────────────────────────────────────────────────────────────
 def send_email(threads_content, images=None):
@@ -321,7 +280,7 @@ if __name__ == "__main__":
         print("Total generation failure.")
         exit(1)
 
-    final_content = inject_image_links(threads)
+    final_content = clean_threads_text(threads)
 
     # Generate images
     image_prompts = extract_image_prompts(threads)
@@ -346,4 +305,5 @@ if __name__ == "__main__":
             generated_images.append(None)
 
     send_email(final_content, images=generated_images)
+
 
