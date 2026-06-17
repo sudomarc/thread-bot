@@ -24,7 +24,7 @@ TO_EMAIL            = "elom.karl.patrick@gmail.com"
 
 TOPICS = ["cybersecurity", "artificial intelligence Claude Anthropic", "tech news"]
 
-HF_API_URL = "https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-schnell"
+HF_API_URL = "https://router.huggingface.co/hf-inference/models/black-forest-labs/FLUX.1-schnell"
 
 # ─── FETCH NEWS ───────────────────────────────────────────────────────────────
 def fetch_articles():
@@ -161,19 +161,35 @@ def generate_hf_image(prompt):
     if not HF_TOKEN:
         print("HF_TOKEN missing, skipping image generation")
         return None
+
+    endpoints = [
+        "https://router.huggingface.co/hf-inference/models/black-forest-labs/FLUX.1-schnell",
+        "https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-schnell",
+        "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-2-1",
+    ]
+
     headers = {"Authorization": f"Bearer {HF_TOKEN}"}
-    try:
-        print(f"Generating image: {prompt[:60]}...")
-        r = requests.post(HF_API_URL, headers=headers, json={"inputs": prompt}, timeout=120)
-        if r.status_code == 200:
-            print("Image generated OK")
-            return r.content
-        else:
-            print(f"HF API error {r.status_code}: {r.text[:100]}")
-            return None
-    except Exception as e:
-        print(f"Image generation error: {e}")
-        return None
+
+    for endpoint in endpoints:
+        for attempt in range(2):
+            try:
+                print(f"Generating image (attempt {attempt+1}): {prompt[:60]}...")
+                r = requests.post(endpoint, headers=headers, json={"inputs": prompt}, timeout=120)
+                if r.status_code == 200 and len(r.content) > 1000:
+                    print(f"Image generated OK from {endpoint.split('/')[2]}")
+                    return r.content
+                elif r.status_code == 503:
+                    print(f"Model loading ({r.status_code}), waiting 20s...")
+                    time.sleep(20)
+                else:
+                    print(f"HF error {r.status_code}: {r.text[:80]}")
+                    break
+            except Exception as e:
+                print(f"Image generation error: {e}")
+                if attempt == 0:
+                    time.sleep(5)
+    print("All image endpoints failed")
+    return None
 
 # ─── ADD OVERLAY (Petit Journal style) ───────────────────────────────────────
 def add_overlay(image_bytes, title_text):
@@ -330,3 +346,4 @@ if __name__ == "__main__":
             generated_images.append(None)
 
     send_email(final_content, images=generated_images)
+
