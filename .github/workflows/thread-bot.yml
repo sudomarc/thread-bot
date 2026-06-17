@@ -5,7 +5,6 @@ on:
     branches:
       - main
   schedule:
-    # Lancement quotidien à 08:00 UTC (pour respecter les quotas)
     - cron: '0 8 * * *'
   workflow_dispatch:
 
@@ -28,7 +27,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install requests
+          pip install requests Pillow
 
       - name: Run Thread Bot
         env:
@@ -36,5 +35,6 @@ jobs:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           GMAIL_USER: ${{ secrets.GMAIL_USER }}
           GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
           python main.py
