@@ -89,14 +89,20 @@ POST 3
 KEYWORDS: keyword1, keyword2
 IMAGE_PROMPT: [scene description]
 
-IMAGE_PROMPT STYLE GUIDE:
-- Photojournalism, ultra-sharp, high contrast editorial photo
-- Dark/moody background: night city, server room, government building, or storm
-- Single dramatic light source: neon blue, orange, or cold white spotlight
-- Subject: anonymous silhouette or symbolic object (NO real faces, NO named people)
-- Mood: tense, urgent, breaking news
-- Technical: 4K, f/1.8, deep shadows, no text, no watermark
-- Example: "anonymous hooded figure in silhouette, blue neon backlight, dark server room, smoke, cables, ultra-sharp editorial photo, 4K, high contrast, no text"
+IMAGE_PROMPT STYLE GUIDE — French TV news / BFM style:
+- Realistic press photo style, NOT sci-fi, NOT cyberpunk, NOT illustration
+- Scene: real-world location — government building exterior, street protest, corporate office, courtroom, parliament, stock exchange floor, hospital corridor
+- Lighting: natural daylight OR harsh indoor fluorescent OR overcast sky — realistic, not dramatic neon
+- Subject: anonymous suited figures, crowds, symbolic objects (handcuffs, documents, screens, flags), empty institutions — NO real faces, NO named people
+- Mood: serious, institutional, cold, urgent — like a AFP/Reuters wire photo
+- Color palette: desaturated, slightly cold, realistic — NOT oversaturated, NOT neon
+- Technical: sharp focus, shallow depth of field, realistic proportions, 4K, no text, no watermark, no logos
+- Examples by topic:
+  * Tech/AI: "modern tech company open office, empty chairs, screens with code, cold fluorescent light, realistic AFP wire photo, 4K, no people, no text"
+  * Cybersecurity: "anonymous person in dark suit typing on laptop in dimly lit office, face out of frame, documents on desk, realistic press photo, 4K"
+  * Politics/Gov: "empty government chamber with rows of seats, national flags, daylight through tall windows, Reuters wire photo style, 4K, no text"
+  * Finance: "stock exchange trading floor, anonymous traders in suits, green and red screens, harsh overhead light, realistic press photo"
+  * Crime/Legal: "courthouse exterior stone steps, anonymous figures in suits carrying briefcases, overcast sky, AFP photo style, 4K"
 
 RULES:
 - OUTPUT ONLY THE 3 POSTS. No intro, no conclusion, no explanation.
@@ -171,11 +177,11 @@ def extract_posts_data(threads_content):
             raw_prompt = stripped.replace("IMAGE_PROMPT:", "").strip()
             current_post["image_prompt"] = (
                 f"{raw_prompt}, "
-                "photojournalism style, ultra-sharp editorial photo, "
-                "single dramatic neon blue or orange light source, "
-                "dark moody background, deep shadows, high contrast, "
+                "realistic AFP Reuters wire photo style, "
+                "natural or fluorescent lighting, desaturated colors, "
+                "sharp focus, no neon, no sci-fi, no illustrations, "
                 "no text, no watermark, no logos, "
-                "Canon EOS R5, f/1.8, ISO 3200, 4K"
+                "Canon EOS R5, f/2.8, ISO 800, 4K press photo"
             )
 
     if current_post:
@@ -352,3 +358,4 @@ if __name__ == "__main__":
             generated_images.append(None)
 
     send_email(final_content, images=generated_images)
+
