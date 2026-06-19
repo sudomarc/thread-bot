@@ -117,18 +117,60 @@ def has_concrete_fact(title, desc):
 
 # ─── GENERATE THREADS ─────────────────────────────────────────────────────────
 def generate_threads(articles_text):
-    prompt = f"""You are a viral tech/cybersecurity content creator for social media.
+    prompt = f"""You write like a real person on Twitter/Threads who's obsessed with tech and cybersecurity — NOT a corporate blog, NOT a SaaS marketing account.
+
 From these news articles, generate exactly 3 DIFFERENT Threads posts in ENGLISH.
 Each post must cover a DIFFERENT article/topic. No repetition between posts.
+
+HOW REAL VIRAL TECH/CYBERSEC POSTS ACTUALLY SOUND:
+
+Example 1:
+Oracle PeopleSoft has a zero-day.
+
+CVE-2026-35273.
+
+It's being exploited RIGHT NOW.
+
+If you're running PeopleSoft and haven't patched —
+you're not "at risk."
+You're already owned.
+
+Example 2:
+A bug report took down a company's entire codebase.
+
+Not malware. Not phishing.
+
+Just text. In a GitHub issue.
+
+The AI assistant read it, executed it, and leaked the secrets straight to the attacker.
+
+This is the new attack surface. And most teams aren't even looking at it.
+
+Example 3:
+Canada wants to ban teens from social media.
+
+Parents: relieved.
+Platforms: panicking.
+Privacy lawyers: billing hours.
+
+Here's what nobody's talking about: enforcement means age verification. Age verification means ID uploads. ID uploads mean a new database to breach.
+
+WHAT MAKES THESE WORK:
+- Short fragments. One fact or idea per line. Heavy use of line breaks for rhythm/suspense.
+- NO corporate vocabulary: never say "consequences," "implications," "protect your enterprise," "threat landscape," "robust," "leverage."
+- Specific > vague. Name the CVE, the company, the number, the mechanism. If the article gives a number ($ amount, # of users, CVE ID), USE IT in the post, don't just gesture at it.
+- The punchline lands HARD and concrete — not a vague warning, not "stay safe out there."
+- Sometimes end on an escalation, a blunt fact, or a sharp rhetorical question — never end on generic advice like "patch your systems" alone without a sting.
+- Write like you're texting a smart friend who works in tech, not writing a corporate alert.
+- Contractions are fine. Sentence fragments are GOOD. Don't write full grammatically "clean" sentences throughout — that's the corporate tell.
 
 STRICT FORMAT — follow EXACTLY:
 
 POST 1
-[SHOCKING HOOK — bold stat or provocative claim, 1 line]
+[line 1 — the concrete fact, short]
 [line 2]
 [line 3]
-[line 4]
-[CTA line — implicit, not "follow me"]
+[line 4 or 5 — punchline/sting, concrete, not generic advice]
 KEYWORDS: keyword1, keyword2
 IMAGE_PROMPT: [scene description — see style below]
 
@@ -136,8 +178,7 @@ POST 2
 [different topic from POST 1]
 [line 2]
 [line 3]
-[line 4]
-[CTA line]
+[line 4 or 5]
 KEYWORDS: keyword1, keyword2
 IMAGE_PROMPT: [scene description]
 
@@ -145,8 +186,7 @@ POST 3
 [different topic from POST 1 and POST 2]
 [line 2]
 [line 3]
-[line 4]
-[CTA line]
+[line 4 or 5]
 KEYWORDS: keyword1, keyword2
 IMAGE_PROMPT: [scene description]
 
@@ -167,9 +207,10 @@ IMAGE_PROMPT STYLE GUIDE — French TV news / BFM style:
 
 RULES:
 - OUTPUT ONLY THE 3 POSTS. No intro, no conclusion, no explanation.
-- Each post = exactly 5 lines + KEYWORDS + IMAGE_PROMPT
-- Short punchy sentences. No corporate tone.
+- Each post = 4 to 6 short lines + KEYWORDS + IMAGE_PROMPT. Vary the rhythm — don't make every post the same length.
+- NO corporate tone, NO marketing language, NO generic safety advice as the closer.
 - Each post on a DIFFERENT topic from the news below.
+- If you catch yourself writing "stay safe," "protect your systems," "consider the implications," or "raises questions about" — DELETE it and write a sharper, more specific line instead.
 
 News:
 {articles_text}
