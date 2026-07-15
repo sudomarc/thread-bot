@@ -23,7 +23,7 @@ OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY", "")
 GMAIL_USER = safe_encode(os.environ.get("GMAIL_USER", ""))
 GMAIL_APP_PASSWORD = safe_encode(os.environ.get("GMAIL_APP_PASSWORD", ""))
 HF_TOKEN = os.environ.get("HF_TOKEN", "")
-TO_EMAIL = "elom.karl.patrick@gmail.com"
+TO_EMAIL = os.environ.get("RECIPIENT_EMAIL", "")
 
 TOPICS = [
     "CVE-2024",
@@ -205,7 +205,7 @@ News (use ONLY for POST 1, pick the single sharpest article):
                 headers={
                     "Authorization": f"Bearer {OPENROUTER_API_KEY}",
                     "Content-Type": "application/json",
-                    "HTTP-Referer": "https://github.com/Patrickk2/thread-bot",
+                    "HTTP-Referer": "https://github.com/sudomarc/thread-bot",
                     "X-Title": "Thread Bot"
                 },
                 json={
@@ -518,6 +518,10 @@ def send_email(threads_content, images=None):
 if __name__ == "__main__":
     if not GMAIL_USER or not GMAIL_APP_PASSWORD:
         print("Error: Missing Gmail credentials.")
+        exit(1)
+
+    if not TO_EMAIL:
+        print("Error: Missing RECIPIENT_EMAIL secret.")
         exit(1)
 
     articles = fetch_articles()
