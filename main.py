@@ -166,6 +166,7 @@ KEYWORDS: keyword1, keyword2
 IMAGE_PROMPT: [scene description]
 
 CRITICAL FORMAT RULES:
+- ALWAYS use proper apostrophes in contractions: "it's", "I'm", "you're", "don't", "can't" — NEVER write them without the apostrophe ("its", "Im", "youre", "dont"). Missing apostrophes cause words to visually run together and look broken.
 - "KEYWORDS:" and "IMAGE_PROMPT:" MUST each start on their OWN new line. Never append them to the end of a content line. Never put them on the same line as the joke/punchline.
 - Always leave a line break BEFORE "KEYWORDS:" and BEFORE "IMAGE_PROMPT:".
 - Never skip IMAGE_PROMPT for any post, even short ones.
@@ -317,6 +318,50 @@ def extract_posts_data(threads_content):
 
 # ─── CLEAN TEXT FOR EMAIL BODY ────────────────────────────────────────────────
 
+KNOWN_CAMELCASE = [
+    "WordPress", "JavaScript", "GitHub", "GitLab", "YouTube", "iPhone",
+    "iPad", "macOS", "PowerShell", "TypeScript", "LinkedIn", "PayPal",
+]
+
+
+def fix_glued_words(text):
+    """
+    Safe fix for one specific glue pattern seen in production: a lowercase
+    word run directly followed by a Capitalized word with no space (e.g.
+    "guruIm" -> "guru Im", "confidenceIm" -> ...).
+
+    Known brand/product CamelCase names (WordPress, GitHub, etc.) are
+    protected via placeholder substitution so they are never incorrectly
+    split (e.g. "WordPress" -> "Word Press", a real false positive caught
+    in testing before this fix was added).
+
+    Known limitation, accepted after testing: if a glue word is stuck
+    DIRECTLY onto the start of a protected brand name (e.g. "newGitHub"),
+    the missing space is not inserted, to avoid the complexity/risk of a
+    more aggressive rule. Not observed in production so far.
+
+    Does NOT catch all-lowercase glue (e.g. "itnow") -- that class of bug
+    is addressed at the source via the generation prompt (explicit
+    instruction to always use apostrophes in contractions), because a
+    dictionary-based fix for that case produced false positives (e.g.
+    "still" containing "ill") and was rejected after testing.
+    """
+    placeholders = {}
+    working = text
+    for i, word in enumerate(KNOWN_CAMELCASE):
+        if word in working:
+            token = f"__PROTECTED_{i}__"
+            placeholders[token] = word
+            working = working.replace(word, token)
+
+    working = re.sub(r"([a-z]{2,})([A-Z][a-z])", r"\1 \2", working)
+
+    for token, word in placeholders.items():
+        working = working.replace(token, word)
+
+    return working
+
+
 def clean_threads_text(threads_content):
     """
     Regex-based cleanup — strips KEYWORDS/IMAGE_PROMPT even when glued to
@@ -336,6 +381,8 @@ def clean_threads_text(threads_content):
 
     # Collapse leftover blank lines (3+ newlines -> 2)
     text = re.sub(r"\n{3,}", "\n\n", text)
+
+    text = fix_glued_words(text)
 
     return text.strip()
 
