@@ -25,6 +25,12 @@ GMAIL_APP_PASSWORD = safe_encode(os.environ.get("GMAIL_APP_PASSWORD", ""))
 HF_TOKEN = os.environ.get("HF_TOKEN", "")
 TO_EMAIL = os.environ.get("RECIPIENT_EMAIL", "")
 
+# Total posts generated per run (1 news + relatable). Images are capped
+# independently via IMAGE_POST_COUNT — increasing TOTAL_POSTS does NOT
+# automatically increase image generation calls/cost.
+TOTAL_POSTS = 5
+IMAGE_POST_COUNT = 3
+
 TOPICS = [
     "CVE-2024",
     "data breach $1M",
@@ -113,10 +119,9 @@ def has_concrete_fact(title, desc):
 def generate_threads(articles_text):
     prompt = f"""You write like a real person on Twitter/Threads who's obsessed with tech and cybersecurity — NOT a corporate blog, NOT a SaaS marketing account.
 
-Generate exactly 3 DIFFERENT Threads posts in ENGLISH:
+Generate exactly 5 DIFFERENT Threads posts in ENGLISH:
 - POST 1 = a hard-news post based on ONE of the news articles below (pick the sharpest one).
-- POST 2 = a RELATABLE / MEME-STYLE post about everyday life in cybersecurity/infosec. NOT based on the news.
-- POST 3 = another RELATABLE / MEME-STYLE post, different angle/topic from POST 2. NOT based on the news.
+- POST 2, POST 3, POST 4, POST 5 = RELATABLE / MEME-STYLE posts about everyday life in cybersecurity/infosec. NOT based on the news. Each one MUST be a different topic/angle from the others.
 
 POST 1 — NEWS STYLE (4 to 6 short lines, line breaks for rhythm):
 Example:
@@ -131,8 +136,8 @@ You're already owned.
 - Specific > vague. Name the CVE, the company, the number, the mechanism from the article.
 - Punchline lands HARD and concrete. Never end on generic advice alone.
 
-POST 2 & POST 3 — RELATABLE/MEME STYLE — STRICT LENGTH LIMIT:
-MAXIMUM 2 SHORT SENTENCES TOTAL. NOT 4-6 lines. ONE OR TWO SENTENCES ONLY.
+POST 2, POST 3, POST 4, POST 5 — RELATABLE/MEME STYLE — STRICT LENGTH LIMIT:
+MAXIMUM 2 SHORT SENTENCES TOTAL PER POST. NOT 4-6 lines. ONE OR TWO SENTENCES ONLY.
 Think tweet-length, not thread-length. A single punchy joke, not a mini-story.
 
 Good length example (this is the target length, do not exceed it):
@@ -141,7 +146,7 @@ Good length example (this is the target length, do not exceed it):
 Another good length example:
 "Passed my own company's phishing test by accident. First time all year I've done anything right on the first try."
 
-Pull from universal infosec/IT truths: imposter syndrome, untested backups, password reuse hypocrisy, failing your own company's phishing test, security budget vs marketing budget, dreading the word "audit", one-person IT team doing everything, compliance theater, users clicking things no matter the training, cert-flexing vs job reality. Pick 2 DIFFERENT ones for POST 2 and POST 3.
+Pull from universal infosec/IT truths: imposter syndrome, untested backups, password reuse hypocrisy, failing your own company's phishing test, security budget vs marketing budget, dreading the word "audit", one-person IT team doing everything, compliance theater, users clicking things no matter the training, cert-flexing vs job reality. Pick 4 DIFFERENT ones — one per post (POST 2, 3, 4, 5), no repeats.
 
 Style: self-aware, self-deprecating, sounds like a real person venting/joking. NO hashtags, no "thoughts?" bait, NO listicle format.
 
@@ -165,6 +170,16 @@ POST 3
 KEYWORDS: keyword1, keyword2
 IMAGE_PROMPT: [scene description]
 
+POST 4
+[ONE OR TWO SENTENCES MAX, different topic from POST 2 and POST 3]
+KEYWORDS: keyword1, keyword2
+IMAGE_PROMPT: [scene description]
+
+POST 5
+[ONE OR TWO SENTENCES MAX, different topic from POST 2, POST 3 and POST 4]
+KEYWORDS: keyword1, keyword2
+IMAGE_PROMPT: [scene description]
+
 CRITICAL FORMAT RULES:
 - ALWAYS use proper apostrophes in contractions: "it's", "I'm", "you're", "don't", "can't" — NEVER write them without the apostrophe ("its", "Im", "youre", "dont"). Missing apostrophes cause words to visually run together and look broken.
 - "KEYWORDS:" and "IMAGE_PROMPT:" MUST each start on their OWN new line. Never append them to the end of a content line. Never put them on the same line as the joke/punchline.
@@ -174,14 +189,14 @@ CRITICAL FORMAT RULES:
 IMAGE_PROMPT STYLE GUIDE — French TV news / BFM style:
 - Realistic press photo style, NOT sci-fi, NOT cyberpunk, NOT illustration
 - POST 1: serious, institutional, cold, urgent — like AFP/Reuters wire photo. Real-world location (office, courtroom, government building, server room).
-- POST 2/3: relatable everyday office/home realism, mundane/tired mood, still realistic press-photo style
+- POST 2/3/4/5: relatable everyday office/home realism, mundane/tired mood, still realistic press-photo style
 - Anonymous figures only, NO real faces, NO named people
 - Desaturated, realistic colors, NOT neon
 - Sharp focus, shallow depth of field, 4K, no text, no watermark, no logos
 
 RULES:
-- OUTPUT ONLY THE 3 POSTS. No intro, no conclusion, no explanation.
-- POST 1 = 4 to 6 lines. POST 2 and POST 3 = 1 to 2 sentences ONLY, this is a hard limit.
+- OUTPUT ONLY THE 5 POSTS. No intro, no conclusion, no explanation.
+- POST 1 = 4 to 6 lines. POST 2 through POST 5 = 1 to 2 sentences ONLY, this is a hard limit.
 - NO corporate tone, NO marketing language.
 - Never write "stay safe," "protect your systems," "consider the implications," or "raises questions about."
 
@@ -290,29 +305,34 @@ def extract_posts_data(threads_content):
             "raw_body": clean_body,
         })
 
-    # Guarantee exactly 3 posts, padding with safe fallback content if the
-    # LLM produced fewer than 3 parseable posts.
-    while len(posts) < 3:
-        idx = len(posts)
+    # Guarantee exactly TOTAL_POSTS posts, padding with safe fallback content
+    # if the LLM produced fewer than TOTAL_POSTS parseable posts.
+    while len(posts) < TOTAL_POSTS:
         posts.append({
             "title": "Thread unavailable this run",
             "image_prompt": None,
             "raw_body": "Thread unavailable this run.",
         })
 
-    posts = posts[:3]
+    posts = posts[:TOTAL_POSTS]
 
-    # Apply fallback image prompts + styling for any post missing one
+    # Apply fallback image prompts + styling ONLY for the first
+    # IMAGE_POST_COUNT posts (images are capped regardless of how many
+    # total posts are generated). Posts beyond that get image_prompt=None,
+    # which generate_hf_image() already treats as "skip, no image".
     for i, post in enumerate(posts):
-        prompt = post["image_prompt"] or FALLBACK_IMAGE_PROMPTS[i % len(FALLBACK_IMAGE_PROMPTS)]
-        post["image_prompt"] = (
-            f"{prompt}, "
-            "realistic AFP Reuters wire photo style, "
-            "natural or fluorescent lighting, desaturated colors, "
-            "sharp focus, no neon, no sci-fi, no illustrations, "
-            "no text, no watermark, no logos, "
-            "Canon EOS R5, f/2.8, ISO 800, 4K press photo"
-        )
+        if i < IMAGE_POST_COUNT:
+            prompt = post["image_prompt"] or FALLBACK_IMAGE_PROMPTS[i % len(FALLBACK_IMAGE_PROMPTS)]
+            post["image_prompt"] = (
+                f"{prompt}, "
+                "realistic AFP Reuters wire photo style, "
+                "natural or fluorescent lighting, desaturated colors, "
+                "sharp focus, no neon, no sci-fi, no illustrations, "
+                "no text, no watermark, no logos, "
+                "Canon EOS R5, f/2.8, ISO 800, 4K press photo"
+            )
+        else:
+            post["image_prompt"] = None
 
     return posts
 
@@ -547,6 +567,10 @@ if __name__ == "__main__":
     generated_images = []
     for i, post in enumerate(posts_data):
         print(f"\n[POST {i+1}] Title: {post['title'][:60]}")
+        if post["image_prompt"] is None:
+            print(f"[POST {i+1}] No image for this post (beyond IMAGE_POST_COUNT={IMAGE_POST_COUNT}) — skipping HF call")
+            generated_images.append(None)
+            continue
         raw_img = generate_hf_image(post["image_prompt"])
         if raw_img:
             styled_img = add_overlay(raw_img, post["title"])
