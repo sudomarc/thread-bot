@@ -8,13 +8,17 @@ on:
     - cron: '0 8 * * *'
   workflow_dispatch:
 
+# contents: write is required so the bot can commit its own topic-rotation
+# state file (state/history.json) back to the repo after each run. This
+# uses the built-in, automatically-scoped-and-expiring GITHUB_TOKEN — never
+# a personal access token — and is limited to this repo only.
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -37,5 +41,27 @@ jobs:
           GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           RECIPIENT_EMAIL: ${{ secrets.RECIPIENT_EMAIL }}
+          # Optional overrides — set as repo Variables (Settings > Secrets
+          # and variables > Actions > Variables tab), not Secrets, since
+          # these aren't sensitive. Falls back to code defaults (5/3) if unset.
+          TOTAL_POSTS: ${{ vars.TOTAL_POSTS }}
+          IMAGE_POST_COUNT: ${{ vars.IMAGE_POST_COUNT }}
         run: |
           python main.py
+
+      # Commit the updated topic-rotation state file back to the repo, IF
+      # it changed. Uses [skip ci] in the commit message — critical: without
+      # this, the commit's own push would re-trigger this same workflow
+      # (it runs `on: push` to main), causing an infinite loop of runs.
+      - name: Commit updated topic history
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add state/history.json 2>/dev/null || true
+          if ! git diff --staged --quiet; then
+            git commit -m "chore: update topic rotation history [skip ci]"
+            git push
+          else
+            echo "No state changes to commit."
+          fi
