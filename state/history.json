@@ -3,13 +3,22 @@
     "untested_backups",
     "users_click_anyway",
     "cert_vs_reality",
-    "compliance_theater"
+    "compliance_theater",
+    "imposter_syndrome",
+    "one_person_team",
+    "password_hypocrisy",
+    "own_phishing_test"
   ],
   "recent_post_titles": [
     "CISA just ordered every federal agency to patch a critical Oracle EBusiness Suite flaw.",
     "I finally tested my backups after the ransomware hit  they were just empty folders.",
     "No matter how many phishing sims we run, someone still clicks the Free Pizza link.",
     "My LinkedIn says Im a ZeroDay Ninja, but the ticket queue just screams password reset.",
-    "We spend all day polishing the compliance checklist while the firewall logs scream for a rule change."
+    "We spend all day polishing the compliance checklist while the firewall logs scream for a rule change.",
+    "Four SharePoint Server flaws are being weaponized now.",
+    "Got my first pentest cert and still feel like Im guessing the password for my own life.",
+    "Im the firewall, the ticket queue, and the coffee machinemy inbox is a battlefield.",
+    "I tell everyone to use a password manager, but my admin account still lives on Password123!.",
+    "Clicked the Update your password link in the test and now HR is sending me a meme about it."
   ]
 }
