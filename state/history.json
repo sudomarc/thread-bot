@@ -11,7 +11,11 @@
     "budget_disparity",
     "audit_dread",
     "password_hypocrisy",
-    "one_person_team"
+    "one_person_team",
+    "users_click_anyway",
+    "imposter_syndrome",
+    "password_hypocrisy",
+    "compliance_theater"
   ],
   "recent_post_titles": [
     "CISA just ordered every federal agency to patch a critical Oracle EBusiness Suite flaw.",
@@ -28,6 +32,11 @@
     "The marketing team just got a new coffee machine while my security budget is still a Postit note.",
     "Every time someone says audit I hear the sound of my heart flatlining.",
     "I tell everyone to use a password manager, then I type Password123! into the admin console.",
-    "Im the firewall, the ticket queue, and the coffee maker all rolled into one."
+    "Im the firewall, the ticket queue, and the coffee maker all rolled into one.",
+    "A U.S. government agency wired $1million to Kairos, a dataextortion outfit.",
+    "We drill phishing for weeks, yet I still click Free iPhone every Friday.",
+    "Got my first pentest cert and still feel like Im guessing passwords on a lock I never opened.",
+    "I told the team to use passphrases, then typed Password123! to log into the admin console.",
+    "We passed the audit, but the firewall is still a cardboard cutout."
   ]
 }
