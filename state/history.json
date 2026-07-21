@@ -15,7 +15,11 @@
     "users_click_anyway",
     "imposter_syndrome",
     "password_hypocrisy",
-    "compliance_theater"
+    "compliance_theater",
+    "one_person_team",
+    "cert_vs_reality",
+    "own_phishing_test",
+    "users_click_anyway"
   ],
   "recent_post_titles": [
     "CISA just ordered every federal agency to patch a critical Oracle EBusiness Suite flaw.",
@@ -37,6 +41,11 @@
     "We drill phishing for weeks, yet I still click Free iPhone every Friday.",
     "Got my first pentest cert and still feel like Im guessing passwords on a lock I never opened.",
     "I told the team to use passphrases, then typed Password123! to log into the admin console.",
-    "We passed the audit, but the firewall is still a cardboard cutout."
+    "We passed the audit, but the firewall is still a cardboard cutout.",
+    "A U.S. government agency transferred $1million to dataextortion group Kairos.",
+    "Im the firewall, ticket triage, and the guy who reminds everyone to change passwordssolo.",
+    "My rsum flashes a cloud security cert, but my daily grind is still chasing reset your password tickets.",
+    "I fell for the companys own phishing test and now the security teams sending me a nice try meme.",
+    "No matter the training, someone always clicks the free gift card link and we all get the blame."
   ]
 }
