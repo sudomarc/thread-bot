@@ -1,9 +1,5 @@
 {
   "recent_relatable_topic_tags": [
-    "untested_backups",
-    "users_click_anyway",
-    "cert_vs_reality",
-    "compliance_theater",
     "imposter_syndrome",
     "one_person_team",
     "password_hypocrisy",
@@ -19,7 +15,11 @@
     "one_person_team",
     "cert_vs_reality",
     "own_phishing_test",
-    "users_click_anyway"
+    "users_click_anyway",
+    "compliance_theater",
+    "cert_vs_reality",
+    "audit_dread",
+    "untested_backups"
   ],
   "recent_post_titles": [
     "CISA just ordered every federal agency to patch a critical Oracle EBusiness Suite flaw.",
@@ -46,6 +46,11 @@
     "Im the firewall, ticket triage, and the guy who reminds everyone to change passwordssolo.",
     "My rsum flashes a cloud security cert, but my daily grind is still chasing reset your password tickets.",
     "I fell for the companys own phishing test and now the security teams sending me a nice try meme.",
-    "No matter the training, someone always clicks the free gift card link and we all get the blame."
+    "No matter the training, someone always clicks the free gift card link and we all get the blame.",
+    "A U.S. government agency transferred $1million to Kairos.",
+    "We spend all day polishing policies while the firewall still lets the coffee machine ping the internet.",
+    "My LinkedIn says I'm a ZeroDay Ninja, but the ticket queue just asks me to reset passwords.",
+    "The moment the auditor says audit, my heart does a DDoS.",
+    "We finally test backups after the ransomware hits, and discover the tapes are in the basement with the old pizza boxes."
   ]
 }
