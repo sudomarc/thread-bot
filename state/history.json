@@ -1,9 +1,5 @@
 {
   "recent_relatable_topic_tags": [
-    "budget_disparity",
-    "audit_dread",
-    "password_hypocrisy",
-    "one_person_team",
     "users_click_anyway",
     "imposter_syndrome",
     "password_hypocrisy",
@@ -19,14 +15,13 @@
     "one_person_team",
     "compliance_theater",
     "untested_backups",
-    "imposter_syndrome"
+    "imposter_syndrome",
+    "cert_vs_reality",
+    "own_phishing_test",
+    "imposter_syndrome",
+    "one_person_team"
   ],
   "recent_post_titles": [
-    "Four SharePoint Server flaws are being weaponized now.",
-    "Got my first pentest cert and still feel like Im guessing the password for my own life.",
-    "Im the firewall, the ticket queue, and the coffee machinemy inbox is a battlefield.",
-    "I tell everyone to use a password manager, but my admin account still lives on Password123!.",
-    "Clicked the Update your password link in the test and now HR is sending me a meme about it.",
     "Four Microsoft SharePoint Server flaws are being weaponized in the wild.",
     "The marketing team just got a new coffee machine while my security budget is still a Postit note.",
     "Every time someone says audit I hear the sound of my heart flatlining.",
@@ -51,6 +46,11 @@
     "Im the firewall, the ticket queue, and the coffee makermy job title is IT department.",
     "We spent three days polishing the compliance checklist while the real phishing test ran unchecked.",
     "Our backup strategy is if it works, well never test ituntil the ransomware hits.",
-    "Got my first OSCP, now Im terrified the next ticket will expose my fraud."
+    "Got my first OSCP, now Im terrified the next ticket will expose my fraud.",
+    "Microsoft released the July2026 cumulative update for AzureDevOps Server (KB5121391).",
+    "I brag about my new Cloud+ badge on LinkedIn, then spend the day Googling how to reset a forgotten admin password.",
+    "I clicked the urgent HR request email and instantly got a popup saying you just failed the phishing testthanks, IT.",
+    "Got my first SOC ticket and felt like a fraud until I realized I was the only one who actually understood the alert.",
+    "Im the firewall admin, patch manager, helpdesk, and coffee makermy todo list reads like a novel."
   ]
 }
