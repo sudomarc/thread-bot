@@ -1,9 +1,5 @@
 {
   "recent_relatable_topic_tags": [
-    "imposter_syndrome",
-    "one_person_team",
-    "password_hypocrisy",
-    "own_phishing_test",
     "budget_disparity",
     "audit_dread",
     "password_hypocrisy",
@@ -19,14 +15,13 @@
     "compliance_theater",
     "cert_vs_reality",
     "audit_dread",
-    "untested_backups"
+    "untested_backups",
+    "one_person_team",
+    "compliance_theater",
+    "untested_backups",
+    "imposter_syndrome"
   ],
   "recent_post_titles": [
-    "CISA just ordered every federal agency to patch a critical Oracle EBusiness Suite flaw.",
-    "I finally tested my backups after the ransomware hit  they were just empty folders.",
-    "No matter how many phishing sims we run, someone still clicks the Free Pizza link.",
-    "My LinkedIn says Im a ZeroDay Ninja, but the ticket queue just screams password reset.",
-    "We spend all day polishing the compliance checklist while the firewall logs scream for a rule change.",
     "Four SharePoint Server flaws are being weaponized now.",
     "Got my first pentest cert and still feel like Im guessing the password for my own life.",
     "Im the firewall, the ticket queue, and the coffee machinemy inbox is a battlefield.",
@@ -51,6 +46,11 @@
     "We spend all day polishing policies while the firewall still lets the coffee machine ping the internet.",
     "My LinkedIn says I'm a ZeroDay Ninja, but the ticket queue just asks me to reset passwords.",
     "The moment the auditor says audit, my heart does a DDoS.",
-    "We finally test backups after the ransomware hits, and discover the tapes are in the basement with the old pizza boxes."
+    "We finally test backups after the ransomware hits, and discover the tapes are in the basement with the old pizza boxes.",
+    "U.S. agency transferred $1million to Kairos.",
+    "Im the firewall, the ticket queue, and the coffee makermy job title is IT department.",
+    "We spent three days polishing the compliance checklist while the real phishing test ran unchecked.",
+    "Our backup strategy is if it works, well never test ituntil the ransomware hits.",
+    "Got my first OSCP, now Im terrified the next ticket will expose my fraud."
   ]
 }
