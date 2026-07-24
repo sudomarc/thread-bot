@@ -1,9 +1,5 @@
 {
   "recent_relatable_topic_tags": [
-    "users_click_anyway",
-    "imposter_syndrome",
-    "password_hypocrisy",
-    "compliance_theater",
     "one_person_team",
     "cert_vs_reality",
     "own_phishing_test",
@@ -19,14 +15,13 @@
     "cert_vs_reality",
     "own_phishing_test",
     "imposter_syndrome",
-    "one_person_team"
+    "one_person_team",
+    "budget_disparity",
+    "password_hypocrisy",
+    "untested_backups",
+    "cert_vs_reality"
   ],
   "recent_post_titles": [
-    "Four Microsoft SharePoint Server flaws are being weaponized in the wild.",
-    "The marketing team just got a new coffee machine while my security budget is still a Postit note.",
-    "Every time someone says audit I hear the sound of my heart flatlining.",
-    "I tell everyone to use a password manager, then I type Password123! into the admin console.",
-    "Im the firewall, the ticket queue, and the coffee maker all rolled into one.",
     "A U.S. government agency wired $1million to Kairos, a dataextortion outfit.",
     "We drill phishing for weeks, yet I still click Free iPhone every Friday.",
     "Got my first pentest cert and still feel like Im guessing passwords on a lock I never opened.",
@@ -51,6 +46,11 @@
     "I brag about my new Cloud+ badge on LinkedIn, then spend the day Googling how to reset a forgotten admin password.",
     "I clicked the urgent HR request email and instantly got a popup saying you just failed the phishing testthanks, IT.",
     "Got my first SOC ticket and felt like a fraud until I realized I was the only one who actually understood the alert.",
-    "Im the firewall admin, patch manager, helpdesk, and coffee makermy todo list reads like a novel."
+    "Im the firewall admin, patch manager, helpdesk, and coffee makermy todo list reads like a novel.",
+    "Check Point's SmartConsole GUI has a zeroday.",
+    "Our security budget is a Postit note; marketing's looks like a billboard.",
+    "I tell users no password reuse while my admin password is Password123.",
+    "We finally test backups after the ransomware hits  too late to care.",
+    "Got a LinkedIn cert for Cloud Security and now Im fielding tickets about printer passwords."
   ]
 }
