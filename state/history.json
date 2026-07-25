@@ -1,9 +1,5 @@
 {
   "recent_relatable_topic_tags": [
-    "one_person_team",
-    "cert_vs_reality",
-    "own_phishing_test",
-    "users_click_anyway",
     "compliance_theater",
     "cert_vs_reality",
     "audit_dread",
@@ -19,14 +15,13 @@
     "budget_disparity",
     "password_hypocrisy",
     "untested_backups",
-    "cert_vs_reality"
+    "cert_vs_reality",
+    "one_person_team",
+    "audit_dread",
+    "password_hypocrisy",
+    "untested_backups"
   ],
   "recent_post_titles": [
-    "A U.S. government agency wired $1million to Kairos, a dataextortion outfit.",
-    "We drill phishing for weeks, yet I still click Free iPhone every Friday.",
-    "Got my first pentest cert and still feel like Im guessing passwords on a lock I never opened.",
-    "I told the team to use passphrases, then typed Password123! to log into the admin console.",
-    "We passed the audit, but the firewall is still a cardboard cutout.",
     "A U.S. government agency transferred $1million to dataextortion group Kairos.",
     "Im the firewall, ticket triage, and the guy who reminds everyone to change passwordssolo.",
     "My rsum flashes a cloud security cert, but my daily grind is still chasing reset your password tickets.",
@@ -51,6 +46,11 @@
     "Our security budget is a Postit note; marketing's looks like a billboard.",
     "I tell users no password reuse while my admin password is Password123.",
     "We finally test backups after the ransomware hits  too late to care.",
-    "Got a LinkedIn cert for Cloud Security and now Im fielding tickets about printer passwords."
+    "Got a LinkedIn cert for Cloud Security and now Im fielding tickets about printer passwords.",
+    "US agencies flag Russian group Laundry Bear exploiting unpatched Zimbra servers.",
+    "Im the firewall, the ticket responder, and the coffee makermy todo list is a single line: survive.",
+    "When the auditor walks in, my heart does a DDoS on my chest.",
+    "I tell everyone no password reuse, then I lock my admin into Password123!.",
+    "Backup ran fine last night; the next morning the server is toast and the tape is a paperweight."
   ]
 }
