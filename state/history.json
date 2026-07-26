@@ -1,9 +1,5 @@
 {
   "recent_relatable_topic_tags": [
-    "compliance_theater",
-    "cert_vs_reality",
-    "audit_dread",
-    "untested_backups",
     "one_person_team",
     "compliance_theater",
     "untested_backups",
@@ -19,14 +15,13 @@
     "one_person_team",
     "audit_dread",
     "password_hypocrisy",
-    "untested_backups"
+    "untested_backups",
+    "users_click_anyway",
+    "one_person_team",
+    "budget_disparity",
+    "compliance_theater"
   ],
   "recent_post_titles": [
-    "A U.S. government agency transferred $1million to dataextortion group Kairos.",
-    "Im the firewall, ticket triage, and the guy who reminds everyone to change passwordssolo.",
-    "My rsum flashes a cloud security cert, but my daily grind is still chasing reset your password tickets.",
-    "I fell for the companys own phishing test and now the security teams sending me a nice try meme.",
-    "No matter the training, someone always clicks the free gift card link and we all get the blame.",
     "A U.S. government agency transferred $1million to Kairos.",
     "We spend all day polishing policies while the firewall still lets the coffee machine ping the internet.",
     "My LinkedIn says I'm a ZeroDay Ninja, but the ticket queue just asks me to reset passwords.",
@@ -51,6 +46,11 @@
     "Im the firewall, the ticket responder, and the coffee makermy todo list is a single line: survive.",
     "When the auditor walks in, my heart does a DDoS on my chest.",
     "I tell everyone no password reuse, then I lock my admin into Password123!.",
-    "Backup ran fine last night; the next morning the server is toast and the tape is a paperweight."
+    "Backup ran fine last night; the next morning the server is toast and the tape is a paperweight.",
+    "OpenAI's ChatGPT Workspace Agents have a critical flaw.",
+    "No matter how many phishtest emails we send, someone still clicks the Free Pizza link.",
+    "Im the firewall, the ticket responder, the coffee maker, and the only one who knows the backup password.",
+    "Marketing got a billboard, I got a sticky note that says Buy more firewalls.",
+    "We passed the audit with a shiny PDF, but the actual firewall is still a cardboard box."
   ]
 }
