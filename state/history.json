@@ -1,9 +1,5 @@
 {
   "recent_relatable_topic_tags": [
-    "one_person_team",
-    "compliance_theater",
-    "untested_backups",
-    "imposter_syndrome",
     "cert_vs_reality",
     "own_phishing_test",
     "imposter_syndrome",
@@ -19,14 +15,13 @@
     "users_click_anyway",
     "one_person_team",
     "budget_disparity",
-    "compliance_theater"
+    "compliance_theater",
+    "own_phishing_test",
+    "one_person_team",
+    "users_click_anyway",
+    "untested_backups"
   ],
   "recent_post_titles": [
-    "A U.S. government agency transferred $1million to Kairos.",
-    "We spend all day polishing policies while the firewall still lets the coffee machine ping the internet.",
-    "My LinkedIn says I'm a ZeroDay Ninja, but the ticket queue just asks me to reset passwords.",
-    "The moment the auditor says audit, my heart does a DDoS.",
-    "We finally test backups after the ransomware hits, and discover the tapes are in the basement with the old pizza boxes.",
     "U.S. agency transferred $1million to Kairos.",
     "Im the firewall, the ticket queue, and the coffee makermy job title is IT department.",
     "We spent three days polishing the compliance checklist while the real phishing test ran unchecked.",
@@ -51,6 +46,11 @@
     "No matter how many phishtest emails we send, someone still clicks the Free Pizza link.",
     "Im the firewall, the ticket responder, the coffee maker, and the only one who knows the backup password.",
     "Marketing got a billboard, I got a sticky note that says Buy more firewalls.",
-    "We passed the audit with a shiny PDF, but the actual firewall is still a cardboard box."
+    "We passed the audit with a shiny PDF, but the actual firewall is still a cardboard box.",
+    "OpenAI's ChatGPT Workspace Agents have a critical flaw.",
+    "I just fell for the company's own phishing test and now I'm the one sending the report this email reminder.",
+    "I wear the hats of sysadmin, SOC analyst, and HR recruiterbecause the budget says one person.",
+    "No matter how many dont click posters we put up, someone always clicks the glittery free pizza link.",
+    "We finally tested the backups after the ransomware hitturns out the tapes were empty."
   ]
 }
