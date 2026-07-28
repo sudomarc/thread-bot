@@ -1,9 +1,5 @@
 {
   "recent_relatable_topic_tags": [
-    "cert_vs_reality",
-    "own_phishing_test",
-    "imposter_syndrome",
-    "one_person_team",
     "budget_disparity",
     "password_hypocrisy",
     "untested_backups",
@@ -19,14 +15,13 @@
     "own_phishing_test",
     "one_person_team",
     "users_click_anyway",
-    "untested_backups"
+    "untested_backups",
+    "untested_backups",
+    "budget_disparity",
+    "compliance_theater",
+    "imposter_syndrome"
   ],
   "recent_post_titles": [
-    "U.S. agency transferred $1million to Kairos.",
-    "Im the firewall, the ticket queue, and the coffee makermy job title is IT department.",
-    "We spent three days polishing the compliance checklist while the real phishing test ran unchecked.",
-    "Our backup strategy is if it works, well never test ituntil the ransomware hits.",
-    "Got my first OSCP, now Im terrified the next ticket will expose my fraud.",
     "Microsoft released the July2026 cumulative update for AzureDevOps Server (KB5121391).",
     "I brag about my new Cloud+ badge on LinkedIn, then spend the day Googling how to reset a forgotten admin password.",
     "I clicked the urgent HR request email and instantly got a popup saying you just failed the phishing testthanks, IT.",
@@ -51,6 +46,11 @@
     "I just fell for the company's own phishing test and now I'm the one sending the report this email reminder.",
     "I wear the hats of sysadmin, SOC analyst, and HR recruiterbecause the budget says one person.",
     "No matter how many dont click posters we put up, someone always clicks the glittery free pizza link.",
-    "We finally tested the backups after the ransomware hitturns out the tapes were empty."
+    "We finally tested the backups after the ransomware hitturns out the tapes were empty.",
+    "A U.S. government agency transferred $1million to dataextortion group Kairos.",
+    "I brag about my backups work until the server crashes and I discover the tape is a paperweight.",
+    "The marketing team just got a new billboard while my firewall is still running on a 2012 laptop.",
+    "We spent the week polishing the compliance checklist, but the real threat is still the interns stickynote password.",
+    "Got my OSCP, now I spend half the day Googling what does this command actually do?"
   ]
 }
