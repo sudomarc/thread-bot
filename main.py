@@ -303,11 +303,21 @@ News (use ONLY for POST 1, pick the single sharpest article):
 
 """
 
+    # NOTE: hardcoded ":free" slugs rot — OpenRouter delists specific free
+    # model IDs without notice (this is what broke the bot on ~29/07/2026:
+    # all 4 slugs below started returning "unavailable for free, use the
+    # paid slug instead"). "openrouter/free" is OpenRouter's own router
+    # that dynamically picks from whichever free models are live right
+    # now, so it doesn't rot the same way. Kept a couple of specific
+    # slugs as secondary fallback in case the router itself has a hiccup,
+    # but "openrouter/free" is the primary and does most of the work.
+    # Deliberately NOT using "openrouter/auto" — that's a paid router
+    # (billed at the routed model's rate) and fails outright on a
+    # zero-credit account, which was part of this same outage.
     models_to_try = [
-        "deepseek/deepseek-chat-v3-0324:free",
+        "openrouter/free",
         "meta-llama/llama-3.3-70b-instruct:free",
-        "openrouter/auto",
-        "qwen/qwen3-coder:free"
+        "nvidia/nemotron-3-ultra-550b-a55b:free",
     ]
 
     for model in models_to_try:
@@ -330,7 +340,8 @@ News (use ONLY for POST 1, pick the single sharpest article):
             data = response.json()
 
             if "choices" in data:
-                print(f"Success with {model}!")
+                actually_used = data.get("model", model)
+                print(f"Success with {model} (actually routed to: {actually_used})!")
                 return safe_encode(data["choices"][0]["message"]["content"])
 
             print(f"Failed with {model}: {data.get('error', {}).get('message', 'Unknown')}")
@@ -784,7 +795,7 @@ Posts to rate:
                 "X-Title": "Thread Bot Scorer",
             },
             json={
-                "model": "deepseek/deepseek-chat-v3-0324:free",
+                "model": "openrouter/free",
                 "messages": [{"role": "user", "content": prompt}],
             },
             timeout=30,
