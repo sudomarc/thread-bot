@@ -1,9 +1,5 @@
 {
   "recent_relatable_topic_tags": [
-    "budget_disparity",
-    "password_hypocrisy",
-    "untested_backups",
-    "cert_vs_reality",
     "one_person_team",
     "audit_dread",
     "password_hypocrisy",
@@ -19,14 +15,13 @@
     "untested_backups",
     "budget_disparity",
     "compliance_theater",
-    "imposter_syndrome"
+    "imposter_syndrome",
+    "own_phishing_test",
+    "untested_backups",
+    "password_hypocrisy",
+    "compliance_theater"
   ],
   "recent_post_titles": [
-    "Microsoft released the July2026 cumulative update for AzureDevOps Server (KB5121391).",
-    "I brag about my new Cloud+ badge on LinkedIn, then spend the day Googling how to reset a forgotten admin password.",
-    "I clicked the urgent HR request email and instantly got a popup saying you just failed the phishing testthanks, IT.",
-    "Got my first SOC ticket and felt like a fraud until I realized I was the only one who actually understood the alert.",
-    "Im the firewall admin, patch manager, helpdesk, and coffee makermy todo list reads like a novel.",
     "Check Point's SmartConsole GUI has a zeroday.",
     "Our security budget is a Postit note; marketing's looks like a billboard.",
     "I tell users no password reuse while my admin password is Password123.",
@@ -51,6 +46,11 @@
     "I brag about my backups work until the server crashes and I discover the tape is a paperweight.",
     "The marketing team just got a new billboard while my firewall is still running on a 2012 laptop.",
     "We spent the week polishing the compliance checklist, but the real threat is still the interns stickynote password.",
-    "Got my OSCP, now I spend half the day Googling what does this command actually do?"
+    "Got my OSCP, now I spend half the day Googling what does this command actually do?",
+    "CVE-2026-66066 is live.",
+    "Nothing hurts more than failing the internal phishing simulation.",
+    "The backup finally failed during the actual incident.",
+    "I'll lecture you on entropy and MFA for an hour.",
+    "We have 500 pages of compliance checklists."
   ]
 }
