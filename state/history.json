@@ -1,9 +1,5 @@
 {
   "recent_relatable_topic_tags": [
-    "own_phishing_test",
-    "one_person_team",
-    "users_click_anyway",
-    "untested_backups",
     "untested_backups",
     "budget_disparity",
     "compliance_theater",
@@ -19,14 +15,13 @@
     "audit_dread",
     "untested_backups",
     "compliance_theater",
-    "cert_vs_reality"
+    "cert_vs_reality",
+    "users_click_anyway",
+    "untested_backups",
+    "own_phishing_test",
+    "imposter_syndrome"
   ],
   "recent_post_titles": [
-    "OpenAI's ChatGPT Workspace Agents have a critical flaw.",
-    "I just fell for the company's own phishing test and now I'm the one sending the report this email reminder.",
-    "I wear the hats of sysadmin, SOC analyst, and HR recruiterbecause the budget says one person.",
-    "No matter how many dont click posters we put up, someone always clicks the glittery free pizza link.",
-    "We finally tested the backups after the ransomware hitturns out the tapes were empty.",
     "A U.S. government agency transferred $1million to dataextortion group Kairos.",
     "I brag about my backups work until the server crashes and I discover the tape is a paperweight.",
     "The marketing team just got a new billboard while my firewall is still running on a 2012 laptop.",
@@ -51,6 +46,11 @@
     "**",
     "**",
     "**",
-    "**"
+    "**",
+    "MITRE rejected 54 fake SQLite CVEs.",
+    "Another phishing simulation, another coworker clicks the 'free iTunes gift card' link.",
+    "We backup every night, but the last time we actually tried to restore was during the fire drill and the tape was blank.",
+    "I got hit by our own phishing test todayclicked the fake password reset link and now I have to explain to SOC why Im the villain.",
+    "I have the CISSP, the CEH, and still feel like Im just Googling how to spell 'firewall' every morning."
   ]
 }
