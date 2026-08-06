@@ -1,9 +1,5 @@
 {
   "recent_relatable_topic_tags": [
-    "untested_backups",
-    "budget_disparity",
-    "compliance_theater",
-    "imposter_syndrome",
     "own_phishing_test",
     "untested_backups",
     "password_hypocrisy",
@@ -19,14 +15,13 @@
     "users_click_anyway",
     "untested_backups",
     "own_phishing_test",
-    "imposter_syndrome"
+    "imposter_syndrome",
+    "one_person_team",
+    "untested_backups",
+    "budget_disparity",
+    "audit_dread"
   ],
   "recent_post_titles": [
-    "A U.S. government agency transferred $1million to dataextortion group Kairos.",
-    "I brag about my backups work until the server crashes and I discover the tape is a paperweight.",
-    "The marketing team just got a new billboard while my firewall is still running on a 2012 laptop.",
-    "We spent the week polishing the compliance checklist, but the real threat is still the interns stickynote password.",
-    "Got my OSCP, now I spend half the day Googling what does this command actually do?",
     "CVE-2026-66066 is live.",
     "Nothing hurts more than failing the internal phishing simulation.",
     "The backup finally failed during the actual incident.",
@@ -51,6 +46,11 @@
     "Another phishing simulation, another coworker clicks the 'free iTunes gift card' link.",
     "We backup every night, but the last time we actually tried to restore was during the fire drill and the tape was blank.",
     "I got hit by our own phishing test todayclicked the fake password reset link and now I have to explain to SOC why Im the villain.",
-    "I have the CISSP, the CEH, and still feel like Im just Googling how to spell 'firewall' every morning."
+    "I have the CISSP, the CEH, and still feel like Im just Googling how to spell 'firewall' every morning.",
+    "Apple bug bounty policy floods with fake reports.",
+    "I patch, monitor, and answer phishing emails all in one coffee break.",
+    "I only test backups when the data is gone.",
+    "Marketing spends on ads, I spend on firewalls, and the CFO thinks I'm overpaying.",
+    "Audit day: I pretend my logs are clean while the auditor looks for holes."
   ]
 }
