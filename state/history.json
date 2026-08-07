@@ -1,9 +1,5 @@
 {
   "recent_relatable_topic_tags": [
-    "own_phishing_test",
-    "untested_backups",
-    "password_hypocrisy",
-    "compliance_theater",
     "cert_vs_reality",
     "untested_backups",
     "users_click_anyway",
@@ -19,14 +15,13 @@
     "one_person_team",
     "untested_backups",
     "budget_disparity",
-    "audit_dread"
+    "audit_dread",
+    "compliance_theater",
+    "untested_backups",
+    "one_person_team",
+    "imposter_syndrome"
   ],
   "recent_post_titles": [
-    "CVE-2026-66066 is live.",
-    "Nothing hurts more than failing the internal phishing simulation.",
-    "The backup finally failed during the actual incident.",
-    "I'll lecture you on entropy and MFA for an hour.",
-    "We have 500 pages of compliance checklists.",
     "Ruby on Rails RCE dropped.",
     "Seven certs on my LinkedIn, still spent three hours debugging why the dev environment won't talk to prod because I typo'd a firewall rule.",
     "Our backup strategy is \"hope the snapshots work\" and the one time we tested restore it took 14 hours and missed half the database.",
@@ -51,6 +46,11 @@
     "I patch, monitor, and answer phishing emails all in one coffee break.",
     "I only test backups when the data is gone.",
     "Marketing spends on ads, I spend on firewalls, and the CFO thinks I'm overpaying.",
-    "Audit day: I pretend my logs are clean while the auditor looks for holes."
+    "Audit day: I pretend my logs are clean while the auditor looks for holes.",
+    "Langflow has a critical flaw.",
+    "Spending three weeks on a SOC2 audit just to realize we're still using 'Password123' for the admin account.",
+    "The backup failed during the restoration attempt.",
+    "I'm currently the SOC, the DevOps, and the person who fixes the office printer.",
+    "I've got three CISSP certifications but I'm still terrified someone's going to ask me how a subnet mask actually works."
   ]
 }
