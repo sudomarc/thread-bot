@@ -1,9 +1,5 @@
 {
   "recent_relatable_topic_tags": [
-    "cert_vs_reality",
-    "untested_backups",
-    "users_click_anyway",
-    "budget_disparity",
     "audit_dread",
     "untested_backups",
     "compliance_theater",
@@ -19,14 +15,13 @@
     "compliance_theater",
     "untested_backups",
     "one_person_team",
-    "imposter_syndrome"
+    "imposter_syndrome",
+    "password_hypocrisy",
+    "untested_backups",
+    "budget_disparity",
+    "own_phishing_test"
   ],
   "recent_post_titles": [
-    "Ruby on Rails RCE dropped.",
-    "Seven certs on my LinkedIn, still spent three hours debugging why the dev environment won't talk to prod because I typo'd a firewall rule.",
-    "Our backup strategy is \"hope the snapshots work\" and the one time we tested restore it took 14 hours and missed half the database.",
-    "Ran phishing simulations quarterly for three years, click rate barely moved, then the CEO clicked a fake DocuSign at 11 PM on a Friday.",
-    "Marketing got a $200K brand refresh budget, I got $12K for \"tools\" and a lecture about ROI from a guy who thinks antivirus is a strategy.",
     "Ruby on Rails CVE-2026-66066",
     "The word \"audit\" just made my coffee go cold.",
     "Finally tested our backups.",
@@ -51,6 +46,11 @@
     "Spending three weeks on a SOC2 audit just to realize we're still using 'Password123' for the admin account.",
     "The backup failed during the restoration attempt.",
     "I'm currently the SOC, the DevOps, and the person who fixes the office printer.",
-    "I've got three CISSP certifications but I'm still terrified someone's going to ask me how a subnet mask actually works."
+    "I've got three CISSP certifications but I'm still terrified someone's going to ask me how a subnet mask actually works.",
+    "NatJack zero-day hits major NAT devices. Exploit actively scanning shodan.io. Patched binaries in vendor repos. Sysadmins sleeping on this are already pivoting. Silently pivoting.",
+    "Use qwerty123 for work and personal? Sure. Im a security person. No youre not.",
+    "Backups? Yeah. Tested? No. Trusted the cinematic third-act save. *Cue loading cursor.*",
+    "Marketing gets 10x my budget. Cybersecurity is a buzzword for C-suite.",
+    "Clicked the documen-t thesis phishing email. Still top performer for quarterly review."
   ]
 }
