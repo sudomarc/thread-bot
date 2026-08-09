@@ -1,9 +1,5 @@
 {
   "recent_relatable_topic_tags": [
-    "audit_dread",
-    "untested_backups",
-    "compliance_theater",
-    "cert_vs_reality",
     "users_click_anyway",
     "untested_backups",
     "own_phishing_test",
@@ -19,14 +15,13 @@
     "password_hypocrisy",
     "untested_backups",
     "budget_disparity",
-    "own_phishing_test"
+    "own_phishing_test",
+    "audit_dread",
+    "own_phishing_test",
+    "imposter_syndrome",
+    "compliance_theater"
   ],
   "recent_post_titles": [
-    "Ruby on Rails CVE-2026-66066",
-    "The word \"audit\" just made my coffee go cold.",
-    "Finally tested our backups.",
-    "Compliance checklist says \"secure.\"",
-    "My LinkedIn says \"CISSP.\"",
     "**",
     "**",
     "**",
@@ -51,6 +46,11 @@
     "Use qwerty123 for work and personal? Sure. Im a security person. No youre not.",
     "Backups? Yeah. Tested? No. Trusted the cinematic third-act save. *Cue loading cursor.*",
     "Marketing gets 10x my budget. Cybersecurity is a buzzword for C-suite.",
-    "Clicked the documen-t thesis phishing email. Still top performer for quarterly review."
+    "Clicked the documen-t thesis phishing email. Still top performer for quarterly review.",
+    "Laundry Bear hits Zimbra.",
+    "Hearing the word 'audit' makes my stomach drop like I've just seen a red flag on a log.",
+    "I clicked my own company's phishing test and now Im stuck explaining why I opened a fake invoice.",
+    "I hold a CISSP badge but still feel like a fraud every time I have to explain a firewall rule to a teammate.",
+    "We locked the server room door for the audit but left the default admin password on a sticky note beside it."
   ]
 }
