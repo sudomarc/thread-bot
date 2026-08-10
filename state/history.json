@@ -1,9 +1,5 @@
 {
   "recent_relatable_topic_tags": [
-    "users_click_anyway",
-    "untested_backups",
-    "own_phishing_test",
-    "imposter_syndrome",
     "one_person_team",
     "untested_backups",
     "budget_disparity",
@@ -19,14 +15,13 @@
     "audit_dread",
     "own_phishing_test",
     "imposter_syndrome",
-    "compliance_theater"
+    "compliance_theater",
+    "cert_vs_reality",
+    "budget_disparity",
+    "own_phishing_test",
+    "users_click_anyway"
   ],
   "recent_post_titles": [
-    "**",
-    "**",
-    "**",
-    "**",
-    "**",
     "MITRE rejected 54 fake SQLite CVEs.",
     "Another phishing simulation, another coworker clicks the 'free iTunes gift card' link.",
     "We backup every night, but the last time we actually tried to restore was during the fire drill and the tape was blank.",
@@ -51,6 +46,11 @@
     "Hearing the word 'audit' makes my stomach drop like I've just seen a red flag on a log.",
     "I clicked my own company's phishing test and now Im stuck explaining why I opened a fake invoice.",
     "I hold a CISSP badge but still feel like a fraud every time I have to explain a firewall rule to a teammate.",
-    "We locked the server room door for the audit but left the default admin password on a sticky note beside it."
+    "We locked the server room door for the audit but left the default admin password on a sticky note beside it.",
+    "CVE-2022-27925 hits unpatched Zimbra servers.",
+    "Got a shiny new CompTIA Security+ badge on LinkedIn and now the team thinks I'm a firewall wizarduntil the firewall says 'no internet.'",
+    "The security team bought a $15k SIEM while marketing got a new espresso machine. At the all-hands, we patched the firewall anyway.",
+    "Clicked the internal 'urgent account verification' link in our own phishing test email. Now the SOC thinks I'm the real deal.",
+    "Finished the tenth 'don't click unknown links' training and still opened the 'account suspended' email because 'what the heck.'"
   ]
 }
