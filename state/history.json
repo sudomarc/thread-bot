@@ -1,9 +1,5 @@
 {
   "recent_relatable_topic_tags": [
-    "one_person_team",
-    "untested_backups",
-    "budget_disparity",
-    "audit_dread",
     "compliance_theater",
     "untested_backups",
     "one_person_team",
@@ -19,14 +15,13 @@
     "cert_vs_reality",
     "budget_disparity",
     "own_phishing_test",
+    "users_click_anyway",
+    "one_person_team",
+    "untested_backups",
+    "imposter_syndrome",
     "users_click_anyway"
   ],
   "recent_post_titles": [
-    "MITRE rejected 54 fake SQLite CVEs.",
-    "Another phishing simulation, another coworker clicks the 'free iTunes gift card' link.",
-    "We backup every night, but the last time we actually tried to restore was during the fire drill and the tape was blank.",
-    "I got hit by our own phishing test todayclicked the fake password reset link and now I have to explain to SOC why Im the villain.",
-    "I have the CISSP, the CEH, and still feel like Im just Googling how to spell 'firewall' every morning.",
     "Apple bug bounty policy floods with fake reports.",
     "I patch, monitor, and answer phishing emails all in one coffee break.",
     "I only test backups when the data is gone.",
@@ -51,6 +46,11 @@
     "Got a shiny new CompTIA Security+ badge on LinkedIn and now the team thinks I'm a firewall wizarduntil the firewall says 'no internet.'",
     "The security team bought a $15k SIEM while marketing got a new espresso machine. At the all-hands, we patched the firewall anyway.",
     "Clicked the internal 'urgent account verification' link in our own phishing test email. Now the SOC thinks I'm the real deal.",
-    "Finished the tenth 'don't click unknown links' training and still opened the 'account suspended' email because 'what the heck.'"
+    "Finished the tenth 'don't click unknown links' training and still opened the 'account suspended' email because 'what the heck.'",
+    "Russian hackers can steal emails without a click.",
+    "I juggle patching, monitoring, and answering user questions all in one coffee cup.",
+    "I never test my backups until the data disappears.",
+    "I keep checking my certs like a security guard checks a badge, but the badge still feels fake.",
+    "I teach phishing, but my own inbox still gets the same link."
   ]
 }
