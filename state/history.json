@@ -1,9 +1,5 @@
 {
   "recent_relatable_topic_tags": [
-    "compliance_theater",
-    "untested_backups",
-    "one_person_team",
-    "imposter_syndrome",
     "password_hypocrisy",
     "untested_backups",
     "budget_disparity",
@@ -19,14 +15,13 @@
     "one_person_team",
     "untested_backups",
     "imposter_syndrome",
-    "users_click_anyway"
+    "users_click_anyway",
+    "imposter_syndrome",
+    "one_person_team",
+    "cert_vs_reality",
+    "budget_disparity"
   ],
   "recent_post_titles": [
-    "Apple bug bounty policy floods with fake reports.",
-    "I patch, monitor, and answer phishing emails all in one coffee break.",
-    "I only test backups when the data is gone.",
-    "Marketing spends on ads, I spend on firewalls, and the CFO thinks I'm overpaying.",
-    "Audit day: I pretend my logs are clean while the auditor looks for holes.",
     "Langflow has a critical flaw.",
     "Spending three weeks on a SOC2 audit just to realize we're still using 'Password123' for the admin account.",
     "The backup failed during the restoration attempt.",
@@ -51,6 +46,11 @@
     "I juggle patching, monitoring, and answering user questions all in one coffee cup.",
     "I never test my backups until the data disappears.",
     "I keep checking my certs like a security guard checks a badge, but the badge still feels fake.",
-    "I teach phishing, but my own inbox still gets the same link."
+    "I teach phishing, but my own inbox still gets the same link.",
+    "Microsoft says Ncentral flaw is live",
+    "I ace the OSCP exam but still feel like I'm faking it every day",
+    "My inbox is a firehose and I'm the only firetruck",
+    "My LinkedIn says CISSP but the SOC ticket is why is the firewall on fire?",
+    "Marketing gets a million for ads while security scrimps on coffee"
   ]
 }
