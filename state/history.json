@@ -22,11 +22,6 @@
     "budget_disparity"
   ],
   "recent_post_titles": [
-    "Langflow has a critical flaw.",
-    "Spending three weeks on a SOC2 audit just to realize we're still using 'Password123' for the admin account.",
-    "The backup failed during the restoration attempt.",
-    "I'm currently the SOC, the DevOps, and the person who fixes the office printer.",
-    "I've got three CISSP certifications but I'm still terrified someone's going to ask me how a subnet mask actually works.",
     "NatJack zero-day hits major NAT devices. Exploit actively scanning shodan.io. Patched binaries in vendor repos. Sysadmins sleeping on this are already pivoting. Silently pivoting.",
     "Use qwerty123 for work and personal? Sure. Im a security person. No youre not.",
     "Backups? Yeah. Tested? No. Trusted the cinematic third-act save. *Cue loading cursor.*",
@@ -51,6 +46,11 @@
     "I ace the OSCP exam but still feel like I'm faking it every day",
     "My inbox is a firehose and I'm the only firetruck",
     "My LinkedIn says CISSP but the SOC ticket is why is the firewall on fire?",
-    "Marketing gets a million for ads while security scrimps on coffee"
+    "Marketing gets a million for ads while security scrimps on coffee",
+    "Thread unavailable this run",
+    "Thread unavailable this run",
+    "Thread unavailable this run",
+    "Thread unavailable this run",
+    "Thread unavailable this run"
   ]
 }
