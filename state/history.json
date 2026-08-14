@@ -1,9 +1,5 @@
 {
   "recent_relatable_topic_tags": [
-    "password_hypocrisy",
-    "untested_backups",
-    "budget_disparity",
-    "own_phishing_test",
     "audit_dread",
     "own_phishing_test",
     "imposter_syndrome",
@@ -19,14 +15,13 @@
     "imposter_syndrome",
     "one_person_team",
     "cert_vs_reality",
-    "budget_disparity"
+    "budget_disparity",
+    "cert_vs_reality",
+    "own_phishing_test",
+    "users_click_anyway",
+    "untested_backups"
   ],
   "recent_post_titles": [
-    "NatJack zero-day hits major NAT devices. Exploit actively scanning shodan.io. Patched binaries in vendor repos. Sysadmins sleeping on this are already pivoting. Silently pivoting.",
-    "Use qwerty123 for work and personal? Sure. Im a security person. No youre not.",
-    "Backups? Yeah. Tested? No. Trusted the cinematic third-act save. *Cue loading cursor.*",
-    "Marketing gets 10x my budget. Cybersecurity is a buzzword for C-suite.",
-    "Clicked the documen-t thesis phishing email. Still top performer for quarterly review.",
     "Laundry Bear hits Zimbra.",
     "Hearing the word 'audit' makes my stomach drop like I've just seen a red flag on a log.",
     "I clicked my own company's phishing test and now Im stuck explaining why I opened a fake invoice.",
@@ -51,6 +46,11 @@
     "Thread unavailable this run",
     "Thread unavailable this run",
     "Thread unavailable this run",
-    "Thread unavailable this run"
+    "Thread unavailable this run",
+    "Ivanti EPM Update patches remotely exploitable flaw.",
+    "My LinkedIn screams OSCP certified. I still can't reset a switch without Googling.",
+    "Our company sent a fake phishing email. I clicked the link and got owned.",
+    "They get a 'free iPhone' link in a Slack message. They click it anyway.",
+    "Our backups sat untouched for months. Ransomware hit and we lost everything."
   ]
 }
