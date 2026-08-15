@@ -1,9 +1,5 @@
 {
   "recent_relatable_topic_tags": [
-    "audit_dread",
-    "own_phishing_test",
-    "imposter_syndrome",
-    "compliance_theater",
     "cert_vs_reality",
     "budget_disparity",
     "own_phishing_test",
@@ -19,14 +15,13 @@
     "cert_vs_reality",
     "own_phishing_test",
     "users_click_anyway",
-    "untested_backups"
+    "untested_backups",
+    "password_hypocrisy",
+    "users_click_anyway",
+    "budget_disparity",
+    "imposter_syndrome"
   ],
   "recent_post_titles": [
-    "Laundry Bear hits Zimbra.",
-    "Hearing the word 'audit' makes my stomach drop like I've just seen a red flag on a log.",
-    "I clicked my own company's phishing test and now Im stuck explaining why I opened a fake invoice.",
-    "I hold a CISSP badge but still feel like a fraud every time I have to explain a firewall rule to a teammate.",
-    "We locked the server room door for the audit but left the default admin password on a sticky note beside it.",
     "CVE-2022-27925 hits unpatched Zimbra servers.",
     "Got a shiny new CompTIA Security+ badge on LinkedIn and now the team thinks I'm a firewall wizarduntil the firewall says 'no internet.'",
     "The security team bought a $15k SIEM while marketing got a new espresso machine. At the all-hands, we patched the firewall anyway.",
@@ -51,6 +46,11 @@
     "My LinkedIn screams OSCP certified. I still can't reset a switch without Googling.",
     "Our company sent a fake phishing email. I clicked the link and got owned.",
     "They get a 'free iPhone' link in a Slack message. They click it anyway.",
-    "Our backups sat untouched for months. Ransomware hit and we lost everything."
+    "Our backups sat untouched for months. Ransomware hit and we lost everything.",
+    "AVEVA Enterprise SCADA deserializes attacker-controlled data.",
+    "Used a password manager for work accounts but my personal email is still \"dragon123.\"",
+    "Sent the same phishing email 47 times this month.",
+    "Our marketing budget bought a gold-plated foosball table.",
+    "Passed my CISSP last year."
   ]
 }
