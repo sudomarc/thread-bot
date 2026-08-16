@@ -1,9 +1,5 @@
 {
   "recent_relatable_topic_tags": [
-    "cert_vs_reality",
-    "budget_disparity",
-    "own_phishing_test",
-    "users_click_anyway",
     "one_person_team",
     "untested_backups",
     "imposter_syndrome",
@@ -19,14 +15,13 @@
     "password_hypocrisy",
     "users_click_anyway",
     "budget_disparity",
-    "imposter_syndrome"
+    "imposter_syndrome",
+    "audit_dread",
+    "compliance_theater",
+    "cert_vs_reality",
+    "one_person_team"
   ],
   "recent_post_titles": [
-    "CVE-2022-27925 hits unpatched Zimbra servers.",
-    "Got a shiny new CompTIA Security+ badge on LinkedIn and now the team thinks I'm a firewall wizarduntil the firewall says 'no internet.'",
-    "The security team bought a $15k SIEM while marketing got a new espresso machine. At the all-hands, we patched the firewall anyway.",
-    "Clicked the internal 'urgent account verification' link in our own phishing test email. Now the SOC thinks I'm the real deal.",
-    "Finished the tenth 'don't click unknown links' training and still opened the 'account suspended' email because 'what the heck.'",
     "Russian hackers can steal emails without a click.",
     "I juggle patching, monitoring, and answering user questions all in one coffee cup.",
     "I never test my backups until the data disappears.",
@@ -51,6 +46,11 @@
     "Used a password manager for work accounts but my personal email is still \"dragon123.\"",
     "Sent the same phishing email 47 times this month.",
     "Our marketing budget bought a gold-plated foosball table.",
-    "Passed my CISSP last year."
+    "Passed my CISSP last year.",
+    "HTML::FormHandler vulnerable.",
+    "Hearing the word audit makes my coffee taste like fear. I start Googling 'how to fake compliance' at 2AM.",
+    "We spend hours ticking boxes while the real breach walks right past. Meanwhile the CISO smiles for the camera.",
+    "My LinkedIn says I'm a security ninja, but I still can't reset a router.",
+    "I'm the dev, the SOC analyst, the janitor, and the coffee maker. All before lunch."
   ]
 }
