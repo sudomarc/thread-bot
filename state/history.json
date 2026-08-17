@@ -1,9 +1,5 @@
 {
   "recent_relatable_topic_tags": [
-    "one_person_team",
-    "untested_backups",
-    "imposter_syndrome",
-    "users_click_anyway",
     "imposter_syndrome",
     "one_person_team",
     "cert_vs_reality",
@@ -19,14 +15,13 @@
     "audit_dread",
     "compliance_theater",
     "cert_vs_reality",
-    "one_person_team"
+    "one_person_team",
+    "untested_backups",
+    "users_click_anyway",
+    "audit_dread",
+    "password_hypocrisy"
   ],
   "recent_post_titles": [
-    "Russian hackers can steal emails without a click.",
-    "I juggle patching, monitoring, and answering user questions all in one coffee cup.",
-    "I never test my backups until the data disappears.",
-    "I keep checking my certs like a security guard checks a badge, but the badge still feels fake.",
-    "I teach phishing, but my own inbox still gets the same link.",
     "Microsoft says Ncentral flaw is live",
     "I ace the OSCP exam but still feel like I'm faking it every day",
     "My inbox is a firehose and I'm the only firetruck",
@@ -51,6 +46,11 @@
     "Hearing the word audit makes my coffee taste like fear. I start Googling 'how to fake compliance' at 2AM.",
     "We spend hours ticking boxes while the real breach walks right past. Meanwhile the CISO smiles for the camera.",
     "My LinkedIn says I'm a security ninja, but I still can't reset a router.",
-    "I'm the dev, the SOC analyst, the janitor, and the coffee maker. All before lunch."
+    "I'm the dev, the SOC analyst, the janitor, and the coffee maker. All before lunch.",
+    "GeoServer zero-day.",
+    "Never tested backups until the fire started.",
+    "Phishing training? Nah, were just gonna click it twice.",
+    "My heart stops every time I hear So were getting audited.",
+    "I literally use Password123! for everything including my own firewall."
   ]
 }
