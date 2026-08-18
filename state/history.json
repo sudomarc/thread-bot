@@ -1,9 +1,5 @@
 {
   "recent_relatable_topic_tags": [
-    "imposter_syndrome",
-    "one_person_team",
-    "cert_vs_reality",
-    "budget_disparity",
     "cert_vs_reality",
     "own_phishing_test",
     "users_click_anyway",
@@ -19,14 +15,13 @@
     "untested_backups",
     "users_click_anyway",
     "audit_dread",
-    "password_hypocrisy"
+    "password_hypocrisy",
+    "audit_dread",
+    "budget_disparity",
+    "own_phishing_test",
+    "compliance_theater"
   ],
   "recent_post_titles": [
-    "Microsoft says Ncentral flaw is live",
-    "I ace the OSCP exam but still feel like I'm faking it every day",
-    "My inbox is a firehose and I'm the only firetruck",
-    "My LinkedIn says CISSP but the SOC ticket is why is the firewall on fire?",
-    "Marketing gets a million for ads while security scrimps on coffee",
     "Thread unavailable this run",
     "Thread unavailable this run",
     "Thread unavailable this run",
@@ -51,6 +46,11 @@
     "Never tested backups until the fire started.",
     "Phishing training? Nah, were just gonna click it twice.",
     "My heart stops every time I hear So were getting audited.",
-    "I literally use Password123! for everything including my own firewall."
+    "I literally use Password123! for everything including my own firewall.",
+    "GeoServer zero-day CVE-2024-GEOS-001",
+    "Hearing \"audit\" feels like realizing you left your phone at home.",
+    "My security budget gets denied, but marketings \"brand revolution\" gets a standing ovation.",
+    "Clicked \"verify your account\" in the phishing test.",
+    "We passed every checklist but skipped updating our firewall."
   ]
 }
