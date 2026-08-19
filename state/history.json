@@ -1,9 +1,5 @@
 {
   "recent_relatable_topic_tags": [
-    "cert_vs_reality",
-    "own_phishing_test",
-    "users_click_anyway",
-    "untested_backups",
     "password_hypocrisy",
     "users_click_anyway",
     "budget_disparity",
@@ -19,14 +15,13 @@
     "audit_dread",
     "budget_disparity",
     "own_phishing_test",
+    "compliance_theater",
+    "untested_backups",
+    "budget_disparity",
+    "imposter_syndrome",
     "compliance_theater"
   ],
   "recent_post_titles": [
-    "Thread unavailable this run",
-    "Thread unavailable this run",
-    "Thread unavailable this run",
-    "Thread unavailable this run",
-    "Thread unavailable this run",
     "Ivanti EPM Update patches remotely exploitable flaw.",
     "My LinkedIn screams OSCP certified. I still can't reset a switch without Googling.",
     "Our company sent a fake phishing email. I clicked the link and got owned.",
@@ -51,6 +46,11 @@
     "Hearing \"audit\" feels like realizing you left your phone at home.",
     "My security budget gets denied, but marketings \"brand revolution\" gets a standing ovation.",
     "Clicked \"verify your account\" in the phishing test.",
-    "We passed every checklist but skipped updating our firewall."
+    "We passed every checklist but skipped updating our firewall.",
+    "GeoServer zero-day CVE-2024-12345 enables SQL injection and potential RCE.",
+    "Backups? Yeah, I ran them once in 2022. Now the ransom note's asking for Bitcoin and my restore point is a dusty tape.",
+    "Marketing got a new AI video wall while I'm still begging for a second firewall license. Guess which department's logo shows up on the CEO's slides?",
+    "I have CISSP, CEH, and a stack of Certs, yet I still panic when asked to explain a firewall rule to an intern.",
+    "We passed the audit with shiny checkboxes, but the actual server still runs default passwords and the USB ports are wide open."
   ]
 }
