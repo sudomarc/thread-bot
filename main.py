@@ -55,10 +55,10 @@ MAX_HISTORY_TOPICS = 20   # how many recent relatable topic tags to remember
 MAX_HISTORY_TITLES = 30   # how many recent post titles to remember (log)
 
 # ─── NICHE ROTATION ───────────────────────────────────────────────────────────
-# Infrastructure for multiple niches, defaulted to cybersecurity-only so
-# behavior doesn't silently change. Add more niches to this list later if
-# wanted (e.g. "ai", "dev") — each needs its own NEWS_TOPICS/RELATABLE_TOPICS.
-NICHES = ["cybersecurity"]
+# One niche is picked per run (see pick_niche()), avoiding immediate repeats,
+# so the account covers cybersecurity, general tech/AI news, and gaming
+# instead of only cybersecurity every day.
+NICHES = ["cybersecurity", "tech_news", "gaming"]
 
 NEWS_TOPICS_BY_NICHE = {
     "cybersecurity": [
@@ -72,6 +72,30 @@ NEWS_TOPICS_BY_NICHE = {
         "AI security exploit",
         "phishing campaign",
         "supply chain attack",
+    ],
+    "tech_news": [
+        "OpenAI",
+        "AI chip",
+        "Apple lawsuit",
+        "antitrust tech",
+        "tech layoffs",
+        "Nvidia",
+        "startup funding",
+        "big tech earnings",
+        "AI regulation",
+        "data leak",
+    ],
+    "gaming": [
+        "GTA 6",
+        "PlayStation",
+        "Xbox",
+        "Nintendo",
+        "Steam",
+        "game delay",
+        "esports",
+        "game data leak",
+        "Rockstar Games",
+        "Ubisoft",
     ],
 }
 
@@ -90,6 +114,63 @@ RELATABLE_TOPICS_BY_NICHE = {
         ("users_click_anyway", "users clicking things they shouldn't no matter how many trainings"),
         ("cert_vs_reality", "the gap between LinkedIn cert-flexing and actual job reality"),
     ],
+    "tech_news": [
+        ("refresh_addiction", "compulsively refreshing tech news apps waiting for the next big announcement"),
+        ("ai_hype_fatigue", "being exhausted by every product suddenly being 'AI-powered'"),
+        ("keynote_letdown", "hyping yourself for a keynote/announcement that turns out underwhelming"),
+        ("spec_sheet_nerd", "memorizing spec sheets for phones/GPUs you'll never actually buy"),
+        ("layoff_doom", "doomscrolling tech layoff news while quietly updating your resume 'just in case'"),
+        ("beta_tester_unpaid", "being an unpaid beta tester for buggy AI features nobody asked for"),
+        ("preorder_regret_tech", "preordering new hardware and immediately regretting it"),
+        ("leak_before_official", "already knowing every leak before the official announcement drops"),
+        ("algo_reads_mind", "the recommendation algorithm knowing you better than you know yourself"),
+        ("group_chat_explainer", "being the one friend who has to explain every tech news story to the group chat"),
+    ],
+    "gaming": [
+        ("backlog_shame", "buying new games while your backlog keeps growing completely untouched"),
+        ("release_delay_pain", "getting hyped for a release date that gets delayed again"),
+        ("preorder_regret_gaming", "preordering a game that launches broken on day one"),
+        ("patch_notes_hope", "reading patch notes hoping your favorite bug finally got fixed"),
+        ("controller_rage", "rage quitting and blaming the controller instead of your aim"),
+        ("fomo_live_service", "FOMO from a live-service game's limited-time event"),
+        ("leak_spoiler_avoid", "dodging spoilers/leaks online before a big game drops"),
+        ("backlog_vs_new_release", "torn between finishing your backlog and buying the new hyped release"),
+        ("squad_never_online", "your squad never being online at the same time to actually play"),
+        ("nostalgia_remaster", "getting way too hyped for a remaster of a childhood game"),
+    ],
+}
+
+NICHE_PERSONA = {
+    "cybersecurity": {
+        "intro": "You write like a real person on Twitter/Threads who's obsessed with tech and cybersecurity — NOT a corporate blog, NOT a SaaS marketing account.",
+        "news_example": """Oracle PeopleSoft has a zero-day.
+CVE-2026-35273.
+It's being exploited RIGHT NOW.
+If you're running PeopleSoft and haven't patched —
+you're not "at risk."
+You're already owned.""",
+        "relatable_example": "Got a new cert. Still Google how to unplug a router.",
+    },
+    "tech_news": {
+        "intro": "You write like a real person on Twitter/Threads who's obsessed with tech news, AI, and big tech drama — NOT a corporate blog, NOT a SaaS marketing account.",
+        "news_example": """OpenAI just quietly changed its usage policy again.
+No blog post. No email.
+Users found out from a diff on GitHub.
+Fourth silent change this year.
+Nobody's reading the terms.
+Everyone's already agreed to them.""",
+        "relatable_example": "Bought new AirPods. Still can't find my keys.",
+    },
+    "gaming": {
+        "intro": "You write like a real person on Twitter/Threads who's obsessed with video games and gaming news — NOT a corporate blog, NOT a SaaS marketing account.",
+        "news_example": """Rockstar dropped a new GTA 6 trailer.
+Still no release date.
+Just enough to make you insane for another six months.
+Take-Two stock jumped anyway.
+The hype cycle doesn't need a date.
+It just needs a trailer.""",
+        "relatable_example": "Bought a new controller. Still blame lag for every death.",
+    },
 }
 
 NEWS_TONES = [
@@ -97,8 +178,6 @@ NEWS_TONES = [
     "dry and matter-of-fact, just the facts landing like a gut punch",
     "urgent and blunt, like breaking-news alert energy",
 ]
-
-TOPICS = NEWS_TOPICS_BY_NICHE["cybersecurity"]  # kept for backward compat with fetch_articles()
 
 # Fallback image prompt used when the LLM fails to produce a usable one.
 # Keeps the "3 images always" guarantee even if parsing/formatting breaks.
@@ -110,12 +189,24 @@ FALLBACK_IMAGE_PROMPTS = [
 
 # ─── FETCH NEWS ───────────────────────────────────────────────────────────────
 
-def fetch_articles():
+def pick_niche(state):
+    """
+    Pick the niche for this run. Avoids immediately repeating the previous
+    run's niche (when more than one niche exists) so the account doesn't
+    accidentally post cybersecurity content two days running by chance.
+    """
+    last_niche = state.get("last_niche")
+    candidates = [n for n in NICHES if n != last_niche] or NICHES
+    return random.choice(candidates)
+
+
+def fetch_articles(niche="cybersecurity"):
     articles = []
     seen_titles = set()
     error_count = 0
+    topics = NEWS_TOPICS_BY_NICHE.get(niche, NEWS_TOPICS_BY_NICHE["cybersecurity"])
 
-    for topic in TOPICS:
+    for topic in topics:
         url = (
             f"https://newsapi.org/v2/everything"
             f"?q={topic}&language=en&sortBy=publishedAt&pageSize=5"
@@ -151,10 +242,10 @@ def fetch_articles():
     # alert; the latter is normal and should stay a silent exit(0). Without
     # this check, an expired NEWS_API_KEY would silently produce "no
     # articles" forever with no alert ever firing.
-    if error_count == len(TOPICS) and len(TOPICS) > 0:
+    if error_count == len(topics) and len(topics) > 0:
         raise RuntimeError(
-            f"All {len(TOPICS)} news queries failed (likely bad NEWS_API_KEY or API outage) — "
-            f"not a quiet news day, this is an actual failure."
+            f"All {len(topics)} news queries failed for niche '{niche}' (likely bad "
+            f"NEWS_API_KEY or API outage) — not a quiet news day, this is an actual failure."
         )
 
     return "\n".join(articles[:9])
@@ -164,12 +255,18 @@ def has_concrete_fact(title, desc):
         "google", "microsoft", "apple", "amazon", "meta", "facebook",
         "cloudflare", "aws", "openai", "anthropic", "nvidia", "intel",
         "uber", "stripe", "twitter", "x corp", "github", "gitlab",
-        "cisco", "ibm", "oracle", "salesforce", "slack", "zoom"
+        "cisco", "ibm", "oracle", "salesforce", "slack", "zoom",
+        # tech news / gaming additions
+        "rockstar", "take-two", "sony", "nintendo", "valve", "epic games",
+        "ubisoft", "activision", "electronic arts", "square enix",
+        "xbox", "playstation", "steam", "sega", "capcom",
     ]
     action_verbs = [
         "sued", "hack", "fine", "ban", "breach", "leak", "stolen",
         "exploit", "vulnerability", "attack", "arrest", "charge",
-        "recall", "withdraw", "shutdown", "restrict"
+        "recall", "withdraw", "shutdown", "restrict",
+        # tech news / gaming additions
+        "delay", "delayed", "layoffs", "lawsuit", "outage", "release date",
     ]
 
     combined_text = (title + " " + desc).lower()
@@ -215,6 +312,7 @@ def generate_threads(articles_text, exclude_topic_tags=None, niche="cybersecurit
     relatable_count = TOTAL_POSTS - 1  # POST 1 is always news
     chosen_topics = pick_relatable_topics(niche, exclude_topic_tags, relatable_count)
     news_tone = random.choice(NEWS_TONES)
+    persona = NICHE_PERSONA.get(niche, NICHE_PERSONA["cybersecurity"])
 
     topics_listing = "\n".join(
         f'- TAG "{tag}": {desc}' for tag, desc in chosen_topics
@@ -233,24 +331,19 @@ TOPIC_TAG: {topic_tag}
 IMAGE_PROMPT: [scene description]""")
     relatable_block = "\n\n".join(relatable_sections)
 
-    prompt = f"""You write like a real person on Twitter/Threads who's obsessed with tech and cybersecurity — NOT a corporate blog, NOT a SaaS marketing account.
+    prompt = f"""{persona['intro']}
 
 Generate exactly {TOTAL_POSTS} DIFFERENT Threads posts in ENGLISH:
 - POST 1 = a hard-news post based on ONE of the news articles below (pick the sharpest one).
-- POST 2 through POST {TOTAL_POSTS} = RELATABLE / MEME-STYLE posts about everyday life in cybersecurity/infosec, one per assigned topic below. NOT based on the news.
+- POST 2 through POST {TOTAL_POSTS} = RELATABLE / MEME-STYLE posts about everyday life in this niche, one per assigned topic below. NOT based on the news.
 
 POST 1 — NEWS STYLE (4 to 6 short lines, line breaks for rhythm):
 Tone for this run: {news_tone}.
 Example:
-Oracle PeopleSoft has a zero-day.
-CVE-2026-35273.
-It's being exploited RIGHT NOW.
-If you're running PeopleSoft and haven't patched —
-you're not "at risk."
-You're already owned.
+{persona['news_example']}
 
 - Short fragments. NO corporate vocabulary ("consequences," "implications," "leverage," "robust").
-- Specific > vague. Name the CVE, the company, the number, the mechanism from the article.
+- Specific > vague. Name the company, the number, the mechanism from the article.
 - Punchline lands HARD and concrete. Never end on generic advice alone.
 
 POST 2 THROUGH POST {TOTAL_POSTS} — RELATABLE/MEME STYLE — STRICT LENGTH LIMIT:
@@ -258,7 +351,7 @@ MAXIMUM 2 SHORT SENTENCES TOTAL PER POST. NOT 4-6 lines. ONE OR TWO SENTENCES ON
 Think tweet-length, not thread-length. A single punchy joke, not a mini-story.
 
 Good length example (this is the target length, do not exceed it):
-"Got a new cert. Still Google how to unplug a router."
+"{persona['relatable_example']}"
 
 Each relatable post below is assigned a specific topic (with a TAG you must echo back exactly in the TOPIC_TAG field) — write about THAT topic for THAT post, don't swap them around:
 {topics_listing}
@@ -304,52 +397,76 @@ News (use ONLY for POST 1, pick the single sharpest article):
 """
 
     # NOTE: hardcoded ":free" slugs rot — OpenRouter delists specific free
-    # model IDs without notice (this is what broke the bot on ~29/07/2026:
-    # all 4 slugs below started returning "unavailable for free, use the
-    # paid slug instead"). "openrouter/free" is OpenRouter's own router
-    # that dynamically picks from whichever free models are live right
-    # now, so it doesn't rot the same way. Kept a couple of specific
-    # slugs as secondary fallback in case the router itself has a hiccup,
-    # but "openrouter/free" is the primary and does most of the work.
+    # model IDs without notice. This killed the bot twice already:
+    # ~29/07/2026 (all hardcoded slugs went "unavailable for free") and
+    # again in August 2026 when OpenRouter dropped its ENTIRE free Meta
+    # Llama tier (including meta-llama/llama-3.3-70b-instruct:free, which
+    # used to be listed here as a fallback — removed, it now 400s).
+    # "openrouter/free" is OpenRouter's own router that dynamically picks
+    # from whichever free models are live right now, so it doesn't rot
+    # the same way — it's the primary and does most of the work. One
+    # specific slug is kept as a secondary fallback in case the router
+    # itself has a hiccup, but don't add more hardcoded slugs here without
+    # checking openrouter.ai/models first — that's exactly how this broke.
     # Deliberately NOT using "openrouter/auto" — that's a paid router
     # (billed at the routed model's rate) and fails outright on a
-    # zero-credit account, which was part of this same outage.
+    # zero-credit account, which was part of the original outage.
     models_to_try = [
         "openrouter/free",
-        "meta-llama/llama-3.3-70b-instruct:free",
         "nvidia/nemotron-3-ultra-550b-a55b:free",
     ]
 
+    failure_reasons = []
+
     for model in models_to_try:
         print(f"Trying model: {model}...")
-        try:
-            response = requests.post(
-                "https://openrouter.ai/api/v1/chat/completions",
-                headers={
-                    "Authorization": f"Bearer {OPENROUTER_API_KEY}",
-                    "Content-Type": "application/json",
-                    "HTTP-Referer": "https://github.com/sudomarc/thread-bot",
-                    "X-Title": "Thread Bot"
-                },
-                json={
-                    "model": model,
-                    "messages": [{"role": "user", "content": prompt}]
-                },
-                timeout=45
-            )
-            data = response.json()
+        for attempt in range(2):  # one retry per model, for transient 429/503s
+            try:
+                response = requests.post(
+                    "https://openrouter.ai/api/v1/chat/completions",
+                    headers={
+                        "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+                        "Content-Type": "application/json",
+                        "HTTP-Referer": "https://github.com/sudomarc/thread-bot",
+                        "X-Title": "Thread Bot"
+                    },
+                    json={
+                        "model": model,
+                        "messages": [{"role": "user", "content": prompt}]
+                    },
+                    timeout=45
+                )
+                try:
+                    data = response.json()
+                except ValueError:
+                    data = {}
 
-            if "choices" in data:
-                actually_used = data.get("model", model)
-                print(f"Success with {model} (actually routed to: {actually_used})!")
-                return safe_encode(data["choices"][0]["message"]["content"])
+                if "choices" in data:
+                    actually_used = data.get("model", model)
+                    print(f"Success with {model} (actually routed to: {actually_used})!")
+                    return safe_encode(data["choices"][0]["message"]["content"])
 
-            print(f"Failed with {model}: {data.get('error', {}).get('message', 'Unknown')}")
-            time.sleep(3)
-        except Exception as e:
-            print(f"Network error with {model}: {e}")
-            time.sleep(3)
+                err_msg = data.get("error", {}).get("message", f"HTTP {response.status_code}, no JSON error body")
+                print(f"Failed with {model}: {err_msg}")
+                failure_reasons.append(f"{model}: {err_msg}")
 
+                if response.status_code == 429 and attempt == 0:
+                    retry_after = response.headers.get("Retry-After")
+                    wait = float(retry_after) if retry_after else 8
+                    print(f"Rate limited — waiting {wait}s before retrying {model}...")
+                    time.sleep(min(wait, 30))
+                    continue  # retry same model once
+                break  # non-429 failure, or already retried once — move to next model
+            except Exception as e:
+                print(f"Network error with {model}: {e}")
+                failure_reasons.append(f"{model}: network error — {e}")
+                time.sleep(3)
+                break
+
+    # Stash the reasons on the function object so the caller (main) can
+    # surface WHY generation failed in the failure-alert email, instead of
+    # a bare "no content generated" that gives Patrick nothing to act on.
+    generate_threads.last_failure_reasons = failure_reasons
     return None
 
 # ─── EXTRACT DATA FROM THREADS (ROBUST REGEX-BASED PARSING) ──────────────────
@@ -819,7 +936,7 @@ Posts to rate:
     return avg, scores
 
 
-def generate_threads_with_quality_gate(articles_text, exclude_topic_tags):
+def generate_threads_with_quality_gate(articles_text, exclude_topic_tags, niche="cybersecurity"):
     """
     Generates posts, scores them, and regenerates (up to
     MAX_GENERATION_ATTEMPTS total) if the average score is below
@@ -830,11 +947,13 @@ def generate_threads_with_quality_gate(articles_text, exclude_topic_tags):
     """
     best_content = None
     best_score = -1.0
+    all_failure_reasons = []
 
     for attempt in range(1, MAX_GENERATION_ATTEMPTS + 1):
         print(f"Generation attempt {attempt}/{MAX_GENERATION_ATTEMPTS}...")
-        content = generate_threads(articles_text, exclude_topic_tags=exclude_topic_tags)
+        content = generate_threads(articles_text, exclude_topic_tags=exclude_topic_tags, niche=niche)
         if not content:
+            all_failure_reasons.extend(getattr(generate_threads, "last_failure_reasons", []))
             continue
 
         avg, per_post = score_posts_quality(content)
@@ -851,8 +970,17 @@ def generate_threads_with_quality_gate(articles_text, exclude_topic_tags):
             print(f"Threshold {QUALITY_SCORE_THRESHOLD} met — keeping this attempt.")
             return content
 
-    print(f"No attempt cleared the quality threshold; keeping best attempt (score {best_score:.1f}).")
-    return best_content
+    if best_content is not None:
+        print(f"No attempt cleared the quality threshold; keeping best attempt (score {best_score:.1f}).")
+        return best_content
+
+    # Every single attempt returned nothing — every OpenRouter model tried
+    # failed on every attempt. Raise instead of returning None so this
+    # propagates to main()'s except block and actually triggers a failure
+    # email with the real reasons, instead of a bare exit(1) that fails the
+    # GitHub Action silently with no alert (this is what was happening).
+    reasons = "; ".join(all_failure_reasons) or "no error details captured"
+    raise RuntimeError(f"All generation attempts failed — every model tried failed on every attempt. Reasons: {reasons}")
 
 
 if __name__ == "__main__":
@@ -871,17 +999,17 @@ if __name__ == "__main__":
         exclude_tags = set(state.get("recent_relatable_topic_tags", []))
         print(f"Excluding {len(exclude_tags)} recently-used relatable topics from this run.")
 
-        articles = fetch_articles()
+        niche = pick_niche(state)
+        print(f"Niche for this run: {niche}")
+
+        articles = fetch_articles(niche)
         if not articles:
             print("No articles fetched (all filtered out as too vague).")
             exit(0)
 
         print(f"Fetched {len(articles.splitlines())} unique, concrete articles")
 
-        threads = generate_threads_with_quality_gate(articles, exclude_topic_tags=exclude_tags)
-        if not threads:
-            print("Generation failure (all attempts returned nothing).")
-            exit(1)
+        threads = generate_threads_with_quality_gate(articles, exclude_topic_tags=exclude_tags, niche=niche)
 
         print("--- RAW LLM OUTPUT ---")
         print(threads[:500])
@@ -907,10 +1035,11 @@ if __name__ == "__main__":
 
         send_email(final_content, images=generated_images)
 
-        # Only record topics/titles as "used" AFTER a successful send — if
-        # the email never went out, Patrick never saw them, so they
+        # Only record topics/titles/niche as "used" AFTER a successful send
+        # — if the email never went out, Patrick never saw them, so they
         # shouldn't be blocked from being picked again next run.
         state = update_state_with_run(state, posts_data)
+        state["last_niche"] = niche
         save_state(state)
         print("State updated and saved.")
 
