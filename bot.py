@@ -98,9 +98,14 @@ def load_state():
             data = json.load(handle)
         if not isinstance(data, dict):
             return default
-        for key, value in default.items():
-            if key not in data or not isinstance(data[key], type(value)):
-                data[key] = value
+        if not isinstance(data.get("recent_relatable_topic_tags"), list):
+            data["recent_relatable_topic_tags"] = []
+        if not isinstance(data.get("recent_post_titles"), list):
+            data["recent_post_titles"] = []
+        if not isinstance(data.get("seen_article_urls"), list):
+            data["seen_article_urls"] = []
+        if data.get("last_run_at") is not None and not isinstance(data.get("last_run_at"), str):
+            data["last_run_at"] = None
         return data
     except (OSError, json.JSONDecodeError) as exc:
         print(f"State file unreadable; starting fresh: {exc}")
@@ -216,7 +221,6 @@ def fetch_articles(state):
     per_category = {category: 0 for category in NEWS_QUERY_GROUPS}
     balanced = []
 
-    # Take up to four from each category, then fill remaining slots by recency.
     for article in picked:
         category = article["category"]
         if per_category[category] >= 4:
@@ -425,7 +429,6 @@ def generate_threads(articles, state):
 
 
 def generate_hf_image(prompt):
-    # Optional feature. Provider/model failures never block content generation.
     if not HF_TOKEN or not prompt:
         return None
     try:
