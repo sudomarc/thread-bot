@@ -20,6 +20,8 @@
     "budget_disparity",
     "imposter_syndrome",
     "compliance_theater",
+    "relatable_tag",
+    "relatable_tag",
     "relatable_tag"
   ],
   "recent_post_titles": [
@@ -62,7 +64,12 @@
     "**China’s AI fortresses in the South China Sea: 3D security or escalation?**",
     "**Arkansas names KJ Jackson starting QB after spring battle**",
     "**Still pre-ordering games? You’re not alone — and you’re still getting burned**",
-    "**Nothing drops CLI tool for Linux users — finally, peace in the audio realm**"
+    "**Nothing drops CLI tool for Linux users — finally, peace in the audio realm**",
+    "Ronaldo shows up at Esports World Cup, Al Nassr fans hold breath",
+    "Alibaba drops $10.2B on AI expansion via HK share placement",
+    "Reddit gets a production-grade MCP server — open source, on PyPI",
+    "Bought three games in the sale. Played zero. Backlog now has gravity.",
+    "Game delayed again. Roadmap updated. Trailer re-cut. Hype put on ice."
   ],
   "seen_article_urls": [
     "https://torrentfreak.com/take-two-expands-gta-6-leak-hunt-with-dmca-subpoenas/",
@@ -88,7 +95,19 @@
     "https://clutchpoints.com/ncaa-football/arkansas-football-news-razorbacks-end-qb1-guessing-game-with-major-announcement",
     "https://www.forbes.com/sites/stevedenning/2026/08/23/why-adaptive-mindsets-outperform-static-processes/",
     "https://slashdot.org/firehose.pl?op=view&amp;id=185121872",
-    "https://bleedingcool.com/games/jonathan-blows-order-of-the-sinking-star-arrives-october-8th/"
+    "https://bleedingcool.com/games/jonathan-blows-order-of-the-sinking-star-arrives-october-8th/",
+    "https://pypi.org/project/reddit-mcp-ai/0.6.0/",
+    "https://www.digitimes.com/news/a20260824PR200/alibaba-technology-competition-worldwide-cloud-ai.html",
+    "https://www.ubergizmo.com/2026/08/quazar-helps-buyers-avoid-luxury-fakes/",
+    "https://pypi.org/project/nkama-fact-benchmark/0.1.31/",
+    "https://pypi.org/project/sec-research/0.2.3/",
+    "https://www.dailymail.com/news/article-16074419/first-guardian-super-changes.html",
+    "https://economictimes.indiatimes.com/markets/stocks/news/sebi-turns-down-adani-linked-fpis-settlement-applications/articleshow/133448753.cms",
+    "https://kitploit.com/en/tools/github/42crunch/api-security-audit-action/",
+    "https://worldsoccertalk.com/news/cristiano-ronaldo-expected-to-feature-in-next-al-nassr-spl-game-despite-paris-trip-and-ewc-cameo/",
+    "https://www.dailymail.com/news/article-16073985/The-Morning-Poll-worry-letting-children-online.html",
+    "https://www.dailymail.com/news/royals/article-16074191/Team-Sussex-vs-Team-Wales-arrival-Harry-Meghan-Englands-smart-set.html",
+    "https://pittsburghbaseballnow.com/pittsburgh-pirates-series-takeaways-los-angeles-dodgers-playoff-hopes/"
   ],
-  "last_run_at": "2026-08-25T00:48:18.945206+00:00"
+  "last_run_at": "2026-08-25T00:51:11.085055+00:00"
 }
