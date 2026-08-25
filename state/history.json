@@ -51,6 +51,25 @@
     "Backups? Yeah, I ran them once in 2022. Now the ransom note's asking for Bitcoin and my restore point is a dusty tape.",
     "Marketing got a new AI video wall while I'm still begging for a second firewall license. Guess which department's logo shows up on the CEO's slides?",
     "I have CISSP, CEH, and a stack of Certs, yet I still panic when asked to explain a firewall rule to an intern.",
-    "We passed the audit with shiny checkboxes, but the actual server still runs default passwords and the USB ports are wide open."
+    "We passed the audit with shiny checkboxes, but the actual server still runs default passwords and the USB ports are wide open.",
+    "Take-Two expands GTA 6 leak hunt with DMCA subpoenas",
+    "SickKids data breach exposes employee info",
+    "Nvidia warns of 15% AI server price hike",
+    "Trying to stay spoiler-free before the big release",
+    "Release delay pain hits another highly anticipated title"
+  ],
+  "seen_article_urls": [
+    "https://torrentfreak.com/take-two-expands-gta-6-leak-hunt-with-dmca-subpoenas/",
+    "https://www.helpnetsecurity.com/2026/08/23/week-in-review-records-allegedly-stolen-from-azure-tenants-medusa-ransomware-hits-500-orgs/",
+    "https://www.livemint.com/companies/news/nvidia-reportedly-warns-some-of-its-biggest-customers-about-upcoming-price-hike-of-ai-servers-by-15-details-11787447183614.html",
+    "https://www.notebookcheck.net/A-113-GB-GTA-6-build-is-circulating-online-but-it-appears-to-be-fake.1375822.0.html",
+    "https://www.notebookcheck.net/GTA-6-hacker-CyberLeek-goes-offline-as-Take-Two-and-Microsoft-mount-legal-crackdown.1375698.0.html",
+    "https://hiphopwired.com/3063515/take-two-interactive-subpoenas-microsoft-discord-cyberleek-gta-reactions/",
+    "https://finance.yahoo.com/technology/ai/articles/alphabet-googl-google-ai-boss-205228358.html",
+    "https://www.bleepingcomputer.com/news/security/sickkids-data-breach-exposes-employee-and-job-applicant-info/",
+    "https://www.blogger.com/browser-not-supported/?ref=/comment/fullpage/post/8152901575140311047/9193980372627956092",
+    "https://risky.biz/RB849/",
+    "https://www.wheresyoured.at/what-happens-if-openai-dies/",
+    "https://thehackernews.com/2026/08/weekly-recap-vmware-exploits-windows-0.html"
   ]
 }
