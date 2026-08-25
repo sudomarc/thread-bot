@@ -15,6 +15,7 @@ Automated social-content bot for current **cybersecurity, technology, AI, gaming
 - Uploads those files as a GitHub Actions artifact for 14 days.
 - Uses an atomic state-file write and a resilient Git rebase/push loop for history persistence.
 - Runs unit tests before the bot and blocks overlapping workflow runs with concurrency control.
+- The state loader accepts the ISO-8601 `last_run_at` timestamp written by the runner instead of treating it as an invalid type.
 
 ## Required secrets
 
@@ -68,7 +69,7 @@ latest_threads + latest_sources
 
 ## Reliability design
 
-The previous runner had several independent failure modes: revoked Gmail app passwords, retired image models, Unicode/ASCII email encoding, malformed LLM output being accepted, excessive API calls, duplicate bot implementations, and non-fast-forward state pushes.
+The previous runner had several independent failure modes: revoked Gmail app passwords, retired image models, Unicode/ASCII email encoding, malformed LLM output being accepted, excessive API calls, duplicate bot implementations, a permissive state loader, and non-fast-forward state pushes.
 
 The maintained implementation is now **`bot.py`**. `main.py` is only a compatibility entrypoint importing `bot.main`.
 
