@@ -19,7 +19,8 @@
     "untested_backups",
     "budget_disparity",
     "imposter_syndrome",
-    "compliance_theater"
+    "compliance_theater",
+    "relatable_tag"
   ],
   "recent_post_titles": [
     "Ivanti EPM Update patches remotely exploitable flaw.",
@@ -56,7 +57,12 @@
     "SickKids data breach exposes employee info",
     "Nvidia warns of 15% AI server price hike",
     "Trying to stay spoiler-free before the big release",
-    "Release delay pain hits another highly anticipated title"
+    "Release delay pain hits another highly anticipated title",
+    "**GTA 6 leaks: Former Rockstar director calls them a \"nothing burger\"**",
+    "**China’s AI fortresses in the South China Sea: 3D security or escalation?**",
+    "**Arkansas names KJ Jackson starting QB after spring battle**",
+    "**Still pre-ordering games? You’re not alone — and you’re still getting burned**",
+    "**Nothing drops CLI tool for Linux users — finally, peace in the audio realm**"
   ],
   "seen_article_urls": [
     "https://torrentfreak.com/take-two-expands-gta-6-leak-hunt-with-dmca-subpoenas/",
@@ -70,6 +76,19 @@
     "https://www.blogger.com/browser-not-supported/?ref=/comment/fullpage/post/8152901575140311047/9193980372627956092",
     "https://risky.biz/RB849/",
     "https://www.wheresyoured.at/what-happens-if-openai-dies/",
-    "https://thehackernews.com/2026/08/weekly-recap-vmware-exploits-windows-0.html"
-  ]
+    "https://thehackernews.com/2026/08/weekly-recap-vmware-exploits-windows-0.html",
+    "https://www.business-standard.com/opinion/specials/best-of-bs-opinion-power-without-guardrails-becomes-a-risk-126082400002_1.html",
+    "https://www.digitaljournal.com/article/chinas-proposed-south-china-sea-ai-fortresses-are-just-the-start-of-new-3d-lateral-security-and-area-denial/",
+    "https://economictimes.indiatimes.com/news/international/global-trends/entering-the-endgame-us-treasury-secy-bessent-says-economic-d-day-begins-against-iran/articleshow/133448842.cms",
+    "https://abcnews.com/International/wireStory/indonesian-police-arrest-72-people-suspected-starting-forest-135880285",
+    "https://www.lifesciencesworld.com/why-do-people-poach-musk-deer/",
+    "https://pypi.org/project/nothing-headphone-cli/",
+    "https://www.chinadaily.com.cn/a/202608/24/WS6a8b884c45ce1d0de951f0f0.html",
+    "https://kitploit.com/en/tools/github/mitre-attack/attack-stix-data/",
+    "https://clutchpoints.com/ncaa-football/arkansas-football-news-razorbacks-end-qb1-guessing-game-with-major-announcement",
+    "https://www.forbes.com/sites/stevedenning/2026/08/23/why-adaptive-mindsets-outperform-static-processes/",
+    "https://slashdot.org/firehose.pl?op=view&amp;id=185121872",
+    "https://bleedingcool.com/games/jonathan-blows-order-of-the-sinking-star-arrives-october-8th/"
+  ],
+  "last_run_at": "2026-08-25T00:48:18.945206+00:00"
 }
