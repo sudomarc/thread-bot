@@ -2,8 +2,7 @@ name: Thread Bot Daily Runner
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   schedule:
     - cron: '0 8 * * *'
   workflow_dispatch:
@@ -18,20 +17,25 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: '3.11'
+          cache: pip
 
       - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install requests Pillow
+        run: python -m pip install -r requirements.txt
+
+      - name: Run tests
+        run: python -m unittest discover -s tests -v
 
       - name: Run Thread Bot
         env:
@@ -39,15 +43,12 @@ jobs:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           GMAIL_USER: ${{ secrets.GMAIL_USER }}
           GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
-          HF_TOKEN: ${{ secrets.HF_TOKEN }}
           RECIPIENT_EMAIL: ${{ secrets.RECIPIENT_EMAIL }}
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
           TOTAL_POSTS: ${{ vars.TOTAL_POSTS }}
           IMAGE_POST_COUNT: ${{ vars.IMAGE_POST_COUNT }}
-        run: |
-          python bot.py
+        run: python bot.py
 
-      # The report is now a first-class output. Email is optional and non-fatal,
-      # so a Gmail authentication problem cannot destroy a successful run.
       - name: Upload generated report
         if: always()
         uses: actions/upload-artifact@v4
@@ -55,21 +56,38 @@ jobs:
           name: thread-bot-report-${{ github.run_number }}
           path: |
             state/latest_threads.txt
+            state/latest_sources.txt
             state/history.json
           if-no-files-found: warn
           retention-days: 14
 
-      # Commit topic/article history only when the bot reached the successful
-      # state-save path. [skip ci] prevents this commit from triggering itself.
       - name: Commit updated state
         if: always()
+        continue-on-error: true
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add state/history.json 2>/dev/null || true
-          if ! git diff --staged --quiet; then
-            git commit -m "chore: update bot history [skip ci]"
-            git push
-          else
+          if git diff --staged --quiet; then
             echo "No state changes to commit."
+            exit 0
           fi
+          git commit -m "chore: update bot history [skip ci]"
+
+          for attempt in 1 2 3; do
+            echo "State push attempt ${attempt}/3"
+            git fetch origin main
+            if git rebase origin/main; then
+              if git push origin HEAD:main; then
+                echo "State push succeeded."
+                exit 0
+              fi
+            else
+              echo "Rebase failed; aborting rebase before retry."
+              git rebase --abort || true
+            fi
+            sleep $((attempt * 2))
+          done
+
+          echo "State push could not be completed after 3 attempts; report/artifact remain valid."
+          exit 0
