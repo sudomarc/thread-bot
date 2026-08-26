@@ -24,6 +24,8 @@
     "relatable_tag",
     "relatable_tag",
     "relatable_tag",
+    "relatable_tag",
+    "relatable_tag",
     "relatable_tag"
   ],
   "recent_post_titles": [
@@ -76,7 +78,12 @@
     "When a game’s launch keeps slipping",
     "Hugging Face reportedly up for $13bn sale",
     "CelcomDigi launches voice firewall to block scam calls",
-    "Doomscrolling tech news while waiting for the next big thing"
+    "Doomscrolling tech news while waiting for the next big thing",
+    "MiniOrange SAML flaw puts WordPress admins at risk",
+    "PENGU token surges 62% on IPO speculation",
+    "Abound adopts Monad for next growth phase",
+    "Doomscrolling is a habit, not a choice",
+    "Lag doesn't kill your aim, your temper does"
   ],
   "seen_article_urls": [
     "https://torrentfreak.com/take-two-expands-gta-6-leak-hunt-with-dmca-subpoenas/",
@@ -126,7 +133,19 @@
     "https://economictimes.indiatimes.com/news/international/us/motivational-french-proverb-of-the-day-to-triumph-without-peril-is-to-why-taking-risks-defines-true-success-a-lesson-on-courage-and-perseverance/articleshow/133457724.cms",
     "https://www.siliconrepublic.com/business/reports-hugging-face-in-talks-for-sale-at-13bn-valuation",
     "https://soyacincau.com/2026/08/24/celcomdigi-rolls-out-voice-firewall-to-tackle-scam-calls-over-355mil-suspicious-calls-detected-so-far/",
-    "https://thehackernews.com/2026/08/uat-10147-uses-ai-to-scale-server.html"
+    "https://thehackernews.com/2026/08/uat-10147-uses-ai-to-scale-server.html",
+    "https://pypi.org/project/skcapstone/0.15.68/",
+    "https://pypi.org/project/chalkruntime/3.42.16/",
+    "https://www.prnewswire.com/news-releases/fastest-growing-global-finance-super-app-abound-chooses-monad-to-power-its-next-phase-of-growth-302859236.html",
+    "https://pypi.org/project/pchandler/2.1.1/",
+    "https://thehackernews.com/2026/08/attackers-target-miniorange-saml-flaws.html",
+    "https://www.lifesciencesworld.com/how-do-you-call-a-baby-bird/",
+    "https://www.ccn.com/news/crypto/is-pengu-good-investment-2026-price-surge/",
+    "https://blog.jetbrains.com/research/2026/08/jbr-podcast/",
+    "https://www.c-sharpcorner.com/article/github-code-scanning-using-mitigated-alerts-without-hiding-security-risk/",
+    "https://www.ign.com/articles/clutch-picks-up-a-publisher-as-maverick-games-partners-with-focus-entertainment",
+    "https://www.animenewsnetwork.com/news/2026-08-25/quintet-terranigma-rpg-gets-release-in-2027/.240943",
+    "https://www.techradar.com/ai-platforms-assistants/claude/amazon-security-engineer-hacks-pc-accessories-with-claude-opus-to-make-them-work-better-asus-insta360-and-elgato-products-reverse-engineered-in-hours-for-better-control-but-engineer-admits-this-also-scares-me"
   ],
-  "last_run_at": "2026-08-25T08:38:24.810047+00:00"
+  "last_run_at": "2026-08-26T08:42:17.216645+00:00"
 }
