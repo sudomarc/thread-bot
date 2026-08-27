@@ -26,6 +26,8 @@
     "relatable_tag",
     "relatable_tag",
     "relatable_tag",
+    "relatable_tag",
+    "relatable_tag",
     "relatable_tag"
   ],
   "recent_post_titles": [
@@ -83,7 +85,12 @@
     "PENGU token surges 62% on IPO speculation",
     "Abound adopts Monad for next growth phase",
     "Doomscrolling is a habit, not a choice",
-    "Lag doesn't kill your aim, your temper does"
+    "Lag doesn't kill your aim, your temper does",
+    "Whipar lands on PyPI",
+    "Spider-Sense for gamers just arrived",
+    "White House prepares water shield",
+    "Spec-sheet scrubbing fails me",
+    "Pedestal syndrome takes hold"
   ],
   "seen_article_urls": [
     "https://torrentfreak.com/take-two-expands-gta-6-leak-hunt-with-dmca-subpoenas/",
@@ -145,7 +152,19 @@
     "https://www.c-sharpcorner.com/article/github-code-scanning-using-mitigated-alerts-without-hiding-security-risk/",
     "https://www.ign.com/articles/clutch-picks-up-a-publisher-as-maverick-games-partners-with-focus-entertainment",
     "https://www.animenewsnetwork.com/news/2026-08-25/quintet-terranigma-rpg-gets-release-in-2027/.240943",
-    "https://www.techradar.com/ai-platforms-assistants/claude/amazon-security-engineer-hacks-pc-accessories-with-claude-opus-to-make-them-work-better-asus-insta360-and-elgato-products-reverse-engineered-in-hours-for-better-control-but-engineer-admits-this-also-scares-me"
+    "https://www.techradar.com/ai-platforms-assistants/claude/amazon-security-engineer-hacks-pc-accessories-with-claude-opus-to-make-them-work-better-asus-insta360-and-elgato-products-reverse-engineered-in-hours-for-better-control-but-engineer-admits-this-also-scares-me",
+    "https://pypi.org/project/whipair/",
+    "https://bleedingcool.com/movies/blu-ray-on-my-mind-we-are-back-alliance-criterion-news-galore/",
+    "http://wwd.com/footwear-news/shoe-trends/harry-styles-dancing-shoes-podiatrist-concert-advice-1239148548/",
+    "https://www.bgr.com/2241442/what-happened-oneplus-downfall-explained/",
+    "https://www.playstationlifestyle.net/2026/08/26/playstation-5-sci-fi-rpg-release-date/",
+    "https://bleedingcool.com/pop-culture/secretlab-unveils-its-first-spider-man-themed-gaming-chair/",
+    "https://www.cbc.ca/news/entertainment/blake-lively-justin-baldoni-legal-costs-9.7321605",
+    "https://www.pymnts.com/partnerships/2026/paysafe-teams-with-fastspring-on-merchant-of-record-solution/",
+    "https://www.digitaljournal.com/article/federal-cybersecurity-compliance-moves-toward-continuous-assurance/",
+    "https://sports.yahoo.com/articles/jobs-stake-jim-harbaugh-wants-184207995.html",
+    "https://dailycaller.com/2026/08/26/bill-gates-claims-bad-stuff-imminent-artificial-intelligence",
+    "https://www.nextgov.com/cybersecurity/2026/08/white-house-soon-launch-water-provider-cyber-protection-program/415650/"
   ],
-  "last_run_at": "2026-08-26T08:42:17.216645+00:00"
+  "last_run_at": "2026-08-27T18:47:56.848128+00:00"
 }
