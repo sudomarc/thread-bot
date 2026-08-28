@@ -28,14 +28,11 @@
     "relatable_tag",
     "relatable_tag",
     "relatable_tag",
+    "relatable_tag",
+    "relatable_tag",
     "relatable_tag"
   ],
   "recent_post_titles": [
-    "Ivanti EPM Update patches remotely exploitable flaw.",
-    "My LinkedIn screams OSCP certified. I still can't reset a switch without Googling.",
-    "Our company sent a fake phishing email. I clicked the link and got owned.",
-    "They get a 'free iPhone' link in a Slack message. They click it anyway.",
-    "Our backups sat untouched for months. Ransomware hit and we lost everything.",
     "AVEVA Enterprise SCADA deserializes attacker-controlled data.",
     "Used a password manager for work accounts but my personal email is still \"dragon123.\"",
     "Sent the same phishing email 47 times this month.",
@@ -90,7 +87,12 @@
     "Spider-Sense for gamers just arrived",
     "White House prepares water shield",
     "Spec-sheet scrubbing fails me",
-    "Pedestal syndrome takes hold"
+    "Pedestal syndrome takes hold",
+    "GTA VI’s extended look drops, and it’s gorgeous",
+    "Trump weighs semiconductor tariffs amid data‑center push",
+    "OpenAI signs 116 groups for AI‑cyber defense pact",
+    "Every gadget now screams ‘AI‑powered’—and I’m tired",
+    "Preordered that limited‑edition controller, now it’s gathering dust"
   ],
   "seen_article_urls": [
     "https://torrentfreak.com/take-two-expands-gta-6-leak-hunt-with-dmca-subpoenas/",
@@ -164,7 +166,19 @@
     "https://www.digitaljournal.com/article/federal-cybersecurity-compliance-moves-toward-continuous-assurance/",
     "https://sports.yahoo.com/articles/jobs-stake-jim-harbaugh-wants-184207995.html",
     "https://dailycaller.com/2026/08/26/bill-gates-claims-bad-stuff-imminent-artificial-intelligence",
-    "https://www.nextgov.com/cybersecurity/2026/08/white-house-soon-launch-water-provider-cyber-protection-program/415650/"
+    "https://www.nextgov.com/cybersecurity/2026/08/white-house-soon-launch-water-provider-cyber-protection-program/415650/",
+    "https://www.courier-journal.com/story/sports/nfl/2026/08/27/patriots-browns-game-channel-tonight-live-how-watch-nfl-games-today-tnf-time-stream-preseason-week-3/91487753007/",
+    "https://gizmodo.com/president-trumps-love-of-tariffs-comes-into-conflict-with-his-love-of-data-centers-2000803876",
+    "https://www.pymnts.com/smbs/2026/sba-proposal-could-push-small-business-lending-into-the-middle-market/",
+    "https://onefootball.com/en/news/santos-fc-v-palmeiras-tickets-on-sale-copa-do-brasil-vila-belmiro-43351711",
+    "https://www.theverge.com/games/983941/grand-theft-auto-vi-gta-netflix-extended-look",
+    "https://insidethemagic.net/2026/08/universal-studios-japan-new-location-cj1/",
+    "https://www.dealnews.com/HP-Labor-Day-Accessories-Sale-Up-to-65-off-free-shipping/22105432.html",
+    "https://www.eurogamer.net/gta-6-activities-things-to-do-spotted-so-far",
+    "https://cryptobriefing.com/openai-collective-ai-cyber-defense-coalition/",
+    "https://financialpost.com/globe-newswire/novarad-updates-novapacs-ei-customers-worldwide-to-9-1-a-major-security-upgrade",
+    "https://devops.com/sonar-ai-agent-discovers-vulnerabilities-hidden-in-business-logic-workflows/",
+    "https://biztoc.com/x/560be213d5c0a690"
   ],
-  "last_run_at": "2026-08-27T18:47:56.848128+00:00"
+  "last_run_at": "2026-08-28T19:52:17.544363+00:00"
 }
