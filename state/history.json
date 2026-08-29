@@ -30,14 +30,10 @@
     "relatable_tag",
     "relatable_tag",
     "relatable_tag",
-    "relatable_tag"
+    "relatable_tag",
+    "patch_notes_hope"
   ],
   "recent_post_titles": [
-    "AVEVA Enterprise SCADA deserializes attacker-controlled data.",
-    "Used a password manager for work accounts but my personal email is still \"dragon123.\"",
-    "Sent the same phishing email 47 times this month.",
-    "Our marketing budget bought a gold-plated foosball table.",
-    "Passed my CISSP last year.",
     "HTML::FormHandler vulnerable.",
     "Hearing the word audit makes my coffee taste like fear. I start Googling 'how to fake compliance' at 2AM.",
     "We spend hours ticking boxes while the real breach walks right past. Meanwhile the CISO smiles for the camera.",
@@ -92,7 +88,12 @@
     "Trump weighs semiconductor tariffs amid data‑center push",
     "OpenAI signs 116 groups for AI‑cyber defense pact",
     "Every gadget now screams ‘AI‑powered’—and I’m tired",
-    "Preordered that limited‑edition controller, now it’s gathering dust"
+    "Preordered that limited‑edition controller, now it’s gathering dust",
+    "Nvidia vs Broadcom: The Core Vulnerability Showdown",
+    "AI agents committing crimes on your behalf—legally, whose problem is it?",
+    "a16z just dropped $1.1B on the 'Machine Age' fund",
+    "Opening patch notes at 2 AM hoping YOUR bug finally got fixed",
+    "Does Computer Science actually need computers? (The answer will surprise you)"
   ],
   "seen_article_urls": [
     "https://torrentfreak.com/take-two-expands-gta-6-leak-hunt-with-dmca-subpoenas/",
@@ -178,7 +179,19 @@
     "https://cryptobriefing.com/openai-collective-ai-cyber-defense-coalition/",
     "https://financialpost.com/globe-newswire/novarad-updates-novapacs-ei-customers-worldwide-to-9-1-a-major-security-upgrade",
     "https://devops.com/sonar-ai-agent-discovers-vulnerabilities-hidden-in-business-logic-workflows/",
-    "https://biztoc.com/x/560be213d5c0a690"
+    "https://biztoc.com/x/560be213d5c0a690",
+    "https://biztoc.com/x/44dee99cb4fe4806",
+    "https://biztoc.com/x/7a0a6d492a817cf3",
+    "https://biztoc.com/x/613b14293ec2a46a",
+    "https://biztoc.com/x/632c62a75f4534ef",
+    "https://biztoc.com/x/ffa4466da5ab53d7",
+    "https://economictimes.indiatimes.com/news/india/bihar-braces-for-floods-as-nepal-rains-push-rivers-above-danger-mark/articleshow/133592289.cms",
+    "https://www.quantamagazine.org/does-computer-science-need-computers-20260828/",
+    "https://smartcanucks.ca/amazon-canada-deals-save-47-on-tmy-smart-portable-mini-projector-4k-bundled-with-google-tv-14-0-compatible-with-netflix-wifi6-bluetooth-using-promo-code-more-offers-2/",
+    "https://the-gadgeteer.com/2026/08/28/9-most-interesting-new-audio-gear-august-2026/",
+    "https://cointelegraph.com/magazine/who-is-legally-liable-when-an-ai-agent-goes-rogue",
+    "https://www.budgetbytes.com/chicken-broccoli-casserole/",
+    "https://aws.amazon.com/blogs/devops/build-your-own-continuous-modernization-pipeline-with-aws-transform-custom/"
   ],
-  "last_run_at": "2026-08-28T19:52:17.544363+00:00"
+  "last_run_at": "2026-08-29T13:35:31.344616+00:00"
 }
