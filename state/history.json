@@ -31,14 +31,10 @@
     "relatable_tag",
     "relatable_tag",
     "relatable_tag",
-    "patch_notes_hope"
+    "patch_notes_hope",
+    "ai_hype_fatigue"
   ],
   "recent_post_titles": [
-    "HTML::FormHandler vulnerable.",
-    "Hearing the word audit makes my coffee taste like fear. I start Googling 'how to fake compliance' at 2AM.",
-    "We spend hours ticking boxes while the real breach walks right past. Meanwhile the CISO smiles for the camera.",
-    "My LinkedIn says I'm a security ninja, but I still can't reset a router.",
-    "I'm the dev, the SOC analyst, the janitor, and the coffee maker. All before lunch.",
     "GeoServer zero-day.",
     "Never tested backups until the fire started.",
     "Phishing training? Nah, were just gonna click it twice.",
@@ -93,7 +89,12 @@
     "AI agents committing crimes on your behalf—legally, whose problem is it?",
     "a16z just dropped $1.1B on the 'Machine Age' fund",
     "Opening patch notes at 2 AM hoping YOUR bug finally got fixed",
-    "Does Computer Science actually need computers? (The answer will surprise you)"
+    "Does Computer Science actually need computers? (The answer will surprise you)",
+    "Samsung’s Gamescom booth is basically a playground for your wallet",
+    "OpenAI’s HuggingFace mess gets weirder by the hour",
+    "Every trash can is suddenly \"AI-powered\"",
+    "\"Elevated Digital Marketing\" turns out to be just elevated excuses",
+    "triage-lens 0.4.1 just made vulnerability sorting way less painful"
   ],
   "seen_article_urls": [
     "https://torrentfreak.com/take-two-expands-gta-6-leak-hunt-with-dmca-subpoenas/",
@@ -191,7 +192,19 @@
     "https://the-gadgeteer.com/2026/08/28/9-most-interesting-new-audio-gear-august-2026/",
     "https://cointelegraph.com/magazine/who-is-legally-liable-when-an-ai-agent-goes-rogue",
     "https://www.budgetbytes.com/chicken-broccoli-casserole/",
-    "https://aws.amazon.com/blogs/devops/build-your-own-continuous-modernization-pipeline-with-aws-transform-custom/"
+    "https://aws.amazon.com/blogs/devops/build-your-own-continuous-modernization-pipeline-with-aws-transform-custom/",
+    "https://timesofindia.indiatimes.com/city/patna/malhar-rang-brings-monsoon-magic-to-patna/articleshow/133612882.cms",
+    "https://www.thehindubusinessline.com/news/dont-just-raise-taxes-but-also-grow-the-tax-base-tn-industries-tell-revenue-augmentation-committee/article71404849.ece",
+    "https://www.notebookcheck.net/Inside-Samsung-s-Gamescom-booth-Fast-monitors-and-next-gen-SSDs.1382593.0.html",
+    "https://timesofindia.indiatimes.com/city/ahmedabad/8000-candidates-from-gujarat-to-appear-for-neet-pg-today/articleshow/133612861.cms",
+    "https://timesofindia.indiatimes.com/city/mumbai/stick-to-comedy-why-drag-castes-states-religions-shiv-sena-ubt-leader-slams-samay-raina/articleshow/133612635.cms",
+    "https://biztoc.com/x/c183a8f9729dc8a6",
+    "https://www.dailymail.com/news/article-16077381/sally-cooper-elevated-digital-marketing-ausmumpreneur-pokies-clients-refunds.html",
+    "https://biztoc.com/x/ebcdf32b194a830b",
+    "https://www.notebookcheck.net/Epomaker-at-Gamescom-IFA-Hands-on-with-new-keyboards-headset-gaming-mouse.1382592.0.html",
+    "http://9to5toys.com/2026/08/29/upgrade-tv-grand-theft-auto-6-deals/",
+    "https://pypi.org/project/triage-lens/0.4.1/",
+    "https://www.marketbeat.com/instant-alerts/event-interface-eyes-growth-as-one-interface-strategy-targets-commercial-flooring-share-2026-08-29/?utm_source=yahoofinance&amp;utm_medium=yahoofinance"
   ],
-  "last_run_at": "2026-08-29T13:35:31.344616+00:00"
+  "last_run_at": "2026-08-30T13:30:26.057725+00:00"
 }
