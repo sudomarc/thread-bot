@@ -32,14 +32,10 @@
     "relatable_tag",
     "relatable_tag",
     "patch_notes_hope",
-    "ai_hype_fatigue"
+    "ai_hype_fatigue",
+    "relatable_tag"
   ],
   "recent_post_titles": [
-    "GeoServer zero-day.",
-    "Never tested backups until the fire started.",
-    "Phishing training? Nah, were just gonna click it twice.",
-    "My heart stops every time I hear So were getting audited.",
-    "I literally use Password123! for everything including my own firewall.",
     "GeoServer zero-day CVE-2024-GEOS-001",
     "Hearing \"audit\" feels like realizing you left your phone at home.",
     "My security budget gets denied, but marketings \"brand revolution\" gets a standing ovation.",
@@ -94,7 +90,12 @@
     "OpenAI’s HuggingFace mess gets weirder by the hour",
     "Every trash can is suddenly \"AI-powered\"",
     "\"Elevated Digital Marketing\" turns out to be just elevated excuses",
-    "triage-lens 0.4.1 just made vulnerability sorting way less painful"
+    "triage-lens 0.4.1 just made vulnerability sorting way less painful",
+    "Citrix just bolted a tiny Linux OS onto Windows",
+    "Gamescom Congress 2026 hit a new attendance record",
+    "pawnlogic 0.3.5 just dropped on PyPI",
+    "New Chitose Airport is leveling up",
+    "Steam sale hits and suddenly you're rich"
   ],
   "seen_article_urls": [
     "https://torrentfreak.com/take-two-expands-gta-6-leak-hunt-with-dmca-subpoenas/",
@@ -204,7 +205,19 @@
     "https://www.notebookcheck.net/Epomaker-at-Gamescom-IFA-Hands-on-with-new-keyboards-headset-gaming-mouse.1382592.0.html",
     "http://9to5toys.com/2026/08/29/upgrade-tv-grand-theft-auto-6-deals/",
     "https://pypi.org/project/triage-lens/0.4.1/",
-    "https://www.marketbeat.com/instant-alerts/event-interface-eyes-growth-as-one-interface-strategy-targets-commercial-flooring-share-2026-08-29/?utm_source=yahoofinance&amp;utm_medium=yahoofinance"
+    "https://www.marketbeat.com/instant-alerts/event-interface-eyes-growth-as-one-interface-strategy-targets-commercial-flooring-share-2026-08-29/?utm_source=yahoofinance&amp;utm_medium=yahoofinance",
+    "https://www.thehindubusinessline.com/specials/current-account/a-growth-story-written-by-global-indians/article71408483.ece",
+    "https://pypi.org/project/pawnlogic/0.3.5/",
+    "https://sports.yahoo.com/articles/high-school-football-week-2-154547610.html",
+    "https://www.business-standard.com/industry/banking/private-bank-ceo-exits-put-board-management-relationship-under-lens-126083000694_1.html",
+    "https://newsonjapan.com/article/150556.php",
+    "https://wccftech.com/gamescom-congress-2026-sets-attendance-record-as-german-president-makes-historic-first-visit/",
+    "https://www.spoilertv.com/2026/08/performer-of-month-july-2026-results.html",
+    "https://it.slashdot.org/story/26/08/30/0545214/citrix-adds-a-linux-powered-escape-hatch-for-compromised-windows-pcs",
+    "https://www.profootballnetwork.com/nfl-fans-warn-jason-kelce-kylie-wild-kirk-herbstreit-story/",
+    "https://cryptobriefing.com/emiliano-martinez-chelsea-premier-league/",
+    "https://www.xda-developers.com/old-intel-chip-transcodes-more-jellyfin-streams-than-my-graphics-card-ever-could/",
+    "https://kotaku.com/the-abominations-i-ate-at-the-cne-this-year-2000729656"
   ],
-  "last_run_at": "2026-08-30T13:30:26.057725+00:00"
+  "last_run_at": "2026-08-31T15:49:30.439062+00:00"
 }
