@@ -33,14 +33,10 @@
     "relatable_tag",
     "patch_notes_hope",
     "ai_hype_fatigue",
+    "relatable_tag",
     "relatable_tag"
   ],
   "recent_post_titles": [
-    "GeoServer zero-day CVE-2024-GEOS-001",
-    "Hearing \"audit\" feels like realizing you left your phone at home.",
-    "My security budget gets denied, but marketings \"brand revolution\" gets a standing ovation.",
-    "Clicked \"verify your account\" in the phishing test.",
-    "We passed every checklist but skipped updating our firewall.",
     "GeoServer zero-day CVE-2024-12345 enables SQL injection and potential RCE.",
     "Backups? Yeah, I ran them once in 2022. Now the ransom note's asking for Bitcoin and my restore point is a dusty tape.",
     "Marketing got a new AI video wall while I'm still begging for a second firewall license. Guess which department's logo shows up on the CEO's slides?",
@@ -95,7 +91,12 @@
     "Gamescom Congress 2026 hit a new attendance record",
     "pawnlogic 0.3.5 just dropped on PyPI",
     "New Chitose Airport is leveling up",
-    "Steam sale hits and suddenly you're rich"
+    "Steam sale hits and suddenly you're rich",
+    "Cloudflare is letting its bot rules rewrite themselves mid-attack.",
+    "Google is hiding full URLs to keep bots from scraping search results.",
+    "The new Wolverine game is bringing Indigenous languages to the forefront.",
+    "Kalshi is teaming up with Alpaca to take prediction markets global.",
+    "You have the ultimate PC build specs memorized... for a PC you'll never afford."
   ],
   "seen_article_urls": [
     "https://torrentfreak.com/take-two-expands-gta-6-leak-hunt-with-dmca-subpoenas/",
@@ -217,7 +218,19 @@
     "https://www.profootballnetwork.com/nfl-fans-warn-jason-kelce-kylie-wild-kirk-herbstreit-story/",
     "https://cryptobriefing.com/emiliano-martinez-chelsea-premier-league/",
     "https://www.xda-developers.com/old-intel-chip-transcodes-more-jellyfin-streams-than-my-graphics-card-ever-could/",
-    "https://kotaku.com/the-abominations-i-ate-at-the-cne-this-year-2000729656"
+    "https://kotaku.com/the-abominations-i-ate-at-the-cne-this-year-2000729656",
+    "https://cryptobriefing.com/kalshi-alpaca-prediction-markets-expansion/",
+    "https://beincrypto.com/gold-price-bitcoin-debasement-trade-pause/",
+    "https://www.practicalecommerce.com/googles-redirects-blur-search-rankings",
+    "https://www.prnewswire.com/news-releases/knox-systems-standardizes-on-crowdstrike-to-secure-the-worlds-largest-federal-and-dow-managed-cloud-302864499.html",
+    "https://www.prnewswire.com/news-releases/texas-tallest-tower-completes-construction-two-months-ahead-of-schedule-302864308.html",
+    "https://devops.com/broadcom-launches-trusted-artifact-service-for-spring-framework/",
+    "https://siliconangle.com/2026/08/31/cloudflare-launches-adaptive-intelligence-to-rewrite-bot-rules-on-the-fly/",
+    "https://siliconangle.com/2026/08/31/broadcoms-private-ai-cloud-spans-infrastructure-agents-data-and-security/",
+    "http://www.denofgeek.com/msn/15-celebrities-with-surprising-skills-you-might-not-expect/",
+    "https://www.core77.com/posts/145212/A-New-Immersive-Gaming-Speaker-Set-Up-OXSs-Thunder-Pro-Max-System",
+    "https://www.cbc.ca/news/canada/british-columbia/squamish-nation-language-in-marvel-s-wolverine-game-9.7324506",
+    "https://www.techradar.com/computing/gaming-laptops/how-nvidia-rtx-spark-will-change-laptops-forever-for-better-and-worse"
   ],
-  "last_run_at": "2026-08-31T15:49:30.439062+00:00"
+  "last_run_at": "2026-09-01T13:02:05.478168+00:00"
 }
