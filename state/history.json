@@ -34,14 +34,11 @@
     "patch_notes_hope",
     "ai_hype_fatigue",
     "relatable_tag",
+    "relatable_tag",
+    "relatable_tag",
     "relatable_tag"
   ],
   "recent_post_titles": [
-    "GeoServer zero-day CVE-2024-12345 enables SQL injection and potential RCE.",
-    "Backups? Yeah, I ran them once in 2022. Now the ransom note's asking for Bitcoin and my restore point is a dusty tape.",
-    "Marketing got a new AI video wall while I'm still begging for a second firewall license. Guess which department's logo shows up on the CEO's slides?",
-    "I have CISSP, CEH, and a stack of Certs, yet I still panic when asked to explain a firewall rule to an intern.",
-    "We passed the audit with shiny checkboxes, but the actual server still runs default passwords and the USB ports are wide open.",
     "Take-Two expands GTA 6 leak hunt with DMCA subpoenas",
     "SickKids data breach exposes employee info",
     "Nvidia warns of 15% AI server price hike",
@@ -96,7 +93,12 @@
     "Google is hiding full URLs to keep bots from scraping search results.",
     "The new Wolverine game is bringing Indigenous languages to the forefront.",
     "Kalshi is teaming up with Alpaca to take prediction markets global.",
-    "You have the ultimate PC build specs memorized... for a PC you'll never afford."
+    "You have the ultimate PC build specs memorized... for a PC you'll never afford.",
+    "Missing lives after Nepal flash floods near Trishuli",
+    "Unpaid beta tester syndrome hits hard",
+    "Sanmar Group backs AltEons to drive 1.5 GW renewable growth",
+    "Free PS5 Live TV rolls out in the U.S. and Canada",
+    "Smart toothbrush claims to map every plaque spot"
   ],
   "seen_article_urls": [
     "https://torrentfreak.com/take-two-expands-gta-6-leak-hunt-with-dmca-subpoenas/",
@@ -230,7 +232,19 @@
     "http://www.denofgeek.com/msn/15-celebrities-with-surprising-skills-you-might-not-expect/",
     "https://www.core77.com/posts/145212/A-New-Immersive-Gaming-Speaker-Set-Up-OXSs-Thunder-Pro-Max-System",
     "https://www.cbc.ca/news/canada/british-columbia/squamish-nation-language-in-marvel-s-wolverine-game-9.7324506",
-    "https://www.techradar.com/computing/gaming-laptops/how-nvidia-rtx-spark-will-change-laptops-forever-for-better-and-worse"
+    "https://www.techradar.com/computing/gaming-laptops/how-nvidia-rtx-spark-will-change-laptops-forever-for-better-and-worse",
+    "https://timesofindia.indiatimes.com/city/bhubaneswar/odisha-nepal-followup/articleshow/133681494.cms",
+    "https://www.dailymail.com/tvshowbiz/article-16094975/candace-owens-justin-baldoni-selfie.html",
+    "https://timesofindia.indiatimes.com/city/chennai/sanmar-group-invests-in-renewable-energy-platform-alteons/articleshow/133681482.cms",
+    "https://soyacincau.com/2026/09/01/dyson-camerajet-smart-toothbrush-built-in-camera-rfid-ai/",
+    "https://www.cbssports.com/college-football/news/ucla-money-problems-donors-martin-jarmond-firing-athletic-director/",
+    "https://www.business-standard.com/industry/news/insurancedekho-renewbuy-merge-to-form-largest-ai-led-insurance-platform-126090101130_1.html",
+    "https://www.notebookcheck.net/New-GPD-Win-Max-3-launching-globally-on-September-2-with-165-Hz-OLED-display-and-128-GB-RAM.1384696.0.html",
+    "http://9to5toys.com/2026/09/01/alienware-240hz-display-one-of-the-most-affordable-qd-oled-models-at-320-low/",
+    "https://www.iphoneincanada.ca/2026/09/01/playstation-5-free-live-tv-in-the-u-s-canada-launch/",
+    "https://roadtovr.com/half-life-alyx-mod-gunman-contracts/",
+    "https://economictimes.indiatimes.com/tech/technology/oncology-firm-novocure-says-cyberattack-exposed-us-patient-records/articleshow/133681167.cms",
+    "https://www.searchenginejournal.com/wordpress-announces-a-proactive-security-initiative/587942/"
   ],
-  "last_run_at": "2026-09-01T13:02:05.478168+00:00"
+  "last_run_at": "2026-09-02T12:30:34.487432+00:00"
 }
