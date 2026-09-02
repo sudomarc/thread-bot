@@ -1,21 +1,26 @@
 # Thread Bot
 
-Automated social-content bot for current **cybersecurity, technology, AI, gaming, and internet news**. It generates source-grounded posts, optionally creates images, emails the report when Gmail works, and always keeps a GitHub Actions artifact.
+Automated social-content bot for current **cybersecurity, technology, AI, gaming, and internet news**. It generates source-grounded posts, optionally creates images, emails the report when Gmail works, and keeps a GitHub Actions artifact.
 
-## What the current runner does
+## Current architecture
 
-- Queries **cybersecurity + technology/AI + gaming** on every run instead of picking one niche for the whole run.
-- Targets current stories such as **GTA 6, Rockstar, Take-Two, CyberLeek**, major AI releases, chips, breaches and vulnerabilities.
-- Uses recent-news filtering (default 72 hours) and remembers article URLs/titles to reduce repetition.
-- Requires the LLM to cite the supplied news record for current-news posts; malformed or unsupported output is rejected and regenerated.
-- Uses OpenRouter's `openrouter/free` router for generation and scoring, with retries for transient API failures.
-- Treats Gmail and Hugging Face as **non-fatal delivery/enrichment channels**: a mail/image outage cannot destroy an otherwise valid content run.
-- Preserves Unicode correctly in reports and email attachments.
-- Writes `state/latest_threads.txt`, `state/latest_sources.txt`, and `state/history.json`.
-- Uploads those files as a GitHub Actions artifact for 14 days.
-- Uses an atomic state-file write and a resilient Git rebase/push loop for history persistence.
-- Runs unit tests before the bot and blocks overlapping workflow runs with concurrency control.
-- The state loader accepts the ISO-8601 `last_run_at` timestamp written by the runner instead of treating it as an invalid type.
+`NewsAPI → filtering/deduplication → OpenRouter generation → strict parsing/validation → optional LLM quality scoring → report/state → optional images/email`
+
+The maintained implementation is `bot.py`. `main.py` remains a compatibility entrypoint.
+
+### Reliability and consistency
+
+- Searches cybersecurity, technology/AI, and gaming on every run.
+- Restricts articles to a rolling 72-hour window and rejects future/invalid timestamps.
+- Sends the NewsAPI key through `X-Api-Key` instead of the query string.
+- Canonicalizes article URLs and removes common tracking parameters before deduplication.
+- Remembers only **articles actually used by generated posts**, avoiding accidental starvation of future runs.
+- Keeps `latest_sources.txt` aligned with the sources cited by the generated report.
+- Requires sequential post numbering, valid source markers, unique source usage, valid topic tags, minimum current-news coverage, and gaming coverage when gaming sources are available.
+- Rejects duplicate titles and exact repeats from recent history.
+- Preserves Unicode and writes state atomically.
+- Treats Gmail and image generation as non-fatal enrichment channels.
+- Makes the optional LLM quality scorer opt-in so a normal run does not double its model traffic.
 
 ## Required secrets
 
@@ -24,9 +29,9 @@ Settings → Secrets and variables → Actions → **Secrets**
 | Secret | Purpose |
 |---|---|
 | `NEWS_API_KEY` | Current news retrieval |
-| `OPENROUTER_API_KEY` | LLM generation/scoring |
+| `OPENROUTER_API_KEY` | LLM generation |
 
-Optional delivery/enrichment secrets:
+Optional:
 
 | Secret | Purpose |
 |---|---|
@@ -35,46 +40,33 @@ Optional delivery/enrichment secrets:
 | `RECIPIENT_EMAIL` | Destination email |
 | `HF_TOKEN` | Optional image generation |
 
-A working Gmail or Hugging Face configuration is **not** required for the content workflow to succeed.
-
 ## Optional Actions variables
-
-Settings → Secrets and variables → Actions → **Variables**
 
 | Variable | Default | Effect |
 |---|---:|---|
 | `TOTAL_POSTS` | `5` | Number of posts per run (1–8) |
 | `IMAGE_POST_COUNT` | `0` | Optional AI images (0–TOTAL_POSTS) |
+| `ENABLE_LLM_SCORING` | `false` | Adds an OpenRouter scoring pass for higher quality gating |
+| `HF_IMAGE_MODEL` | `black-forest-labs/FLUX.1-schnell` | Hugging Face image model used when `HF_TOKEN` is configured |
 
-## Workflow
+## Workflow behavior
 
-```text
-NewsAPI: cyber + tech/AI + gaming
-            ↓
-source-grounded LLM generation
-            ↓
-strict parser/validation
-            ↓
-quality scoring + regeneration
-            ↓
-optional images
-            ↓
-latest_threads + latest_sources
-      ┌─────┴─────────┐
-    Gmail          Artifact
-      └─────┬─────────┘
-            ↓
-       history state
-```
+The workflow runs on the daily schedule or through `workflow_dispatch`. It no longer launches a full bot execution on every code push, which prevents ordinary repository maintenance from consuming API quota.
 
-## Reliability design
+GitHub Actions uses current Node 24-compatible action releases (`checkout@v7`, `setup-python@v7`, `upload-artifact@v7`). Tests run before the bot. Generated state is committed only after a successful run.
 
-The previous runner had several independent failure modes: revoked Gmail app passwords, retired image models, Unicode/ASCII email encoding, malformed LLM output being accepted, excessive API calls, duplicate bot implementations, a permissive state loader, and non-fast-forward state pushes.
+## State files
 
-The maintained implementation is now **`bot.py`**. `main.py` is only a compatibility entrypoint importing `bot.main`.
-
-The workflow also runs `python -m unittest discover -s tests -v` before generation, uses current Node 24-based GitHub Actions runners, and retries state persistence instead of failing the entire content run on a race.
+`state/history.json` is the persistent deduplication state. `state/latest_threads.txt` and `state/latest_sources.txt` are runtime outputs and are ignored by Git. The workflow uploads all three as an artifact for 14 days.
 
 ## Safety around leaks
 
-Gaming/news posts can discuss reported leaks and legal actions around them. The bot does **not** distribute leaked files, stolen credentials, piracy links, or instructions for accessing stolen material.
+The bot may discuss reported leaks and legal actions, but it does not distribute leaked files, stolen credentials, piracy links, or instructions for accessing stolen material.
+
+## Local verification
+
+```bash
+python -m pip install -r requirements.txt
+python -m unittest discover -s tests -v
+python -m py_compile bot.py main.py
+```

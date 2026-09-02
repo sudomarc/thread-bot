@@ -13,6 +13,7 @@ from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email import encoders
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 import requests
 
@@ -22,6 +23,7 @@ GMAIL_USER = os.environ.get("GMAIL_USER", "").strip()
 GMAIL_APP_PASSWORD = os.environ.get("GMAIL_APP_PASSWORD", "").strip()
 TO_EMAIL = os.environ.get("RECIPIENT_EMAIL", "").strip()
 HF_TOKEN = os.environ.get("HF_TOKEN", "").strip()
+HF_IMAGE_MODEL = os.environ.get("HF_IMAGE_MODEL", "black-forest-labs/FLUX.1-schnell").strip()
 
 STATE_FILE_PATH = "state/history.json"
 REPORT_FILE_PATH = "state/latest_threads.txt"
@@ -32,8 +34,9 @@ MAX_HISTORY_URLS = 200
 QUALITY_SCORE_THRESHOLD = 6.5
 MAX_GENERATION_ATTEMPTS = 3
 NEWS_MAX_AGE_HOURS = 72
-
+REQUEST_USER_AGENT = "thread-bot/2.1 (+https://github.com/sudomarc/thread-bot)"
 RETRYABLE_HTTP = {408, 409, 425, 429, 500, 502, 503, 504}
+TRACKING_QUERY_KEYS = {"fbclid", "gclid", "mc_cid", "mc_eid"}
 
 
 def read_int_env(name, default, min_val, max_val):
@@ -44,13 +47,21 @@ def read_int_env(name, default, min_val, max_val):
     return max(min_val, min(max_val, value))
 
 
+def read_bool_env(name, default=False):
+    raw = os.environ.get(name)
+    if raw is None:
+        return default
+    return raw.strip().lower() in {"1", "true", "yes", "on"}
+
+
 TOTAL_POSTS = read_int_env("TOTAL_POSTS", 5, 1, 8)
 IMAGE_POST_COUNT = min(read_int_env("IMAGE_POST_COUNT", 0, 0, TOTAL_POSTS), TOTAL_POSTS)
+ENABLE_LLM_SCORING = read_bool_env("ENABLE_LLM_SCORING", False)
 
 NEWS_QUERY_GROUPS = {
     "cybersecurity": 'cybersecurity OR ransomware OR breach OR vulnerability OR "zero-day" OR hacker OR "data leak" OR cybercrime',
     "technology": 'technology OR AI OR "artificial intelligence" OR OpenAI OR Anthropic OR Nvidia OR Apple OR Google OR Microsoft OR semiconductor OR cloud',
-    "gaming": '"GTA 6" OR "GTA VI" OR Rockstar OR "Take-Two" OR CyberLeek OR PlayStation OR Xbox OR Nintendo OR Steam OR gaming OR "game delay" OR esports',
+    "gaming": '"GTA 6" OR "GTA VI" OR Rockstar OR "Take-Two" OR PlayStation OR Xbox OR Nintendo OR Steam OR gaming OR "game delay" OR esports',
 }
 
 RELATABLE_TOPICS = [
@@ -79,45 +90,75 @@ FALLBACK_IMAGE_PROMPTS = [
 
 
 def clean_text(value):
-    """Normalize text without destroying legitimate Unicode punctuation."""
     text = unicodedata.normalize("NFC", str(value or ""))
     return "".join(ch for ch in text if ch in "\n\t" or ord(ch) >= 32).strip()
 
 
-def load_state():
-    default = {
+def title_key(value):
+    return re.sub(r"[^a-z0-9]+", " ", clean_text(value).lower()).strip()
+
+
+def canonicalize_url(value):
+    url = str(value or "").strip()
+    if not url:
+        return ""
+    try:
+        parts = urlsplit(url)
+        query = [(key, val) for key, val in parse_qsl(parts.query, keep_blank_values=True) if not key.lower().startswith("utm_") and key.lower() not in TRACKING_QUERY_KEYS]
+        return urlunsplit((parts.scheme.lower(), parts.netloc.lower(), parts.path.rstrip("/"), urlencode(query), ""))
+    except ValueError:
+        return url
+
+
+def parse_iso_datetime(value):
+    raw = str(value or "").strip()
+    if not raw:
+        return None
+    try:
+        return datetime.fromisoformat(raw.replace("Z", "+00:00")).astimezone(timezone.utc)
+    except ValueError:
+        return None
+
+
+def default_state():
+    return {
+        "schema_version": 2,
         "recent_relatable_topic_tags": [],
         "recent_post_titles": [],
         "seen_article_urls": [],
         "last_run_at": None,
     }
+
+
+def load_state():
+    default = default_state()
     if not os.path.exists(STATE_FILE_PATH):
         return default
     try:
         with open(STATE_FILE_PATH, "r", encoding="utf-8") as handle:
             data = json.load(handle)
-        if not isinstance(data, dict):
-            return default
-        if not isinstance(data.get("recent_relatable_topic_tags"), list):
-            data["recent_relatable_topic_tags"] = []
-        if not isinstance(data.get("recent_post_titles"), list):
-            data["recent_post_titles"] = []
-        if not isinstance(data.get("seen_article_urls"), list):
-            data["seen_article_urls"] = []
-        if data.get("last_run_at") is not None and not isinstance(data.get("last_run_at"), str):
-            data["last_run_at"] = None
-        return data
     except (OSError, json.JSONDecodeError) as exc:
         print(f"State file unreadable; starting fresh: {exc}")
         return default
+    if not isinstance(data, dict):
+        return default
+    for key in ("recent_relatable_topic_tags", "recent_post_titles", "seen_article_urls"):
+        if not isinstance(data.get(key), list):
+            data[key] = []
+    if data.get("last_run_at") is not None and not isinstance(data.get("last_run_at"), str):
+        data["last_run_at"] = None
+    data["schema_version"] = 2
+    return data
 
 
 def save_state(state):
-    state["recent_relatable_topic_tags"] = list(state.get("recent_relatable_topic_tags", []))[-MAX_HISTORY_TOPICS:]
-    state["recent_post_titles"] = list(state.get("recent_post_titles", []))[-MAX_HISTORY_TITLES:]
-    state["seen_article_urls"] = list(state.get("seen_article_urls", []))[-MAX_HISTORY_URLS:]
+    state["schema_version"] = 2
+    state["recent_relatable_topic_tags"] = list(dict.fromkeys(state.get("recent_relatable_topic_tags", [])))[-MAX_HISTORY_TOPICS:]
+    state["recent_post_titles"] = list(dict.fromkeys(state.get("recent_post_titles", [])))[-MAX_HISTORY_TITLES:]
+    state["seen_article_urls"] = list(dict.fromkeys(state.get("seen_article_urls", [])))[-MAX_HISTORY_URLS:]
     state["last_run_at"] = datetime.now(timezone.utc).isoformat()
-    os.makedirs(os.path.dirname(STATE_FILE_PATH), exist_ok=True)
+    state_dir = os.path.dirname(STATE_FILE_PATH) or "."
+    os.makedirs(state_dir, exist_ok=True)
     tmp_path = STATE_FILE_PATH + ".tmp"
     with open(tmp_path, "w", encoding="utf-8") as handle:
         json.dump(state, handle, indent=2, ensure_ascii=False)
@@ -126,22 +167,25 @@ def save_state(state):
 
 
 def write_report(content, sources):
-    os.makedirs(os.path.dirname(REPORT_FILE_PATH), exist_ok=True)
+    state_dir = os.path.dirname(REPORT_FILE_PATH) or "."
+    os.makedirs(state_dir, exist_ok=True)
     with open(REPORT_FILE_PATH, "w", encoding="utf-8") as handle:
         handle.write(content.rstrip() + "\n")
     with open(SOURCES_FILE_PATH, "w", encoding="utf-8") as handle:
         for idx, article in enumerate(sources, 1):
             handle.write(
-                f"NEWS {idx} | {article['category']} | {article['published']} | {article['source']}\n"
+                f"SOURCE {idx} | {article['category']} | {article['published']} | {article['source']}\n"
                 f"{article['title']}\n{article['url']}\n\n"
             )
 
 
 def request_with_retries(method, url, *, retries=3, timeout=20, **kwargs):
+    headers = dict(kwargs.pop("headers", {}) or {})
+    headers.setdefault("User-Agent", REQUEST_USER_AGENT)
     last_error = None
     for attempt in range(1, retries + 1):
         try:
-            response = requests.request(method, url, timeout=timeout, **kwargs)
+            response = requests.request(method, url, timeout=timeout, headers=headers, **kwargs)
             if response.status_code not in RETRYABLE_HTTP:
                 return response
             last_error = RuntimeError(f"HTTP {response.status_code}: {response.text[:250]}")
@@ -153,12 +197,19 @@ def request_with_retries(method, url, *, retries=3, timeout=20, **kwargs):
     raise RuntimeError(f"Request failed after {retries} attempts: {last_error}")
 
 
+def validate_runtime_config():
+    missing = [name for name, value in (("NEWS_API_KEY", NEWS_API_KEY), ("OPENROUTER_API_KEY", OPENROUTER_API_KEY)) if not value]
+    if missing:
+        raise RuntimeError("Missing required environment variables: " + ", ".join(missing))
+
+
 def fetch_articles(state):
     if not NEWS_API_KEY:
         raise RuntimeError("NEWS_API_KEY is missing")
 
-    cutoff = datetime.now(timezone.utc) - timedelta(hours=NEWS_MAX_AGE_HOURS)
-    seen_urls = set(state.get("seen_article_urls", []))
+    now = datetime.now(timezone.utc)
+    cutoff = now - timedelta(hours=NEWS_MAX_AGE_HOURS)
+    seen_urls = {canonicalize_url(url) for url in state.get("seen_article_urls", [])}
     picked = []
     seen_keys = set()
     failures = 0
@@ -170,13 +221,14 @@ def fetch_articles(state):
                 "https://newsapi.org/v2/everything",
                 retries=3,
                 timeout=20,
+                headers={"X-Api-Key": NEWS_API_KEY},
                 params={
                     "q": query,
                     "language": "en",
                     "sortBy": "publishedAt",
-                    "pageSize": 20,
+                    "pageSize": 25,
                     "from": cutoff.strftime("%Y-%m-%dT%H:%M:%SZ"),
-                    "apiKey": NEWS_API_KEY,
+                    "to": now.strftime("%Y-%m-%dT%H:%M:%SZ"),
                 },
             )
             if response.status_code >= 400:
@@ -186,18 +238,21 @@ def fetch_articles(state):
             data = response.json()
         except Exception as exc:
             failures += 1
-            print(f"News query failed [{category}]: {exc}")
+            print(f"News query failed [{category}]: {type(exc).__name__}: {exc}")
             continue
 
         category_count = 0
         for article in data.get("articles", []):
             title = clean_text(article.get("title"))
             description = clean_text(article.get("description"))
-            url = str(article.get("url") or "").strip()
-            published = str(article.get("publishedAt") or "").strip()
+            url = canonicalize_url(article.get("url"))
+            published = clean_text(article.get("publishedAt"))
             source = clean_text((article.get("source") or {}).get("name"))
-            key = re.sub(r"\W+", " ", title.lower()).strip()
+            published_at = parse_iso_datetime(published)
+            key = title_key(title)
             if not title or len(title) < 15 or not url or key in seen_keys or url in seen_urls:
+                continue
+            if not published_at or published_at < cutoff or published_at > now:
                 continue
             if "removed by the source" in title.lower():
                 continue
@@ -206,33 +261,32 @@ def fetch_articles(state):
                 "category": category,
                 "title": title,
                 "description": description,
-                "source": source,
+                "source": source or "Unknown source",
                 "published": published,
                 "url": url,
             })
             category_count += 1
-            if category_count >= 6:
+            if category_count >= 8:
                 break
 
     if failures == len(NEWS_QUERY_GROUPS):
         raise RuntimeError("All NewsAPI category queries failed")
 
-    picked.sort(key=lambda item: item.get("published", ""), reverse=True)
+    picked.sort(key=lambda item: parse_iso_datetime(item["published"]) or datetime.min.replace(tzinfo=timezone.utc), reverse=True)
     per_category = {category: 0 for category in NEWS_QUERY_GROUPS}
     balanced = []
-
     for article in picked:
         category = article["category"]
         if per_category[category] >= 4:
             continue
         balanced.append(article)
         per_category[category] += 1
-        if len(balanced) >= 12:
+        if len(balanced) >= max(8, TOTAL_POSTS + 3):
             break
 
-    if len(balanced) < min(6, max(3, TOTAL_POSTS)):
+    minimum = min(5, max(3, TOTAL_POSTS))
+    if len(balanced) < minimum:
         raise RuntimeError(f"Too few usable current articles: {len(balanced)}")
-
     print(f"Fetched {len(balanced)} recent articles across categories: {per_category}")
     return balanced
 
@@ -248,38 +302,39 @@ def choose_relatable_topics(state, count):
     return fresh[:count]
 
 
-def build_generation_prompt(articles, relatable_topics):
+def build_generation_prompt(articles, relatable_topics, state):
     news_lines = []
     for idx, article in enumerate(articles, 1):
         news_lines.append(
             f"NEWS {idx} | {article['category']} | {article['published']} | {article['source']}\n"
             f"TITLE: {article['title']}\nSUMMARY: {article['description']}\nURL: {article['url']}"
         )
-    topic_lines = "\n".join(f"- {tag}: {desc}" for tag, desc in relatable_topics)
+    topic_lines = "\n".join(f"- {tag}: {desc}" for tag, desc in relatable_topics) or "- none"
+    previous_titles = state.get("recent_post_titles", [])[-10:]
+    history_hint = "\n".join(f"- {title}" for title in previous_titles) or "- none"
+    required_news = min(3, TOTAL_POSTS)
     return f"""You write an English-language social feed about cybersecurity, technology, AI, gaming, and internet culture.
 
-Create exactly {TOTAL_POSTS} posts. Do not make the feed cybersecurity-only. Use current supplied news heavily. At least {min(3, TOTAL_POSTS)} posts must be current-news posts whenever the sources support it, and at least one current-news post must use a gaming source when a gaming source is supplied. Other posts may be relatable observations.
+Create exactly {TOTAL_POSTS} posts. At least {required_news} posts must be current-news posts. When a gaming source is supplied, at least one current-news post must use a gaming source. Remaining posts may be relatable observations.
 
-For current stories, state only facts supported by the supplied sources. Never invent quotes, dates, accusations, breach details, or exploit details. For rumors/leaks, clearly say reported/alleged. Do not provide piracy links, stolen files, credential dumps, or instructions for accessing leaked material.
+Every current-news post MUST use exactly one SOURCE: NEWS N marker. Every relatable post MUST use SOURCE: NONE. Do not reuse the same NEWS source in two posts. Use only the supplied source facts. Never invent quotes, dates, accusations, breach details, exploit details, or unverified claims. For rumors/leaks, say reported/alleged. Do not provide piracy links, stolen files, credential dumps, or instructions for accessing stolen material.
+
+Choose TOPIC_TAG only from the supplied relatable tags for relatable posts; use current_news for news posts.
 
 Tone: sharp, human, concise, scroll-stopping. No corporate PR language. No generic motivational filler.
+
+Avoid repeating these recent titles or obvious paraphrases:
+{history_hint}
 
 Output ONLY this exact structure:
 POST 1
 <title/opening line>
 <2-6 short lines of post text>
 KEYWORDS: keyword1, keyword2
-TOPIC_TAG: current_news
-SOURCE: NEWS 1
+TOPIC_TAG: current_news OR one supplied relatable tag
+SOURCE: NEWS 1 OR NONE
 
-POST 2
-<title/opening line>
-<2-6 short lines of post text>
-KEYWORDS: keyword1, keyword2
-TOPIC_TAG: relatable_tag
-SOURCE: NONE
-
-Continue until POST {TOTAL_POSTS}. Use only one SOURCE line per post.
+Continue until POST {TOTAL_POSTS}. Use one SOURCE line per post.
 
 CURRENT NEWS:
 {chr(10).join(news_lines)}
@@ -323,7 +378,7 @@ def openrouter_chat(prompt, timeout=60):
 
 
 def parse_posts(raw):
-    blocks = re.split(r"(?=^POST\s+\d+\s*$)", raw, flags=re.IGNORECASE | re.MULTILINE)
+    blocks = re.split(r"(?=^POST\s+\d+\s*$)", str(raw or ""), flags=re.IGNORECASE | re.MULTILINE)
     posts = []
     for block in blocks:
         match = re.search(r"^POST\s+(\d+)\s*$", block, flags=re.IGNORECASE | re.MULTILINE)
@@ -333,53 +388,80 @@ def parse_posts(raw):
         body = re.sub(r"^POST\s+\d+\s*$", "", block, count=1, flags=re.IGNORECASE | re.MULTILINE).strip()
         source_match = re.search(r"^SOURCE:\s*(.+?)\s*$", body, flags=re.IGNORECASE | re.MULTILINE)
         tag_match = re.search(r"^TOPIC_TAG:\s*(.+?)\s*$", body, flags=re.IGNORECASE | re.MULTILINE)
-        body = re.split(r"^KEYWORDS:\s*.*$|^TOPIC_TAG:\s*.*$|^SOURCE:\s*.*$", body, maxsplit=1, flags=re.IGNORECASE | re.MULTILINE)[0].strip()
-        if body:
-            title = next((line.strip() for line in body.splitlines() if line.strip()), "Thread Bot post")
-            posts.append({
-                "number": number,
-                "title": title,
-                "body": body,
-                "source": source_match.group(1).strip() if source_match else "NONE",
-                "topic_tag": tag_match.group(1).strip() if tag_match else "current_news",
-            })
-    by_number = {post["number"]: post for post in posts}
-    return [by_number[num] for num in range(1, TOTAL_POSTS + 1) if num in by_number]
+        keyword_match = re.search(r"^KEYWORDS:\s*(.+?)\s*$", body, flags=re.IGNORECASE | re.MULTILINE)
+        content_only = re.split(r"^KEYWORDS:\s*.*$|^TOPIC_TAG:\s*.*$|^SOURCE:\s*.*$", body, maxsplit=1, flags=re.IGNORECASE | re.MULTILINE)[0].strip()
+        lines = [line.strip() for line in content_only.splitlines() if line.strip()]
+        if not lines:
+            continue
+        posts.append({
+            "number": number,
+            "title": lines[0],
+            "body": content_only,
+            "keywords": [item.strip() for item in (keyword_match.group(1).split(",") if keyword_match else []) if item.strip()],
+            "source": source_match.group(1).strip() if source_match else "NONE",
+            "topic_tag": tag_match.group(1).strip() if tag_match else "",
+        })
+    return posts
 
 
-def validate_posts(posts, articles):
+def validate_posts(posts, articles, relatable_topics=None, previous_titles=None):
     if len(posts) != TOTAL_POSTS:
         raise ValueError(f"LLM produced {len(posts)}/{TOTAL_POSTS} valid posts")
-    if any(not post["body"].strip() for post in posts):
+    numbers = [post.get("number") for post in posts]
+    expected = list(range(1, TOTAL_POSTS + 1))
+    if numbers != expected or len(set(numbers)) != TOTAL_POSTS:
+        raise ValueError(f"Post numbering is not exactly sequential: {numbers}")
+    if any(not clean_text(post.get("body")) for post in posts):
         raise ValueError("LLM produced an empty post")
-    if any(len(post["body"]) > 1500 for post in posts):
+    if any(len(post.get("body", "")) > 1500 for post in posts):
         raise ValueError("LLM produced an excessively long post")
 
+    allowed_tags = {tag for tag, _ in (relatable_topics or RELATABLE_TOPICS)}
     source_ids = []
+    source_seen = set()
     for post in posts:
-        source = post.get("source", "NONE").upper()
+        source = post.get("source", "NONE").strip().upper()
+        tag = post.get("topic_tag", "").strip()
         if source.startswith("NEWS "):
-            try:
-                source_id = int(source.split()[1])
-            except (IndexError, ValueError):
+            parts = source.split()
+            if len(parts) != 2 or not parts[1].isdigit():
                 raise ValueError(f"Invalid source marker: {source}")
+            source_id = int(parts[1])
             if not 1 <= source_id <= len(articles):
                 raise ValueError(f"Source marker out of range: {source}")
+            if source_id in source_seen:
+                raise ValueError(f"Source reused by multiple posts: {source}")
+            source_seen.add(source_id)
             source_ids.append(source_id)
+            if tag != "current_news":
+                raise ValueError("Current-news post must use TOPIC_TAG: current_news")
+        elif source != "NONE":
+            raise ValueError(f"Invalid source marker: {source}")
+        elif tag == "current_news":
+            raise ValueError("Relatable post cannot use TOPIC_TAG: current_news")
+        elif tag not in allowed_tags:
+            raise ValueError(f"Unknown relatable topic tag: {tag}")
 
     required_news = min(3, TOTAL_POSTS)
     if len(source_ids) < required_news:
         raise ValueError(f"Need at least {required_news} source-grounded posts, got {len(source_ids)}")
 
-    gaming_available = any(article["category"] == "gaming" for article in articles)
-    if gaming_available:
-        gaming_ids = {idx + 1 for idx, article in enumerate(articles) if article["category"] == "gaming"}
-        if not gaming_ids.intersection(source_ids):
-            raise ValueError("LLM ignored all supplied gaming sources")
+    gaming_ids = {idx + 1 for idx, article in enumerate(articles) if article.get("category") == "gaming"}
+    if gaming_ids and not gaming_ids.intersection(source_ids):
+        raise ValueError("LLM ignored all supplied gaming sources")
+
+    normalized_previous = {title_key(title) for title in (previous_titles or []) if title}
+    current_titles = [title_key(post.get("title")) for post in posts]
+    if len(set(current_titles)) != len(current_titles):
+        raise ValueError("LLM produced duplicate post titles")
+    if normalized_previous and any(title in normalized_previous for title in current_titles):
+        raise ValueError("LLM repeated a recent post title")
     return True
 
 
 def score_posts_quality(posts):
+    if not ENABLE_LLM_SCORING:
+        return None
     labeled = "\n\n".join(f"POST {post['number']}\n{post['body']}" for post in posts)
     try:
         raw = openrouter_chat(
@@ -388,19 +470,21 @@ def score_posts_quality(posts):
             timeout=40,
         )
         matches = re.findall(r"POST\s+(\d+)\s+SCORE:\s*(\d+(?:\.\d+)?)", raw, flags=re.IGNORECASE)
-        scores = {int(num): float(score) for num, score in matches}
+        scores = {int(num): float(score) for num, score in matches if 0 < float(score) <= 10}
         if any(num not in scores for num in range(1, TOTAL_POSTS + 1)):
-            print("Quality scoring response incomplete; skipping gate for this attempt.")
+            print("Quality scoring response incomplete; skipping scoring for this attempt.")
             return None
         return sum(scores.values()) / TOTAL_POSTS
     except Exception as exc:
-        print(f"Quality scoring unavailable; accepting the generated attempt: {type(exc).__name__}: {exc}")
+        print(f"Quality scoring unavailable; skipping scoring: {type(exc).__name__}: {exc}")
         return None
 
 
 def generate_threads(articles, state):
-    relatable_count = max(0, TOTAL_POSTS - min(3, TOTAL_POSTS))
-    prompt = build_generation_prompt(articles, choose_relatable_topics(state, relatable_count))
+    required_news = min(3, TOTAL_POSTS)
+    relatable_count = max(0, TOTAL_POSTS - required_news)
+    relatable_topics = choose_relatable_topics(state, relatable_count)
+    prompt = build_generation_prompt(articles, relatable_topics, state)
     best = None
     best_score = -1.0
 
@@ -409,7 +493,7 @@ def generate_threads(articles, state):
         try:
             raw = openrouter_chat(prompt)
             posts = parse_posts(raw)
-            validate_posts(posts, articles)
+            validate_posts(posts, articles, relatable_topics, state.get("recent_post_titles", []))
             score = score_posts_quality(posts)
             print(f"Attempt {attempt}: {len(posts)} posts, score={score}")
             candidate = "\n\n".join(post["body"].strip() for post in posts)
@@ -434,13 +518,14 @@ def generate_hf_image(prompt):
     try:
         response = request_with_retries(
             "POST",
-            "https://router.huggingface.co/hf-inference/models/black-forest-labs/FLUX.1-schnell",
+            f"https://router.huggingface.co/hf-inference/models/{HF_IMAGE_MODEL}",
             retries=2,
             timeout=90,
             headers={"Authorization": f"Bearer {HF_TOKEN}"},
             json={"inputs": prompt},
         )
-        if response.status_code == 200 and len(response.content) > 1000:
+        content_type = response.headers.get("Content-Type", "")
+        if response.status_code == 200 and response.content and (content_type.startswith("image/") or len(response.content) > 1000):
             return response.content
         print(f"HF image skipped: HTTP {response.status_code} {response.text[:160]}")
     except Exception as exc:
@@ -504,15 +589,33 @@ def send_email(content, images):
         return False
 
 
+def used_articles_from_posts(posts, articles):
+    indices = []
+    for post in posts:
+        source = post.get("source", "NONE").strip().upper()
+        if source.startswith("NEWS "):
+            indices.append(int(source.split()[1]) - 1)
+    return [articles[index] for index in indices]
+
+
 def main():
+    validate_runtime_config()
     state = load_state()
     articles = fetch_articles(state)
     content, posts = generate_threads(articles, state)
-    write_report(content, articles)
+    used_articles = used_articles_from_posts(posts, articles)
+    write_report(content, used_articles)
 
     print("--- FINAL REPORT ---")
     print(content)
     print("--- END REPORT ---")
+
+    state["recent_post_titles"].extend(post["title"] for post in posts)
+    state["seen_article_urls"].extend(article["url"] for article in used_articles if article.get("url"))
+    state["recent_relatable_topic_tags"].extend(
+        post["topic_tag"] for post in posts if post.get("source", "").upper() == "NONE" and post.get("topic_tag") in {tag for tag, _ in RELATABLE_TOPICS}
+    )
+    save_state(state)
 
     images = []
     for index, post in enumerate(posts[:IMAGE_POST_COUNT]):
@@ -524,13 +627,6 @@ def main():
         images.append(add_overlay(raw_image, post["title"]) if raw_image else None)
 
     send_email(content, images)
-
-    state["recent_post_titles"].extend(post["title"] for post in posts)
-    state["seen_article_urls"].extend(article["url"] for article in articles if article.get("url"))
-    state["recent_relatable_topic_tags"].extend(
-        post["topic_tag"] for post in posts if post.get("topic_tag") and post["topic_tag"] != "current_news"
-    )
-    save_state(state)
     print("State updated.")
 
 

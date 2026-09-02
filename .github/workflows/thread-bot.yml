@@ -1,8 +1,6 @@
 name: Thread Bot Daily Runner
 
 on:
-  push:
-    branches: [main]
   schedule:
     - cron: '0 8 * * *'
   workflow_dispatch:
@@ -14,6 +12,9 @@ concurrency:
   group: thread-bot-main
   cancel-in-progress: false
 
+env:
+  PYTHONUNBUFFERED: '1'
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -21,7 +22,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -32,7 +33,7 @@ jobs:
           cache: pip
 
       - name: Install dependencies
-        run: python -m pip install -r requirements.txt
+        run: python -m pip install --upgrade pip && python -m pip install -r requirements.txt
 
       - name: Run tests
         run: python -m unittest discover -s tests -v
@@ -47,11 +48,13 @@ jobs:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           TOTAL_POSTS: ${{ vars.TOTAL_POSTS }}
           IMAGE_POST_COUNT: ${{ vars.IMAGE_POST_COUNT }}
+          ENABLE_LLM_SCORING: ${{ vars.ENABLE_LLM_SCORING }}
+          HF_IMAGE_MODEL: ${{ vars.HF_IMAGE_MODEL }}
         run: python bot.py
 
       - name: Upload generated report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: thread-bot-report-${{ github.run_number }}
           path: |
@@ -62,32 +65,16 @@ jobs:
           retention-days: 14
 
       - name: Commit updated state
-        if: always()
-        continue-on-error: true
+        if: success()
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add state/history.json 2>/dev/null || true
+          git add state/history.json
           if git diff --staged --quiet; then
             echo "No state changes to commit."
             exit 0
           fi
           git commit -m "chore: update bot history [skip ci]"
-
-          for attempt in 1 2 3; do
-            echo "State push attempt ${attempt}/3"
-            git fetch origin main
-            if git rebase origin/main; then
-              if git push origin HEAD:main; then
-                echo "State push succeeded."
-                exit 0
-              fi
-            else
-              echo "Rebase failed; aborting rebase before retry."
-              git rebase --abort || true
-            fi
-            sleep $((attempt * 2))
-          done
-
-          echo "State push could not be completed after 3 attempts; report/artifact remain valid."
-          exit 0
+          git fetch origin main
+          git rebase origin/main
+          git push origin HEAD:main
