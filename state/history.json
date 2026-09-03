@@ -9,41 +9,14 @@
     "cert_vs_reality",
     "one_person_team",
     "untested_backups",
-    "users_click_anyway",
-    "audit_dread",
-    "password_hypocrisy",
-    "audit_dread",
-    "budget_disparity",
     "own_phishing_test",
-    "compliance_theater",
-    "untested_backups",
-    "budget_disparity",
-    "imposter_syndrome",
-    "compliance_theater",
-    "relatable_tag",
-    "relatable_tag",
-    "relatable_tag",
-    "relatable_tag",
-    "relatable_tag",
-    "relatable_tag",
-    "relatable_tag",
-    "relatable_tag",
-    "relatable_tag",
-    "relatable_tag",
     "relatable_tag",
     "patch_notes_hope",
     "ai_hype_fatigue",
-    "relatable_tag",
-    "relatable_tag",
-    "relatable_tag",
-    "relatable_tag"
+    "group_chat_explainer",
+    "doomscroll_news"
   ],
   "recent_post_titles": [
-    "Take-Two expands GTA 6 leak hunt with DMCA subpoenas",
-    "SickKids data breach exposes employee info",
-    "Nvidia warns of 15% AI server price hike",
-    "Trying to stay spoiler-free before the big release",
-    "Release delay pain hits another highly anticipated title",
     "**GTA 6 leaks: Former Rockstar director calls them a \"nothing burger\"**",
     "**China’s AI fortresses in the South China Sea: 3D security or escalation?**",
     "**Arkansas names KJ Jackson starting QB after spring battle**",
@@ -98,7 +71,12 @@
     "Unpaid beta tester syndrome hits hard",
     "Sanmar Group backs AltEons to drive 1.5 GW renewable growth",
     "Free PS5 Live TV rolls out in the U.S. and Canada",
-    "Smart toothbrush claims to map every plaque spot"
+    "Smart toothbrush claims to map every plaque spot",
+    "India's auto makers race to lock down the supply chain",
+    "India balances China and Russia within BRICS",
+    "Four detained after army armoury weapons vanish",
+    "When your group chat turns into a tech news flash",
+    "Refreshing the feed for the umpteenth time"
   ],
   "seen_article_urls": [
     "https://torrentfreak.com/take-two-expands-gta-6-leak-hunt-with-dmca-subpoenas/",
@@ -244,7 +222,11 @@
     "https://www.iphoneincanada.ca/2026/09/01/playstation-5-free-live-tv-in-the-u-s-canada-launch/",
     "https://roadtovr.com/half-life-alyx-mod-gunman-contracts/",
     "https://economictimes.indiatimes.com/tech/technology/oncology-firm-novocure-says-cyberattack-exposed-us-patient-records/articleshow/133681167.cms",
-    "https://www.searchenginejournal.com/wordpress-announces-a-proactive-security-initiative/587942/"
+    "https://www.searchenginejournal.com/wordpress-announces-a-proactive-security-initiative/587942/",
+    "https://economictimes.indiatimes.com/industry/auto/auto-components/indias-auto-parts-makers-face-a-new-race-localise-innovate-lead/articleshow/133710477.cms",
+    "https://thediplomat.com/2026/09/balancing-china-and-russia-indias-tightrope-walk-at-brics",
+    "https://economictimes.indiatimes.com/news/india/agniveers-among-four-detained-after-12-weapons-stolen-from-secunderabad-army-armoury/articleshow/133709176.cms"
   ],
-  "last_run_at": "2026-09-02T12:30:34.487432+00:00"
+  "last_run_at": "2026-09-03T12:33:50.203664+00:00",
+  "schema_version": 2
 }
