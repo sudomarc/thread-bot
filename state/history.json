@@ -14,14 +14,11 @@
     "patch_notes_hope",
     "ai_hype_fatigue",
     "group_chat_explainer",
-    "doomscroll_news"
+    "doomscroll_news",
+    "controller_rage",
+    "backlog_shame"
   ],
   "recent_post_titles": [
-    "**GTA 6 leaks: Former Rockstar director calls them a \"nothing burger\"**",
-    "**China’s AI fortresses in the South China Sea: 3D security or escalation?**",
-    "**Arkansas names KJ Jackson starting QB after spring battle**",
-    "**Still pre-ordering games? You’re not alone — and you’re still getting burned**",
-    "**Nothing drops CLI tool for Linux users — finally, peace in the audio realm**",
     "Ronaldo shows up at Esports World Cup, Al Nassr fans hold breath",
     "Alibaba drops $10.2B on AI expansion via HK share placement",
     "Reddit gets a production-grade MCP server — open source, on PyPI",
@@ -76,7 +73,12 @@
     "India balances China and Russia within BRICS",
     "Four detained after army armoury weapons vanish",
     "When your group chat turns into a tech news flash",
-    "Refreshing the feed for the umpteenth time"
+    "Refreshing the feed for the umpteenth time",
+    "Two back-to-back PlayStation shows incoming",
+    "Visa's new shield aims to freeze fraud mid-transaction",
+    "EDM legends join the 'responsible' AI music wave",
+    "My thumb is sore and my pride is broken",
+    "Just bought another game, backlog still winning"
   ],
   "seen_article_urls": [
     "https://torrentfreak.com/take-two-expands-gta-6-leak-hunt-with-dmca-subpoenas/",
@@ -225,8 +227,11 @@
     "https://www.searchenginejournal.com/wordpress-announces-a-proactive-security-initiative/587942/",
     "https://economictimes.indiatimes.com/industry/auto/auto-components/indias-auto-parts-makers-face-a-new-race-localise-innovate-lead/articleshow/133710477.cms",
     "https://thediplomat.com/2026/09/balancing-china-and-russia-indias-tightrope-walk-at-brics",
-    "https://economictimes.indiatimes.com/news/india/agniveers-among-four-detained-after-12-weapons-stolen-from-secunderabad-army-armoury/articleshow/133709176.cms"
+    "https://economictimes.indiatimes.com/news/india/agniveers-among-four-detained-after-12-weapons-stolen-from-secunderabad-army-armoury/articleshow/133709176.cms",
+    "https://www.playstationlifestyle.net/2026/09/03/playstation-state-of-play-livestream-september-2026",
+    "https://www.electronicpaymentsinternational.com/news/visa-upgrades-a2a-protect",
+    "https://djmag.com/news/armin-van-buuren-and-laidback-luke-join-responsible-ai-music-company-moises-advisors"
   ],
-  "last_run_at": "2026-09-03T12:33:50.203664+00:00",
+  "last_run_at": "2026-09-04T12:28:04.968469+00:00",
   "schema_version": 2
 }
