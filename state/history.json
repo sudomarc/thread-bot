@@ -16,14 +16,11 @@
     "group_chat_explainer",
     "doomscroll_news",
     "controller_rage",
-    "backlog_shame"
+    "backlog_shame",
+    "release_delay_pain",
+    "spec_sheet_nerd"
   ],
   "recent_post_titles": [
-    "Ronaldo shows up at Esports World Cup, Al Nassr fans hold breath",
-    "Alibaba drops $10.2B on AI expansion via HK share placement",
-    "Reddit gets a production-grade MCP server — open source, on PyPI",
-    "Bought three games in the sale. Played zero. Backlog now has gravity.",
-    "Game delayed again. Roadmap updated. Trailer re-cut. Hype put on ice.",
     "GTA 6’s Indian price tag is out",
     "When a game’s launch keeps slipping",
     "Hugging Face reportedly up for $13bn sale",
@@ -78,7 +75,12 @@
     "Visa's new shield aims to freeze fraud mid-transaction",
     "EDM legends join the 'responsible' AI music wave",
     "My thumb is sore and my pride is broken",
-    "Just bought another game, backlog still winning"
+    "Just bought another game, backlog still winning",
+    "Tesla’s Wheel‑Less Cybercab Hits Austin, a Year Late",
+    "Free PS5 Game Drops With Full Trophy Set",
+    "Trezor Breach Expands to 67K More Users",
+    "Another one bites the dust: game delayed again",
+    "Spec sheet nerd syndrome: memorizing numbers I’ll never use"
   ],
   "seen_article_urls": [
     "https://torrentfreak.com/take-two-expands-gta-6-leak-hunt-with-dmca-subpoenas/",
@@ -230,8 +232,11 @@
     "https://economictimes.indiatimes.com/news/india/agniveers-among-four-detained-after-12-weapons-stolen-from-secunderabad-army-armoury/articleshow/133709176.cms",
     "https://www.playstationlifestyle.net/2026/09/03/playstation-state-of-play-livestream-september-2026",
     "https://www.electronicpaymentsinternational.com/news/visa-upgrades-a2a-protect",
-    "https://djmag.com/news/armin-van-buuren-and-laidback-luke-join-responsible-ai-music-company-moises-advisors"
+    "https://djmag.com/news/armin-van-buuren-and-laidback-luke-join-responsible-ai-music-company-moises-advisors",
+    "https://news.livedoor.com/article/detail/32244154",
+    "https://www.playstationlifestyle.net/2026/09/04/free-ps5-game-with-trophies-fortress-merge",
+    "https://decrypt.co/377389/67000-more-trezor-customers-exposed-as-data-breach-widens"
   ],
-  "last_run_at": "2026-09-04T12:28:04.968469+00:00",
+  "last_run_at": "2026-09-05T11:36:00.149663+00:00",
   "schema_version": 2
 }
