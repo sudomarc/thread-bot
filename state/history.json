@@ -18,14 +18,11 @@
     "controller_rage",
     "backlog_shame",
     "release_delay_pain",
-    "spec_sheet_nerd"
+    "spec_sheet_nerd",
+    "preorder_regret",
+    "leak_spoiler_avoid"
   ],
   "recent_post_titles": [
-    "GTA 6’s Indian price tag is out",
-    "When a game’s launch keeps slipping",
-    "Hugging Face reportedly up for $13bn sale",
-    "CelcomDigi launches voice firewall to block scam calls",
-    "Doomscrolling tech news while waiting for the next big thing",
     "MiniOrange SAML flaw puts WordPress admins at risk",
     "PENGU token surges 62% on IPO speculation",
     "Abound adopts Monad for next growth phase",
@@ -80,7 +77,12 @@
     "Free PS5 Game Drops With Full Trophy Set",
     "Trezor Breach Expands to 67K More Users",
     "Another one bites the dust: game delayed again",
-    "Spec sheet nerd syndrome: memorizing numbers I’ll never use"
+    "Spec sheet nerd syndrome: memorizing numbers I’ll never use",
+    "New PyPI tool \"mesk\" simplifies hardware control for next-gen platforms",
+    "Gen.G Esports shocks LCK giants HLE, secures spot in Grand Finals",
+    "Why gamers are fleeing Nvidia for AMD in droves",
+    "That preorder for the “exclusive” edition? Still sitting in my backlog.",
+    "Avoiding leaks feels like solving a Rubik’s Cube blindfolded."
   ],
   "seen_article_urls": [
     "https://torrentfreak.com/take-two-expands-gta-6-leak-hunt-with-dmca-subpoenas/",
@@ -235,8 +237,11 @@
     "https://djmag.com/news/armin-van-buuren-and-laidback-luke-join-responsible-ai-music-company-moises-advisors",
     "https://news.livedoor.com/article/detail/32244154",
     "https://www.playstationlifestyle.net/2026/09/04/free-ps5-game-with-trophies-fortress-merge",
-    "https://decrypt.co/377389/67000-more-trezor-customers-exposed-as-data-breach-widens"
+    "https://decrypt.co/377389/67000-more-trezor-customers-exposed-as-data-breach-widens",
+    "https://pypi.org/project/mesk",
+    "https://cryptobriefing.com/geng-defeats-hle-lck-grand-finals",
+    "https://www.bgr.com/2248843/switching-nvidia-to-amd-unexpected-reasons"
   ],
-  "last_run_at": "2026-09-05T11:36:00.149663+00:00",
+  "last_run_at": "2026-09-06T11:55:23.039318+00:00",
   "schema_version": 2
 }
