@@ -20,14 +20,10 @@
     "release_delay_pain",
     "spec_sheet_nerd",
     "preorder_regret",
-    "leak_spoiler_avoid"
+    "leak_spoiler_avoid",
+    "beta_tester_unpaid"
   ],
   "recent_post_titles": [
-    "MiniOrange SAML flaw puts WordPress admins at risk",
-    "PENGU token surges 62% on IPO speculation",
-    "Abound adopts Monad for next growth phase",
-    "Doomscrolling is a habit, not a choice",
-    "Lag doesn't kill your aim, your temper does",
     "Whipar lands on PyPI",
     "Spider-Sense for gamers just arrived",
     "White House prepares water shield",
@@ -82,7 +78,12 @@
     "Gen.G Esports shocks LCK giants HLE, secures spot in Grand Finals",
     "Why gamers are fleeing Nvidia for AMD in droves",
     "That preorder for the “exclusive” edition? Still sitting in my backlog.",
-    "Avoiding leaks feels like solving a Rubik’s Cube blindfolded."
+    "Avoiding leaks feels like solving a Rubik’s Cube blindfolded.",
+    "FCC Just Banned Foreign Robot Vacuums. Here's What That Actually Means.",
+    "DLSS 5 Just Melted an RTX 5090 Connector During Testing",
+    "Kenya Bet Graduates on Gig Work in 2022. ChatGPT Launched That Same Year.",
+    "Every App Now Claims It Has AI. I Just Want My Apps Back.",
+    "I've Been Testing Beta Software for Free. My Receipt Says Thanks, Zero Dollars."
   ],
   "seen_article_urls": [
     "https://torrentfreak.com/take-two-expands-gta-6-leak-hunt-with-dmca-subpoenas/",
@@ -240,8 +241,11 @@
     "https://decrypt.co/377389/67000-more-trezor-customers-exposed-as-data-breach-widens",
     "https://pypi.org/project/mesk",
     "https://cryptobriefing.com/geng-defeats-hle-lck-grand-finals",
-    "https://www.bgr.com/2248843/switching-nvidia-to-amd-unexpected-reasons"
+    "https://www.bgr.com/2248843/switching-nvidia-to-amd-unexpected-reasons",
+    "https://uk.pcmag.com/robot-vacuums/167117/should-you-buy-a-robot-vacuum-right-now-heres-what-the-fcc-ban-means-for-you",
+    "https://www.techpowerup.com/352412/dlss-5-testing-ends-in-a-melted-rtx-5090-connector-power-shoots-past-600-w",
+    "https://thenextweb.com/news/kenya-essay-writing-industry-ai-gig-work-collapse"
   ],
-  "last_run_at": "2026-09-06T11:55:23.039318+00:00",
+  "last_run_at": "2026-09-07T13:57:19.774185+00:00",
   "schema_version": 2
 }
