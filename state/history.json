@@ -24,11 +24,6 @@
     "beta_tester_unpaid"
   ],
   "recent_post_titles": [
-    "Whipar lands on PyPI",
-    "Spider-Sense for gamers just arrived",
-    "White House prepares water shield",
-    "Spec-sheet scrubbing fails me",
-    "Pedestal syndrome takes hold",
     "GTA VI’s extended look drops, and it’s gorgeous",
     "Trump weighs semiconductor tariffs amid data‑center push",
     "OpenAI signs 116 groups for AI‑cyber defense pact",
@@ -83,7 +78,12 @@
     "DLSS 5 Just Melted an RTX 5090 Connector During Testing",
     "Kenya Bet Graduates on Gig Work in 2022. ChatGPT Launched That Same Year.",
     "Every App Now Claims It Has AI. I Just Want My Apps Back.",
-    "I've Been Testing Beta Software for Free. My Receipt Says Thanks, Zero Dollars."
+    "I've Been Testing Beta Software for Free. My Receipt Says Thanks, Zero Dollars.",
+    "Capcom just resurrected Onimusha and it sold like hotcakes.",
+    "DLSS 5 is a frame-rate killer, tests confirm.",
+    "Another AI coding assistant desktop app just dropped.",
+    "Preordering hardware feels like a gamble that never pays off.",
+    "Working in tech doesn't stop you from reusing \"password123\"."
   ],
   "seen_article_urls": [
     "https://torrentfreak.com/take-two-expands-gta-6-leak-hunt-with-dmca-subpoenas/",
@@ -244,8 +244,11 @@
     "https://www.bgr.com/2248843/switching-nvidia-to-amd-unexpected-reasons",
     "https://uk.pcmag.com/robot-vacuums/167117/should-you-buy-a-robot-vacuum-right-now-heres-what-the-fcc-ban-means-for-you",
     "https://www.techpowerup.com/352412/dlss-5-testing-ends-in-a-melted-rtx-5090-connector-power-shoots-past-600-w",
-    "https://thenextweb.com/news/kenya-essay-writing-industry-ai-gig-work-collapse"
+    "https://thenextweb.com/news/kenya-essay-writing-industry-ai-gig-work-collapse",
+    "https://www.tweaktown.com/news/113437/capcoms-new-onimusha-way-of-the-sword-hits-platinum-sales-on-day-one/index.html",
+    "https://www.eurogamer.net/nvidia-dlss-5-tested-frame-rates",
+    "https://pypi.org/project/polyglot-ai/0.18.0"
   ],
-  "last_run_at": "2026-09-07T13:57:19.774185+00:00",
+  "last_run_at": "2026-09-08T12:35:33.853185+00:00",
   "schema_version": 2
 }
