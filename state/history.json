@@ -24,11 +24,6 @@
     "beta_tester_unpaid"
   ],
   "recent_post_titles": [
-    "GTA VI’s extended look drops, and it’s gorgeous",
-    "Trump weighs semiconductor tariffs amid data‑center push",
-    "OpenAI signs 116 groups for AI‑cyber defense pact",
-    "Every gadget now screams ‘AI‑powered’—and I’m tired",
-    "Preordered that limited‑edition controller, now it’s gathering dust",
     "Nvidia vs Broadcom: The Core Vulnerability Showdown",
     "AI agents committing crimes on your behalf—legally, whose problem is it?",
     "a16z just dropped $1.1B on the 'Machine Age' fund",
@@ -83,7 +78,12 @@
     "DLSS 5 is a frame-rate killer, tests confirm.",
     "Another AI coding assistant desktop app just dropped.",
     "Preordering hardware feels like a gamble that never pays off.",
-    "Working in tech doesn't stop you from reusing \"password123\"."
+    "Working in tech doesn't stop you from reusing \"password123\".",
+    "The Forgotten Google Workspace Access That Keeps You Exposed",
+    "Henry Ford's Take on Future-Proofing",
+    "Lenovo's 165Hz Legion Tablet Hits a Record Low",
+    "The Tech Industry's Worst-Kept Secret",
+    "Paper Credentials Don't Equal Real Skill"
   ],
   "seen_article_urls": [
     "https://torrentfreak.com/take-two-expands-gta-6-leak-hunt-with-dmca-subpoenas/",
@@ -247,8 +247,11 @@
     "https://thenextweb.com/news/kenya-essay-writing-industry-ai-gig-work-collapse",
     "https://www.tweaktown.com/news/113437/capcoms-new-onimusha-way-of-the-sword-hits-platinum-sales-on-day-one/index.html",
     "https://www.eurogamer.net/nvidia-dlss-5-tested-frame-rates",
-    "https://pypi.org/project/polyglot-ai/0.18.0"
+    "https://pypi.org/project/polyglot-ai/0.18.0",
+    "https://www.bleepingcomputer.com/news/security/webinar-the-forgotten-google-workspace-access-that-can-lead-to-a-breach",
+    "https://economictimes.indiatimes.com/news/international/us/quote-of-the-day-by-henry-ford-if-you-dont-think-of-the-future-you-wont-have-one-life-lessons-from-inspiring-quote-on-strategic-thinking-goal-setting-adaptability-complacency-and-challenges/articleshow/133925215.cms",
+    "http://9to5toys.com/2026/09/08/lenovo-165hz-legion-gaming-tablet-with-snapdragon-8-elite-new-all-time-low"
   ],
-  "last_run_at": "2026-09-08T12:35:33.853185+00:00",
+  "last_run_at": "2026-09-09T12:41:50.210862+00:00",
   "schema_version": 2
 }
