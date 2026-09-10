@@ -24,11 +24,6 @@
     "beta_tester_unpaid"
   ],
   "recent_post_titles": [
-    "Nvidia vs Broadcom: The Core Vulnerability Showdown",
-    "AI agents committing crimes on your behalf—legally, whose problem is it?",
-    "a16z just dropped $1.1B on the 'Machine Age' fund",
-    "Opening patch notes at 2 AM hoping YOUR bug finally got fixed",
-    "Does Computer Science actually need computers? (The answer will surprise you)",
     "Samsung’s Gamescom booth is basically a playground for your wallet",
     "OpenAI’s HuggingFace mess gets weirder by the hour",
     "Every trash can is suddenly \"AI-powered\"",
@@ -83,7 +78,12 @@
     "Henry Ford's Take on Future-Proofing",
     "Lenovo's 165Hz Legion Tablet Hits a Record Low",
     "The Tech Industry's Worst-Kept Secret",
-    "Paper Credentials Don't Equal Real Skill"
+    "Paper Credentials Don't Equal Real Skill",
+    "India's FRI System Blocks $640M in Cyber Fraud—Here’s How It Works",
+    "Goodram PX700 2TB SSD: Budget Gaming Powerhouse or Paper Tiger?",
+    "Thrive’s Zero Trust Overhaul: Elastic + Cato Networks Take the Wheel",
+    "Password hypocrisy: Why do we still use “Password123” at 3 a.m.?",
+    "Spec sheet nerd? You’re not alone (but maybe delusional)"
   ],
   "seen_article_urls": [
     "https://torrentfreak.com/take-two-expands-gta-6-leak-hunt-with-dmca-subpoenas/",
@@ -250,8 +250,11 @@
     "https://pypi.org/project/polyglot-ai/0.18.0",
     "https://www.bleepingcomputer.com/news/security/webinar-the-forgotten-google-workspace-access-that-can-lead-to-a-breach",
     "https://economictimes.indiatimes.com/news/international/us/quote-of-the-day-by-henry-ford-if-you-dont-think-of-the-future-you-wont-have-one-life-lessons-from-inspiring-quote-on-strategic-thinking-goal-setting-adaptability-complacency-and-challenges/articleshow/133925215.cms",
-    "http://9to5toys.com/2026/09/08/lenovo-165hz-legion-gaming-tablet-with-snapdragon-8-elite-new-all-time-low"
+    "http://9to5toys.com/2026/09/08/lenovo-165hz-legion-gaming-tablet-with-snapdragon-8-elite-new-all-time-low",
+    "https://www.livemint.com/money/personal-finance/cyber-fraud-stopped-at-source-how-india-s-fri-system-saved-5-000-crore-and-6-steps-to-protect-your-money-11788951751840.html",
+    "https://www.tomshardware.com/pc-components/ssds/goodram-px700-2tb-ssd-review",
+    "https://financialpost.com/globe-newswire/thrive-advances-nextgen-platform-with-enhanced-security-architecture-powered-by-elastic-and-cato-networks"
   ],
-  "last_run_at": "2026-09-09T12:41:50.210862+00:00",
+  "last_run_at": "2026-09-10T12:41:17.479337+00:00",
   "schema_version": 2
 }
