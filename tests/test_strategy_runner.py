@@ -71,6 +71,17 @@ class StrategyRunnerTests(unittest.TestCase):
         self.assertEqual(row["normalized"]["reply_rate"], 0.02)
         self.assertEqual(len(state["performance_history"]), 1)
 
+    def test_run_pipeline_retries_semantic_fact_validation_failure(self):
+        first_error = content_engine.PipelineError("Unknown factual status: ''")
+        expected = {"decision": "PUBLISH"}
+        with patch.object(strategy_runner, "evaluate_topic", side_effect=[first_error, expected]) as evaluator:
+            result = strategy_runner._run_pipeline("Topic", {"title": "Story"}, "Format: opinion.")
+        self.assertEqual(result, expected)
+        self.assertEqual(evaluator.call_count, 2)
+        retry_brief = evaluator.call_args_list[1].kwargs["editorial_brief"]
+        self.assertIn("VALIDATION RETRY", retry_brief)
+        self.assertIn("Never leave status blank", retry_brief)
+
     def test_generate_strategy_threads_runs_fact_angle_and_draft_stages(self):
         articles = [{
             "category": "gaming",
