@@ -1,8 +1,7 @@
 from datetime import datetime, timezone
-import re
 
 import bot
-from content_engine import evaluate_topic, render_report, performance_row, normalized_metrics
+from content_engine import evaluate_topic, normalized_metrics, performance_row, render_report
 
 
 STRATEGY_TARGETS = {
@@ -62,16 +61,6 @@ def _topic_from_slot(recipe, article, relatable_topic):
     return f"Format: {kind}. Hook direction: {hook}. Editorial instruction: {instruction}.\nTopic: {topic}"
 
 
-def _validate_selected_post(result):
-    decision = result.get("decision")
-    draft = str(result.get("draft", "")).strip()
-    if decision not in {"PUBLISH", "REWRITE", "REJECT"}:
-        raise ValueError(f"Invalid final decision: {decision}")
-    if decision == "PUBLISH" and not draft:
-        raise ValueError("Publish decision requires a non-empty draft")
-    return True
-
-
 def record_performance(state, data):
     row = performance_row(data)
     row["normalized"] = normalized_metrics(row)
@@ -79,6 +68,10 @@ def record_performance(state, data):
     history.append(row)
     state["performance_history"] = history[-200:]
     return row
+
+
+def _run_pipeline(topic, article):
+    return evaluate_topic(topic, [article], bot.openrouter_chat)
 
 
 def generate_strategy_threads(articles, state):
@@ -89,14 +82,17 @@ def generate_strategy_threads(articles, state):
     relatable_topic = _fresh_topic(state) if preferred_category is None else None
     topic = _topic_from_slot(recipe, article, relatable_topic)
 
-    result = evaluate_topic(topic, [article], bot.openrouter_chat)
-    _validate_selected_post(result)
+    result = _run_pipeline(topic, article)
+    if result.get("decision") == "REWRITE":
+        rewrite_topic = topic + "\nRewrite pass: preserve the strongest defensible claim, increase specificity and tension, and remove generic wording."
+        result = _run_pipeline(rewrite_topic, article)
+    if result.get("decision") != "PUBLISH":
+        with open(PIPELINE_REPORT_PATH, "w", encoding="utf-8") as handle:
+            handle.write(render_report(result))
+        raise RuntimeError(f"Content pipeline decision: {result.get('decision', 'UNKNOWN')}")
 
     with open(PIPELINE_REPORT_PATH, "w", encoding="utf-8") as handle:
         handle.write(render_report(result))
-
-    if result["decision"] == "REJECT":
-        raise RuntimeError("Content pipeline rejected the selected topic")
 
     post = {
         "number": 1,
