@@ -3,6 +3,7 @@ import unittest
 from content_engine import (
     IDEA_WEIGHTS,
     QUALITY_WEIGHTS,
+    extract_json,
     factuality_gate,
     final_decision,
     final_score,
@@ -78,6 +79,10 @@ class ContentEngineTests(unittest.TestCase):
         )
         self.assertFalse(result["genericity"])
         self.assertFalse(result["all_pass"])
+
+    def test_extract_json_accepts_surrounding_prose(self):
+        payload = extract_json("Here is the requested JSON:\n{\"claims\": []}\nDone.")
+        self.assertEqual(payload, {"claims": []})
 
     def test_performance_metrics_are_normalized(self):
         row = performance_row({
