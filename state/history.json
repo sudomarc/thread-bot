@@ -24,11 +24,6 @@
     "beta_tester_unpaid"
   ],
   "recent_post_titles": [
-    "Samsung’s Gamescom booth is basically a playground for your wallet",
-    "OpenAI’s HuggingFace mess gets weirder by the hour",
-    "Every trash can is suddenly \"AI-powered\"",
-    "\"Elevated Digital Marketing\" turns out to be just elevated excuses",
-    "triage-lens 0.4.1 just made vulnerability sorting way less painful",
     "Citrix just bolted a tiny Linux OS onto Windows",
     "Gamescom Congress 2026 hit a new attendance record",
     "pawnlogic 0.3.5 just dropped on PyPI",
@@ -83,7 +78,12 @@
     "Goodram PX700 2TB SSD: Budget Gaming Powerhouse or Paper Tiger?",
     "Thrive’s Zero Trust Overhaul: Elastic + Cato Networks Take the Wheel",
     "Password hypocrisy: Why do we still use “Password123” at 3 a.m.?",
-    "Spec sheet nerd? You’re not alone (but maybe delusional)"
+    "Spec sheet nerd? You’re not alone (but maybe delusional)",
+    "Court throws out AI video probe—because it's obviously ridiculous",
+    "Apple’s A20 Pro chip bets big on on‑device AI",
+    "Barry Melrose, the ESPN hockey guru, passes at 70",
+    "That feeling when your code looks perfect but you’re still a fraud",
+    "Controller rage after a lag spike decides the match"
   ],
   "seen_article_urls": [
     "https://torrentfreak.com/take-two-expands-gta-6-leak-hunt-with-dmca-subpoenas/",
@@ -253,8 +253,11 @@
     "http://9to5toys.com/2026/09/08/lenovo-165hz-legion-gaming-tablet-with-snapdragon-8-elite-new-all-time-low",
     "https://www.livemint.com/money/personal-finance/cyber-fraud-stopped-at-source-how-india-s-fri-system-saved-5-000-crore-and-6-steps-to-protect-your-money-11788951751840.html",
     "https://www.tomshardware.com/pc-components/ssds/goodram-px700-2tb-ssd-review",
-    "https://financialpost.com/globe-newswire/thrive-advances-nextgen-platform-with-enhanced-security-architecture-powered-by-elastic-and-cato-networks"
+    "https://financialpost.com/globe-newswire/thrive-advances-nextgen-platform-with-enhanced-security-architecture-powered-by-elastic-and-cato-networks",
+    "https://reason.com/volokh/2026/09/10/court-blocks-investigation-of-ai-generated-video-about-vermont-political-candidates-because-video-is-obviously-ridiculous",
+    "https://uk.pcmag.com/ai/167225/a20-pro-iphone-chip-explained-apple-event",
+    "https://slashdot.org/firehose.pl?op=view&amp%3Bid=185582850"
   ],
-  "last_run_at": "2026-09-10T12:41:17.479337+00:00",
+  "last_run_at": "2026-09-11T12:33:57.163611+00:00",
   "schema_version": 2
 }
