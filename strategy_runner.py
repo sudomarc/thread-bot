@@ -78,8 +78,18 @@ def record_performance(state, data):
     return row
 
 
+def _resilient_openrouter_chat(prompt, timeout=60):
+    try:
+        return bot.openrouter_chat(prompt, timeout=timeout)
+    except RuntimeError as exc:
+        if str(exc) != "OpenRouter returned empty content":
+            raise
+        print("OpenRouter returned an empty payload; retrying once within the provider resilience budget.")
+        return bot.openrouter_chat(prompt, timeout=timeout)
+
+
 def _run_pipeline(topic, article, editorial_brief=""):
-    return evaluate_topic(topic, [article], bot.openrouter_chat, editorial_brief=editorial_brief)
+    return evaluate_topic(topic, [article], _resilient_openrouter_chat, editorial_brief=editorial_brief)
 
 
 def generate_strategy_threads(articles, state):
