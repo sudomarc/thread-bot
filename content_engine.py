@@ -33,6 +33,7 @@ ANGLE_TYPES = [
 
 FACT_STATUSES = {"VERIFIED", "PARTIALLY_VERIFIED", "UNVERIFIED", "CONTRADICTED", "OPINION", "PREDICTION"}
 FINAL_DECISIONS = {"PUBLISH", "REWRITE", "REJECT"}
+EVIDENCE_REQUIRED_STATUSES = {"VERIFIED", "PARTIALLY_VERIFIED", "UNVERIFIED", "CONTRADICTED"}
 
 
 class PipelineError(ValueError):
@@ -49,10 +50,32 @@ def _finite_score(value: Any) -> float:
     return score
 
 
+def _finite_percent_score(value: Any, name: str) -> float:
+    try:
+        score = float(value)
+    except (TypeError, ValueError):
+        raise PipelineError(f"Invalid {name}: {value!r}")
+    if not math.isfinite(score) or not 0 <= score <= 100:
+        raise PipelineError(f"{name} must be finite and in [0, 100]: {value!r}")
+    return score
+
+
+def _finite_confidence(value: Any) -> float:
+    try:
+        confidence = float(value)
+    except (TypeError, ValueError):
+        raise PipelineError(f"Invalid fact confidence: {value!r}")
+    if not math.isfinite(confidence) or not 0 <= confidence <= 1:
+        raise PipelineError(f"fact_confidence must be finite and in [0, 1]: {value!r}")
+    return confidence
+
+
 def weighted_score(values: Mapping[str, Any], weights: Mapping[str, int]) -> float:
     missing = [name for name in weights if name not in values]
     if missing:
         raise PipelineError(f"Missing score dimensions: {', '.join(missing)}")
+    if not weights or sum(weights.values()) <= 0:
+        raise PipelineError("Score weights must have a positive total")
     total_weight = sum(weights.values())
     return round(sum(_finite_score(values[name]) * weight for name, weight in weights.items()) / total_weight * 10, 1)
 
@@ -66,7 +89,8 @@ def quality_score(values: Mapping[str, Any]) -> float:
 
 
 def idea_decision(score: float, values: Mapping[str, Any], fact_confidence: float = 1.0) -> str:
-    score = float(score)
+    score = _finite_percent_score(score, "idea_score")
+    fact_confidence = _finite_confidence(fact_confidence)
     originality = _finite_score(values["originality"])
     hook = _finite_score(values["scroll_stop"])
     debate = _finite_score(values["debate_potential"])
@@ -91,10 +115,15 @@ def factuality_gate(claims: Sequence[Mapping[str, Any]]) -> tuple[bool, float, s
     confidences = []
     central_statuses = []
     for claim in claims:
+        if not isinstance(claim, Mapping):
+            raise PipelineError("Each factual claim must be an object")
         status = str(claim.get("status", "")).upper().strip()
         if status not in FACT_STATUSES:
             raise PipelineError(f"Unknown factual status: {status!r}")
         confidence = _finite_score(claim.get("confidence", 0)) / 10
+        evidence = str(claim.get("evidence", "")).strip()
+        if status in EVIDENCE_REQUIRED_STATUSES and not evidence:
+            return False, confidence, "Factual claim is missing supporting evidence."
         confidences.append(confidence)
         if claim.get("central", False):
             central_statuses.append(status)
@@ -109,14 +138,20 @@ def factuality_gate(claims: Sequence[Mapping[str, Any]]) -> tuple[bool, float, s
 
 
 def final_score(idea: float, quality: float, fact_confidence: float, stress_pass: bool) -> float:
-    if not 0 <= fact_confidence <= 1:
-        raise PipelineError("fact_confidence must be in [0, 1]")
+    idea = _finite_percent_score(idea, "idea_score")
+    quality = _finite_percent_score(quality, "quality_score")
+    fact_confidence = _finite_confidence(fact_confidence)
     if not stress_pass or fact_confidence < 0.7:
         return 0.0
     return round(idea * 0.55 + quality * 0.45, 1)
 
 
 def final_decision(idea: float, quality: float, fact_confidence: float, stress: Mapping[str, Any]) -> str:
+    idea = _finite_percent_score(idea, "idea_score")
+    quality = _finite_percent_score(quality, "quality_score")
+    fact_confidence = _finite_confidence(fact_confidence)
+    if not isinstance(stress, Mapping):
+        raise PipelineError("stress must be an object")
     passed = bool(stress.get("all_pass", False))
     if fact_confidence < 0.7 or not passed:
         return "REJECT" if fact_confidence < 0.7 else "REWRITE"
@@ -151,14 +186,20 @@ def extract_json(raw: str) -> Any:
 
 
 def validate_angles(angles: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
+    if not isinstance(angles, Sequence) or isinstance(angles, (str, bytes)):
+        raise PipelineError("Angles must be a JSON array")
     if len(angles) < 8:
         raise PipelineError(f"Expected at least 8 angles, got {len(angles)}")
     normalized = []
     seen_claims = set()
     for angle in angles:
+        if not isinstance(angle, Mapping):
+            raise PipelineError("Each angle must be a JSON object")
         required = ("angle", "core_claim", "why_it_matters", "target_reaction", "supporting_facts", "potential_counterargument")
         if any(not str(angle.get(key, "")).strip() for key in required):
             raise PipelineError("Angle missing required fields")
+        if not isinstance(angle.get("supporting_facts"), Sequence) or isinstance(angle.get("supporting_facts"), (str, bytes)):
+            raise PipelineError("Angle supporting_facts must be an array")
         key = re.sub(r"\W+", " ", str(angle["core_claim"]).lower()).strip()
         if key in seen_claims:
             continue
@@ -170,10 +211,38 @@ def validate_angles(angles: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]
 
 
 def stress_test(draft: str, *, scroll_answer: str, reply_example: str, counterargument: str, generic: bool, quotable_line: str, claims: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
-    claim_ok = all(str(c.get("status", "")).upper() in {"VERIFIED", "PARTIALLY_VERIFIED", "OPINION", "PREDICTION"} and str(c.get("evidence", "")).strip() for c in claims)
-    result = {"scroll": bool(scroll_answer.strip()), "reply": bool(reply_example.strip()), "counterargument": bool(counterargument.strip()), "genericity": not generic, "quotability": bool(quotable_line.strip()), "claim_integrity": claim_ok}
+    normalized_draft = str(draft or "").strip()
+    claim_ok = bool(claims) and all(
+        isinstance(claim, Mapping)
+        and str(claim.get("status", "")).upper() in {"VERIFIED", "PARTIALLY_VERIFIED", "OPINION", "PREDICTION"}
+        and str(claim.get("evidence", "")).strip()
+        for claim in claims
+    )
+    result = {
+        "draft_present": bool(normalized_draft),
+        "scroll": bool(scroll_answer.strip()),
+        "reply": bool(reply_example.strip()),
+        "counterargument": bool(counterargument.strip()),
+        "genericity": not generic,
+        "quotability": bool(quotable_line.strip()),
+        "claim_integrity": claim_ok,
+    }
     result["all_pass"] = all(result.values())
     return result
+
+
+def _metric_int(value: Any, name: str) -> int:
+    if isinstance(value, bool):
+        raise PipelineError(f"Invalid metric {name}: {value!r}")
+    if isinstance(value, float) and not value.is_integer():
+        raise PipelineError(f"Invalid metric {name}: {value!r}")
+    try:
+        parsed = int(value)
+    except (TypeError, ValueError, OverflowError):
+        raise PipelineError(f"Invalid metric {name}: {value!r}")
+    if parsed < 0:
+        raise PipelineError(f"Invalid metric {name}: {value!r}")
+    return parsed
 
 
 def performance_row(data: Mapping[str, Any]) -> dict[str, Any]:
@@ -182,38 +251,60 @@ def performance_row(data: Mapping[str, Any]) -> dict[str, Any]:
     if missing:
         raise PipelineError(f"Performance row missing: {', '.join(missing)}")
     row = dict(data)
+    for name in ("post_id", "date", "topic", "angle"):
+        if not str(row.get(name, "")).strip():
+            raise PipelineError(f"Performance field {name} must not be empty")
+    for name in ("idea_score", "quality_score", "final_score"):
+        row[name] = _finite_percent_score(row[name], name)
     for metric in ("impressions", "views", "likes", "replies", "reposts", "quotes", "profile_visits", "follows"):
         value = row.get(metric)
         if value is None:
             continue
-        try:
-            row[metric] = max(0, int(value))
-        except (TypeError, ValueError):
-            raise PipelineError(f"Invalid metric {metric}: {value!r}")
+        row[metric] = _metric_int(value, metric)
     return row
 
 
 def normalized_metrics(row: Mapping[str, Any]) -> dict[str, float]:
-    denominator = max(1, int(row.get("views", 0) or row.get("impressions", 0) or 0))
-    views = max(1, int(row.get("views", 0) or 0))
+    raw_views = _metric_int(row.get("views", 0) or 0, "views")
+    raw_impressions = _metric_int(row.get("impressions", 0) or 0, "impressions")
+    denominator = max(1, raw_views or raw_impressions)
+    replies = _metric_int(row.get("replies", 0) or 0, "replies")
+    reposts = _metric_int(row.get("reposts", 0) or 0, "reposts")
+    likes = _metric_int(row.get("likes", 0) or 0, "likes")
+    quotes = _metric_int(row.get("quotes", 0) or 0, "quotes")
+    follows = _metric_int(row.get("follows", 0) or 0, "follows")
+    follow_conversion = round(follows / raw_views, 4) if raw_views else 0.0
     return {
-        "reply_rate": round(int(row.get("replies", 0)) / denominator, 4),
-        "repost_rate": round(int(row.get("reposts", 0)) / denominator, 4),
-        "like_rate": round(int(row.get("likes", 0)) / denominator, 4),
-        "follow_conversion": round(int(row.get("follows", 0)) / views, 4),
-        "engagement_rate": round((int(row.get("likes", 0)) + int(row.get("replies", 0)) + int(row.get("reposts", 0)) + int(row.get("quotes", 0))) / denominator, 4),
+        "reply_rate": round(replies / denominator, 4),
+        "repost_rate": round(reposts / denominator, 4),
+        "like_rate": round(likes / denominator, 4),
+        "follow_conversion": follow_conversion,
+        "engagement_rate": round((likes + replies + reposts + quotes) / denominator, 4),
     }
 
 
-def run_llm_json(openrouter_chat: Callable[[str], str], prompt: str) -> Any:
-    try:
-        return extract_json(openrouter_chat(prompt))
-    except PipelineError as first_error:
-        retry_prompt = f"{prompt}\n\nCRITICAL OUTPUT RULE: Return ONLY one valid JSON object. No markdown, no explanation, no prose before or after the JSON."
+def _require_object(value: Any, name: str) -> Mapping[str, Any]:
+    if not isinstance(value, Mapping):
+        raise PipelineError(f"Model returned invalid {name}: expected a JSON object")
+    return value
+
+
+def _require_sequence(value: Any, name: str) -> Sequence[Any]:
+    if not isinstance(value, Sequence) or isinstance(value, (str, bytes)):
+        raise PipelineError(f"Model returned invalid {name}: expected a JSON array")
+    return value
+
+
+def run_llm_json(openrouter_chat: Callable[[str], str], prompt: str) -> Mapping[str, Any]:
+    first_error = None
+    for attempt in range(2):
         try:
-            return extract_json(openrouter_chat(retry_prompt))
-        except PipelineError:
-            raise first_error
+            parsed = extract_json(openrouter_chat(prompt if attempt == 0 else f"{prompt}\n\nCRITICAL OUTPUT RULE: Return ONLY one valid JSON object. No markdown, no explanation, no prose before or after the JSON."))
+            return _require_object(parsed, "JSON payload")
+        except PipelineError as error:
+            if first_error is None:
+                first_error = error
+    raise first_error
 
 
 def build_fact_prompt(topic: str, sources: Sequence[Mapping[str, Any]]) -> str:
@@ -258,7 +349,7 @@ Avoid rage bait, engagement bait, fake certainty, invented numbers or quotes, ge
 
 def evaluate_topic(topic: str, sources: Sequence[Mapping[str, Any]], openrouter_chat: Callable[[str], str], *, max_angles: int = 8, editorial_brief: str = "") -> dict[str, Any]:
     fact_result = run_llm_json(openrouter_chat, build_fact_prompt(topic, sources))
-    claims = fact_result.get("claims", [])
+    claims = _require_sequence(fact_result.get("claims", []), "claims")
     fact_ok, fact_confidence, fact_reason = factuality_gate(claims)
     if not fact_ok:
         return {"topic": topic, "editorial_brief": editorial_brief, "fact_status": fact_result, "fact_confidence": fact_confidence, "fact_gate": fact_reason, "angles": [], "decision": "REJECT"}
@@ -267,8 +358,9 @@ def evaluate_topic(topic: str, sources: Sequence[Mapping[str, Any]], openrouter_
     angles = validate_angles(angle_result.get("angles", []))[:max_angles]
     scored = []
     for angle in angles:
-        score = idea_score(angle["scores"])
-        decision = idea_decision(score, angle["scores"], fact_confidence)
+        scores = _require_object(angle.get("scores", {}), "angle scores")
+        score = idea_score(scores)
+        decision = idea_decision(score, scores, fact_confidence)
         scored.append({**angle, "idea_score": score, "idea_decision": decision})
     scored.sort(key=lambda item: item["idea_score"], reverse=True)
     top = next((item for item in scored if item["idea_decision"] in {"EXCEPTIONAL", "STRONG", "PROMISING"}), None)
@@ -276,9 +368,9 @@ def evaluate_topic(topic: str, sources: Sequence[Mapping[str, Any]], openrouter_
         return {"topic": topic, "editorial_brief": editorial_brief, "fact_status": fact_result, "fact_confidence": fact_confidence, "fact_gate": fact_reason, "angles": scored, "decision": "REJECT"}
 
     draft_result = run_llm_json(openrouter_chat, build_draft_prompt(top, fact_result, sources, editorial_brief))
-    quality = quality_score(draft_result.get("quality", {}))
-    draft_claims = draft_result.get("claims", claims)
-    stress = draft_result.get("stress", {})
+    quality = quality_score(_require_object(draft_result.get("quality", {}), "quality"))
+    draft_claims = _require_sequence(draft_result.get("claims", claims), "draft claims")
+    stress = _require_object(draft_result.get("stress", {}), "stress test")
     stress_result = stress_test(str(draft_result.get("draft", "")), scroll_answer=str(stress.get("scroll_answer", "")), reply_example=str(stress.get("reply_example", "")), counterargument=str(stress.get("counterargument", "")), generic=bool(stress.get("generic", True)), quotable_line=str(stress.get("quotable_line", "")), claims=draft_claims)
     claim_ok, final_fact_confidence, final_fact_reason = factuality_gate(draft_claims)
     final = final_score(top["idea_score"], quality, final_fact_confidence, stress_result["all_pass"])
