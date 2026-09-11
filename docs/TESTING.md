@@ -24,6 +24,7 @@ The content engine should test:
 - malformed, fenced, and prose-wrapped LLM JSON;
 - wrong JSON top-level types;
 - missing or malformed nested arrays/objects;
+- missing required semantic fields such as factual claim status;
 - non-finite and out-of-range scores;
 - missing evidence for factual claims;
 - contradicted claims and unverified central claims;
@@ -35,7 +36,7 @@ The content engine should test:
 
 ## Network and provider failures
 
-Provider calls use bounded retries. Tests should cover retryable HTTP responses, exhausted retry budgets, malformed provider payloads, empty responses, and permanent failures. Retries must not turn a failed provider operation into a false success.
+Provider calls use bounded retries. Transport failures and malformed provider output may receive a single retry when the operation is side-effect free. Semantic validation failures such as a missing factual claim status are provider-output failures and must trigger the same bounded retry with a stricter output contract. A repeated semantic failure must still fail closed; retries must never convert invalid provider output into a false success.
 
 ## State and workflow verification
 
