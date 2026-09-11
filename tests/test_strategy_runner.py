@@ -82,6 +82,26 @@ class StrategyRunnerTests(unittest.TestCase):
         self.assertIn("VALIDATION RETRY", retry_brief)
         self.assertIn("Never leave status blank", retry_brief)
 
+    def test_angle_retry_brief_demands_material_diversity(self):
+        error = content_engine.PipelineError("Angles are repetitive; need at least 8 materially distinct angles")
+        brief = strategy_runner._retry_brief("Format: news_opinion.", error)
+        self.assertIn("ANGLE DIVERSITY RETRY", brief)
+        self.assertIn("at least 10 angles", brief)
+        self.assertIn("at least 8 different allowed angle types", brief)
+        self.assertIn("materially different core_claims", brief)
+        self.assertNotIn("Never leave status blank", brief)
+
+    def test_run_pipeline_does_not_mask_original_validation_failure_when_retry_hits_provider_error(self):
+        first_error = content_engine.PipelineError("Angles are repetitive; need at least 8 materially distinct angles")
+        provider_error = RuntimeError("OpenRouter HTTP 429: rate limit")
+        with patch.object(strategy_runner, "evaluate_topic", side_effect=[first_error, provider_error]) as evaluator:
+            with self.assertRaises(content_engine.PipelineError) as raised:
+                strategy_runner._run_pipeline("Topic", {"title": "Story"}, "Format: opinion.")
+        self.assertIn("Angles are repetitive", str(raised.exception))
+        self.assertIn("retry failed", str(raised.exception))
+        self.assertIn("rate limit", str(raised.exception))
+        self.assertEqual(evaluator.call_count, 2)
+
     def test_generate_strategy_threads_runs_fact_angle_and_draft_stages(self):
         articles = [{
             "category": "gaming",

@@ -78,21 +78,39 @@ def record_performance(state, data):
     return row
 
 
+def _retry_brief(editorial_brief, error):
+    message = str(error).lower()
+    if "angles are repetitive" in message or "expected at least 8 angles" in message:
+        return (
+            f"{editorial_brief} "
+            "ANGLE DIVERSITY RETRY: regenerate the angle pool from the same source facts. "
+            "Return at least 10 angles using at least 8 different allowed angle types. "
+            "The first 8 accepted angles must have different angle types and materially different core_claims. "
+            "Do not restate the same thesis with different wording. Vary the mechanism, stakeholder, consequence, "
+            "time horizon, incentive, behavior, trade-off, or question being explored. "
+            "Keep every supporting fact grounded in the supplied fact check/source material."
+        ).strip()
+    return (
+        f"{editorial_brief} "
+        "VALIDATION RETRY: the previous model response violated the required JSON/data contract. "
+        "Return every required field explicitly; for each factual claim, include claim, status, evidence, "
+        "confidence, and central. Never leave status blank. Do not omit required fields."
+    ).strip()
+
+
 def _run_pipeline(topic, article, editorial_brief=""):
     try:
         return evaluate_topic(topic, [article], bot.openrouter_chat_json, editorial_brief=editorial_brief)
     except PipelineError as first_error:
-        retry_brief = (
-            f"{editorial_brief} "
-            "VALIDATION RETRY: the previous model response violated the required JSON/data contract. "
-            "Return every required field explicitly; for each factual claim, include claim, status, evidence, "
-            "confidence, and central. Never leave status blank. Do not omit required fields."
-        ).strip()
+        retry_brief = _retry_brief(editorial_brief, first_error)
         print(f"Pipeline validation failed; retrying once: {type(first_error).__name__}: {first_error}")
         try:
             return evaluate_topic(topic, [article], bot.openrouter_chat_json, editorial_brief=retry_brief)
-        except PipelineError:
-            raise first_error
+        except Exception as retry_error:
+            raise PipelineError(
+                f"Pipeline validation failed: {first_error}; retry failed: "
+                f"{type(retry_error).__name__}: {retry_error}"
+            ) from retry_error
 
 
 def generate_strategy_threads(articles, state):
