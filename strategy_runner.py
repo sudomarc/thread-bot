@@ -80,7 +80,7 @@ def record_performance(state, data):
 
 def _run_pipeline(topic, article, editorial_brief=""):
     try:
-        return evaluate_topic(topic, [article], bot.openrouter_chat, editorial_brief=editorial_brief)
+        return evaluate_topic(topic, [article], bot.openrouter_chat_json, editorial_brief=editorial_brief)
     except PipelineError as first_error:
         retry_brief = (
             f"{editorial_brief} "
@@ -90,7 +90,7 @@ def _run_pipeline(topic, article, editorial_brief=""):
         ).strip()
         print(f"Pipeline validation failed; retrying once: {type(first_error).__name__}: {first_error}")
         try:
-            return evaluate_topic(topic, [article], bot.openrouter_chat, editorial_brief=retry_brief)
+            return evaluate_topic(topic, [article], bot.openrouter_chat_json, editorial_brief=retry_brief)
         except PipelineError:
             raise first_error
 

@@ -1,12 +1,44 @@
 import os
 import tempfile
 import unittest
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import bot
 
 
 class BotUnitTests(unittest.TestCase):
+    def test_openrouter_chat_json_mode_sends_response_format(self):
+        mock_response = MagicMock(status_code=200)
+        mock_response.json.return_value = {"choices": [{"message": {"content": '{"ok": true}'}}]}
+        with patch.object(bot, "OPENROUTER_API_KEY", "test-key"), \
+             patch.object(bot, "request_with_retries", return_value=mock_response) as mocked:
+            result = bot.openrouter_chat_json("prompt")
+        self.assertEqual(result, '{"ok": true}')
+        sent_payload = mocked.call_args.kwargs["json"]
+        self.assertEqual(sent_payload["response_format"], {"type": "json_object"})
+        self.assertEqual(sent_payload["temperature"], 0.4)
+
+    def test_openrouter_chat_plain_mode_omits_response_format(self):
+        mock_response = MagicMock(status_code=200)
+        mock_response.json.return_value = {"choices": [{"message": {"content": "plain text"}}]}
+        with patch.object(bot, "OPENROUTER_API_KEY", "test-key"), \
+             patch.object(bot, "request_with_retries", return_value=mock_response) as mocked:
+            bot.openrouter_chat("prompt")
+        sent_payload = mocked.call_args.kwargs["json"]
+        self.assertNotIn("response_format", sent_payload)
+        self.assertEqual(sent_payload["temperature"], 0.85)
+
+    def test_openrouter_chat_json_mode_falls_back_on_400(self):
+        rejected = MagicMock(status_code=400, text="response_format not supported")
+        accepted = MagicMock(status_code=200)
+        accepted.json.return_value = {"choices": [{"message": {"content": '{"ok": true}'}}]}
+        with patch.object(bot, "OPENROUTER_API_KEY", "test-key"), \
+             patch.object(bot, "request_with_retries", side_effect=[rejected, accepted]) as mocked:
+            result = bot.openrouter_chat_json("prompt")
+        self.assertEqual(result, '{"ok": true}')
+        self.assertEqual(mocked.call_count, 2)
+        self.assertNotIn("response_format", mocked.call_args_list[1].kwargs["json"])
+
     def test_clean_text_preserves_unicode(self):
         text = bot.clean_text("Take-Two’s GTA 6 — c’est réel.\x00")
         self.assertIn("’", text)

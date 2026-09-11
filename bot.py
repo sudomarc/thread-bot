@@ -344,10 +344,15 @@ RELATABLE TOPIC IDEAS:
 """
 
 
-def openrouter_chat(prompt, timeout=60):
-    if not OPENROUTER_API_KEY:
-        raise RuntimeError("OPENROUTER_API_KEY is missing")
-    response = request_with_retries(
+def _openrouter_request(prompt, timeout, temperature, use_json_mode):
+    payload = {
+        "model": "openrouter/free",
+        "messages": [{"role": "user", "content": prompt}],
+        "temperature": temperature,
+    }
+    if use_json_mode:
+        payload["response_format"] = {"type": "json_object"}
+    return request_with_retries(
         "POST",
         "https://openrouter.ai/api/v1/chat/completions",
         retries=4,
@@ -358,12 +363,20 @@ def openrouter_chat(prompt, timeout=60):
             "HTTP-Referer": "https://github.com/sudomarc/thread-bot",
             "X-Title": "Thread Bot",
         },
-        json={
-            "model": "openrouter/free",
-            "messages": [{"role": "user", "content": prompt}],
-            "temperature": 0.85,
-        },
+        json=payload,
     )
+
+
+def openrouter_chat(prompt, timeout=60, json_mode=False, temperature=None):
+    if not OPENROUTER_API_KEY:
+        raise RuntimeError("OPENROUTER_API_KEY is missing")
+    effective_temperature = temperature if temperature is not None else (0.4 if json_mode else 0.85)
+    response = _openrouter_request(prompt, timeout, effective_temperature, json_mode)
+    if json_mode and response.status_code == 400:
+        # The free-tier auto-router can land on a model that rejects response_format.
+        # Retry once without it rather than failing the whole pipeline stage.
+        print("OpenRouter rejected response_format=json_object; retrying without it.")
+        response = _openrouter_request(prompt, timeout, effective_temperature, False)
     if response.status_code >= 400:
         raise RuntimeError(f"OpenRouter HTTP {response.status_code}: {response.text[:300]}")
     data = response.json()
@@ -375,6 +388,11 @@ def openrouter_chat(prompt, timeout=60):
     if not isinstance(content, str) or not content.strip():
         raise RuntimeError("OpenRouter returned empty content")
     return content.strip()
+
+
+def openrouter_chat_json(prompt, timeout=60):
+    """Use for pipeline calls that require a strict JSON contract (content_engine)."""
+    return openrouter_chat(prompt, timeout=timeout, json_mode=True)
 
 
 def parse_posts(raw):
