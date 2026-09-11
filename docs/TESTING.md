@@ -39,6 +39,8 @@ Provider calls use bounded retries. Tests should cover retryable HTTP responses,
 
 ## State and workflow verification
 
+Every pull request and every push to `main` must execute the `test` job. Strategy execution is separate and may run only for scheduled/manual executions or an explicit `[run-bot]` push. The strategy job must depend on the successful test job.
+
 The scheduled workflow must run tests before executing the strategy slot and must persist state only after successful generation. Changes to state/report behavior should verify atomic writes and final artifact consistency.
 
 ## Final verification
@@ -57,4 +59,4 @@ CI for the final commit
 review complete diff and status
 ```
 
-If local execution is unavailable, say so explicitly and use current GitHub Actions results as the available verification evidence. Never report unverified tests as passing.
+A skipped verification job is not evidence of success. If local execution is unavailable, say so explicitly and use current GitHub Actions results as the available verification evidence. Never report unverified tests as passing.

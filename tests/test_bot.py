@@ -112,6 +112,13 @@ SOURCE: NEWS 3
     def test_email_uses_utf8(self):
         self.assertEqual(bot.MIMEText("é — ", "plain", "utf-8").get_content_charset(), "utf-8")
 
+    def test_workflow_runs_tests_on_main_push(self):
+        with open(os.path.join(os.path.dirname(__file__), "..", ".github", "workflows", "thread-bot.yml"), encoding="utf-8") as handle:
+            workflow = handle.read()
+        self.assertIn("test:\n    # Every pull request and main push must execute the repository verification.", workflow)
+        self.assertNotIn("if: github.event_name != 'push' || contains(github.event.head_commit.message, '[run-bot]')", workflow)
+        self.assertIn("if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && contains(github.event.head_commit.message, '[run-bot]'))", workflow)
+
 
 if __name__ == "__main__":
     unittest.main()
