@@ -2,6 +2,7 @@ import json
 import unittest
 from unittest.mock import patch
 
+import content_engine
 import strategy_runner
 
 
@@ -57,7 +58,7 @@ class StrategyRunnerTests(unittest.TestCase):
         state = {"strategy_cursor": 3, "recent_post_titles": [], "recent_relatable_topic_tags": []}
         angles = []
         for index in range(8):
-            scores = {key: 9 for key in strategy_runner.bot.content_engine.IDEA_WEIGHTS}
+            scores = {key: 9 for key in content_engine.IDEA_WEIGHTS}
             angles.append({
                 "angle": f"angle_{index}",
                 "core_claim": f"Distinct claim {index}",
@@ -72,7 +73,7 @@ class StrategyRunnerTests(unittest.TestCase):
             json.dumps({"angles": angles}),
             json.dumps({
                 "draft": "A specific take on why this gaming story changes the economics of the next wave of games.",
-                "quality": {key: 9 for key in strategy_runner.bot.content_engine.QUALITY_WEIGHTS},
+                "quality": {key: 9 for key in content_engine.QUALITY_WEIGHTS},
                 "stress": {
                     "scroll_answer": "The opening makes a concrete claim.",
                     "reply_example": "A reader could disagree about the business impact.",
