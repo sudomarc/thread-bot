@@ -2,6 +2,12 @@
 
 All notable changes to Thread Bot are documented here.
 
+## [2.2.2] — 2026-09-11
+
+### Fixed
+- Added resilient parsing for valid JSON surrounded by model prose or markdown fences.
+- Added one strict JSON-only retry when an LLM response is not parseable, without weakening factuality gates.
+
 ## [2.2.1] — 2026-09-11
 
 ### Fixed
