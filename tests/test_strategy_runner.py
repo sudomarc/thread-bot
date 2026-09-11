@@ -95,7 +95,8 @@ SOURCE: NEWS 1
 """
         with patch.object(strategy_runner.bot, "openrouter_chat", return_value=raw):
             content, posts = strategy_runner.generate_strategy_threads(articles, state)
-        self.assertIn("AI NPCs", content)
+        self.assertIn("This is a concise test post.", content)
+        self.assertEqual(posts[0]["title"], "AI NPCs could change gaming.")
         self.assertEqual(posts[0]["source"], "NEWS 1")
         self.assertEqual(state["strategy_cursor"], 4)
 
