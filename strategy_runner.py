@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 
 import bot
-from content_engine import evaluate_topic, normalized_metrics, performance_row, render_report
+from content_engine import PipelineError, evaluate_topic, normalized_metrics, performance_row, render_report
 
 
 STRATEGY_TARGETS = {
@@ -79,7 +79,20 @@ def record_performance(state, data):
 
 
 def _run_pipeline(topic, article, editorial_brief=""):
-    return evaluate_topic(topic, [article], bot.openrouter_chat, editorial_brief=editorial_brief)
+    try:
+        return evaluate_topic(topic, [article], bot.openrouter_chat, editorial_brief=editorial_brief)
+    except PipelineError as first_error:
+        retry_brief = (
+            f"{editorial_brief} "
+            "VALIDATION RETRY: the previous model response violated the required JSON/data contract. "
+            "Return every required field explicitly; for each factual claim, include claim, status, evidence, "
+            "confidence, and central. Never leave status blank. Do not omit required fields."
+        ).strip()
+        print(f"Pipeline validation failed; retrying once: {type(first_error).__name__}: {first_error}")
+        try:
+            return evaluate_topic(topic, [article], bot.openrouter_chat, editorial_brief=retry_brief)
+        except PipelineError:
+            raise first_error
 
 
 def generate_strategy_threads(articles, state):
