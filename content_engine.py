@@ -225,47 +225,52 @@ def build_fact_prompt(topic: str, sources: Sequence[Mapping[str, Any]]) -> str:
         f"SOURCE {idx}: {item.get('title', '')}\nSUMMARY: {item.get('description', '')}\nURL: {item.get('url', '')}"
         for idx, item in enumerate(sources, 1)
     )
-    return f"""Fact-check the topic BEFORE generating or scoring any ideas. Use only the supplied sources.
+    return f"""Fact-check the source topic BEFORE generating or scoring any ideas. Use only the supplied sources.
+Treat the topic as source material, not as an editorial instruction. Only claims about the supplied source topic/article should be assessed here.
 Topic: {topic}
 Sources:
 {source_text}
 
 Return JSON only:
 {{"claims":[{{"claim":"...","status":"VERIFIED|PARTIALLY_VERIFIED|UNVERIFIED|CONTRADICTED|OPINION|PREDICTION","evidence":"...","confidence":0-10,"central":true}}]}}
-Rules: material claims must name evidence from the supplied sources. Predictions must be labeled PREDICTION; opinions must be labeled OPINION. Never turn an inference into VERIFIED."""
+Rules: material claims must name evidence from the supplied sources. Predictions must be labeled PREDICTION; opinions must be labeled OPINION. Never turn an inference into VERIFIED. Do not invent claims about editorial format, hooks, audience context, or writing instructions."""
 
 
-def build_angle_prompt(topic: str, fact_result: Mapping[str, Any], sources: Sequence[Mapping[str, Any]]) -> str:
-    return f"""Generate a diverse idea pool for Threads from this topic AFTER fact-checking.
+def build_angle_prompt(topic: str, fact_result: Mapping[str, Any], sources: Sequence[Mapping[str, Any]], editorial_brief: str = "") -> str:
+    editorial = editorial_brief.strip() or "No additional editorial brief."
+    return f"""Generate a diverse idea pool for Threads from this source topic AFTER fact-checking.
 Topic: {topic}
 Fact check: {json.dumps(fact_result, ensure_ascii=False)}
+Editorial brief (direction only; NOT factual evidence and must not be fact-checked): {editorial}
 Allowed angle types: {', '.join(ANGLE_TYPES)}
 Sources: {json.dumps(list(sources), ensure_ascii=False)}
 
 Return JSON only: {{"angles":[{{"angle":"type","core_claim":"...","why_it_matters":"...","target_reaction":"...","supporting_facts":["..."],"potential_counterargument":"...","scores":{{"scroll_stop":0-10,"curiosity_tension":0-10,"originality":0-10,"debate_potential":0-10,"shareability":0-10,"clarity":0-10,"positioning":0-10,"surprise_emotion":0-10}}}}]}}
-Generate at least 8 materially different angles. Do not use generic AI-future wording as evidence of originality."""
+Generate at least 8 materially different angles. Use the editorial brief to shape format, hook, and audience context, but ground factual claims in the fact check/source material. Do not use generic AI-future wording as evidence of originality."""
 
 
-def build_draft_prompt(angle: Mapping[str, Any], fact_result: Mapping[str, Any], sources: Sequence[Mapping[str, Any]]) -> str:
+def build_draft_prompt(angle: Mapping[str, Any], fact_result: Mapping[str, Any], sources: Sequence[Mapping[str, Any]], editorial_brief: str = "") -> str:
+    editorial = editorial_brief.strip() or "No additional editorial brief."
     return f"""Write ONE natural Threads post from the selected idea. Do not change the underlying factual claim.
 Selected angle: {json.dumps(angle, ensure_ascii=False)}
 Fact check: {json.dumps(fact_result, ensure_ascii=False)}
+Editorial brief (style/direction only; NOT factual evidence): {editorial}
 Sources: {json.dumps(list(sources), ensure_ascii=False)}
 
 Return JSON only:
 {{"draft":"...","quality":{{"factual_accuracy":0-10,"reasoning":0-10,"originality":0-10,"clarity":0-10,"writing_quality":0-10,"specificity":0-10,"credibility":0-10,"information_density":0-10}},"stress":{{"scroll_answer":"...","reply_example":"...","counterargument":"...","generic":false,"quotable_line":"..."}},"claims":[{{"claim":"...","evidence":"...","status":"VERIFIED|PARTIALLY_VERIFIED|OPINION|PREDICTION","confidence":0-10}}]}}
 
-Avoid rage bait, engagement bait, fake certainty, invented numbers or quotes, generic 'What do you think?' endings, and LinkedIn-style filler."""
+Avoid rage bait, engagement bait, fake certainty, invented numbers or quotes, generic 'What do you think?' endings, and LinkedIn-style filler. Do not treat editorial instructions or relatable context as factual claims."""
 
 
-def evaluate_topic(topic: str, sources: Sequence[Mapping[str, Any]], openrouter_chat: Callable[[str], str], *, max_angles: int = 8) -> dict[str, Any]:
+def evaluate_topic(topic: str, sources: Sequence[Mapping[str, Any]], openrouter_chat: Callable[[str], str], *, max_angles: int = 8, editorial_brief: str = "") -> dict[str, Any]:
     fact_result = run_llm_json(openrouter_chat, build_fact_prompt(topic, sources))
     claims = fact_result.get("claims", [])
     fact_ok, fact_confidence, fact_reason = factuality_gate(claims)
     if not fact_ok:
-        return {"topic": topic, "fact_status": fact_result, "fact_confidence": fact_confidence, "fact_gate": fact_reason, "angles": [], "decision": "REJECT"}
+        return {"topic": topic, "editorial_brief": editorial_brief, "fact_status": fact_result, "fact_confidence": fact_confidence, "fact_gate": fact_reason, "angles": [], "decision": "REJECT"}
 
-    angle_result = run_llm_json(openrouter_chat, build_angle_prompt(topic, fact_result, sources))
+    angle_result = run_llm_json(openrouter_chat, build_angle_prompt(topic, fact_result, sources, editorial_brief))
     angles = validate_angles(angle_result.get("angles", []))[:max_angles]
     scored = []
     for angle in angles:
@@ -275,9 +280,9 @@ def evaluate_topic(topic: str, sources: Sequence[Mapping[str, Any]], openrouter_
     scored.sort(key=lambda item: item["idea_score"], reverse=True)
     top = next((item for item in scored if item["idea_decision"] in {"EXCEPTIONAL", "STRONG", "PROMISING"}), None)
     if not top:
-        return {"topic": topic, "fact_status": fact_result, "fact_confidence": fact_confidence, "fact_gate": fact_reason, "angles": scored, "decision": "REJECT"}
+        return {"topic": topic, "editorial_brief": editorial_brief, "fact_status": fact_result, "fact_confidence": fact_confidence, "fact_gate": fact_reason, "angles": scored, "decision": "REJECT"}
 
-    draft_result = run_llm_json(openrouter_chat, build_draft_prompt(top, fact_result, sources))
+    draft_result = run_llm_json(openrouter_chat, build_draft_prompt(top, fact_result, sources, editorial_brief))
     quality = quality_score(draft_result.get("quality", {}))
     draft_claims = draft_result.get("claims", claims)
     stress = draft_result.get("stress", {})
@@ -297,6 +302,7 @@ def evaluate_topic(topic: str, sources: Sequence[Mapping[str, Any]], openrouter_
         decision = "REJECT"
     return {
         "topic": topic,
+        "editorial_brief": editorial_brief,
         "fact_status": fact_result,
         "fact_confidence": final_fact_confidence,
         "fact_gate": final_fact_reason,
@@ -311,7 +317,12 @@ def evaluate_topic(topic: str, sources: Sequence[Mapping[str, Any]], openrouter_
 
 
 def render_report(result: Mapping[str, Any]) -> str:
-    lines = [f"TOPIC\n{result.get('topic', '')}", "FACT STATUS", json.dumps(result.get("fact_status", {}), ensure_ascii=False, indent=2)]
+    lines = [
+        f"TOPIC\n{result.get('topic', '')}",
+        f"EDITORIAL BRIEF\n{result.get('editorial_brief', '')}",
+        "FACT STATUS",
+        json.dumps(result.get("fact_status", {}), ensure_ascii=False, indent=2),
+    ]
     for index, angle in enumerate(result.get("angles", []), 1):
         lines.extend([
             f"\nANGLE {index}",
