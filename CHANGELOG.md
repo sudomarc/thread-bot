@@ -2,6 +2,19 @@
 
 All notable changes to Thread Bot are documented here.
 
+## [2.2.0] — 2026-09-11
+
+### Added
+- Staged Threads content evaluation pipeline: topic, fact check, diverse angles, idea scoring, draft, quality scoring, stress tests, and final decision.
+- Deterministic weighted idea and quality scores with factuality gates.
+- Performance feedback storage and normalized engagement metrics for later calibration.
+- `state/latest_content_evaluation.txt` evaluation artifact.
+
+### Changed
+- The scheduled strategy runner now selects and publishes only ideas that pass the content pipeline.
+- `REWRITE` decisions receive a second evaluation pass and are never published as-is.
+- Pull requests now execute the unit-test job without calling external content-generation APIs.
+
 ## [2.1.0] — 2026-09-03
 
 ### Added
