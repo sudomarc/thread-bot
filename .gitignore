@@ -3,3 +3,4 @@ __pycache__/
 *.pyc
 state/latest_threads.txt
 state/latest_sources.txt
+state/latest_content_evaluation.txt

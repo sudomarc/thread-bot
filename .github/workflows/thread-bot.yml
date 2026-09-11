@@ -1,6 +1,7 @@
 name: Thread Bot Weekly Strategy
 
 on:
+  pull_request:
   push:
     branches:
       - main
@@ -51,6 +52,7 @@ jobs:
         run: python -m unittest discover -s tests -v
 
       - name: Run Thread Bot strategy slot
+        if: github.event_name != 'pull_request'
         env:
           NEWS_API_KEY: ${{ secrets.NEWS_API_KEY }}
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
@@ -62,19 +64,20 @@ jobs:
         run: python strategy_runner.py
 
       - name: Upload generated report
-        if: always()
+        if: always() && github.event_name != 'pull_request'
         uses: actions/upload-artifact@v7
         with:
           name: thread-bot-report-${{ github.run_number }}
           path: |
             state/latest_threads.txt
             state/latest_sources.txt
+            state/latest_content_evaluation.txt
             state/history.json
           if-no-files-found: warn
           retention-days: 14
 
       - name: Commit updated state
-        if: success()
+        if: success() && github.event_name != 'pull_request'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
