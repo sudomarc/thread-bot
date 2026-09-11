@@ -69,6 +69,7 @@ jobs:
           path: |
             state/latest_threads.txt
             state/latest_sources.txt
+            state/latest_content_evaluation.txt
             state/history.json
           if-no-files-found: warn
           retention-days: 14
