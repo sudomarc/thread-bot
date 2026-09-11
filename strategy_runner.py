@@ -53,12 +53,20 @@ def _fresh_topic(state):
     return (topics or bot.RELATABLE_TOPICS)[0]
 
 
-def _topic_from_slot(recipe, article, relatable_topic):
+def _topic_from_slot(recipe, article):
+    return f"{article['title']}. {article.get('description', '')}".strip()
+
+
+def _editorial_brief_from_slot(recipe, relatable_topic):
     kind, _, hook, instruction = recipe
-    topic = f"{article['title']}. {article.get('description', '')}".strip()
+    parts = [
+        f"Format: {kind}.",
+        f"Hook direction: {hook}.",
+        f"Editorial instruction: {instruction}.",
+    ]
     if relatable_topic:
-        topic += f" Relatable context: {relatable_topic[1]}."
-    return f"Format: {kind}. Hook direction: {hook}. Editorial instruction: {instruction}.\nTopic: {topic}"
+        parts.append(f"Relatable context: {relatable_topic[1]}.")
+    return " ".join(parts)
 
 
 def record_performance(state, data):
@@ -70,8 +78,8 @@ def record_performance(state, data):
     return row
 
 
-def _run_pipeline(topic, article):
-    return evaluate_topic(topic, [article], bot.openrouter_chat)
+def _run_pipeline(topic, article, editorial_brief=""):
+    return evaluate_topic(topic, [article], bot.openrouter_chat, editorial_brief=editorial_brief)
 
 
 def generate_strategy_threads(articles, state):
@@ -80,12 +88,13 @@ def generate_strategy_threads(articles, state):
     kind, preferred_category, _, _ = recipe
     article = _pick_article(articles, preferred_category)
     relatable_topic = _fresh_topic(state) if preferred_category is None else None
-    topic = _topic_from_slot(recipe, article, relatable_topic)
+    topic = _topic_from_slot(recipe, article)
+    editorial_brief = _editorial_brief_from_slot(recipe, relatable_topic)
 
-    result = _run_pipeline(topic, article)
+    result = _run_pipeline(topic, article, editorial_brief)
     if result.get("decision") == "REWRITE":
-        rewrite_topic = topic + "\nRewrite pass: preserve the strongest defensible claim, increase specificity and tension, and remove generic wording."
-        result = _run_pipeline(rewrite_topic, article)
+        rewrite_brief = f"{editorial_brief} Rewrite pass: preserve the strongest defensible claim, increase specificity and tension, and remove generic wording."
+        result = _run_pipeline(topic, article, rewrite_brief)
     if result.get("decision") != "PUBLISH":
         with open(PIPELINE_REPORT_PATH, "w", encoding="utf-8") as handle:
             handle.write(render_report(result))
