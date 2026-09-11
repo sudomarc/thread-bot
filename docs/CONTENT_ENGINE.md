@@ -1,6 +1,6 @@
 # Threads Content Engine
 
-The scheduled strategy runner now uses a staged content pipeline:
+The scheduled strategy runner uses a staged content pipeline:
 
 `TOPIC → FACT CHECK → ANGLES → IDEA SCORE → TOP IDEA → DRAFT → QUALITY SCORE → STRESS TEST → FINAL DECISION`
 
@@ -14,6 +14,22 @@ The levels are kept separate:
 - **Score**: idea score, quality score, and final score are stored separately.
 - **Decision**: `PUBLISH`, `REWRITE`, or `REJECT`.
 - **Result**: real post metrics can be appended later for calibration.
+
+## Boundary validation
+
+LLM output is untrusted data and is validated before it reaches the next stage.
+
+- JSON payloads that are required to be objects must decode to objects; valid arrays, strings, numbers, or `null` are rejected and retried once with a strict JSON-only instruction.
+- Required nested arrays/objects are validated before dereferencing them.
+- Idea and quality component scores must be finite values in `[0, 10]`.
+- Aggregate scores must be finite values in `[0, 100]`.
+- Factual claims with factual statuses must include supporting evidence.
+- Contradicted claims and unverified central claims fail the factuality gate.
+- A draft must be non-empty and must pass all stress checks before publication.
+- Performance metrics must be non-negative integer values; fractional and boolean counters are rejected instead of silently truncated.
+- Follow conversion is `0` when there are no recorded views because a views-based denominator is unavailable.
+
+These checks fail closed: malformed provider output is not treated as a valid success state.
 
 ## Idea scoring
 
@@ -38,7 +54,7 @@ An angle is not eligible for normal progression when originality, hook, or debat
 
 Allowed claim statuses are `VERIFIED`, `PARTIALLY_VERIFIED`, `UNVERIFIED`, `CONTRADICTED`, `OPINION`, and `PREDICTION`.
 
-A contradicted material claim or an unverified central claim is rejected. Predictions and opinions are allowed only when labeled as such. The engine never converts an inference into a verified claim merely because the idea scores highly.
+Factual statuses require evidence. A contradicted material claim or an unverified central claim is rejected. Predictions and opinions are allowed only when labeled as such. The engine never converts an inference into a verified claim merely because the idea scores highly.
 
 ## Quality scoring
 
@@ -63,6 +79,7 @@ Publishing additionally requires:
 - quality score ≥ 80
 - fact confidence ≥ 0.80
 - every stress test passed
+- a non-empty draft
 
 The final decision is then exactly one of:
 
@@ -74,7 +91,7 @@ A `REWRITE` result is never published by the strategy runner; it receives one ad
 
 ## Stress tests
 
-The draft is checked for a concrete scroll reason, a plausible reply, a reasonable counterargument, non-generic wording, a quotable line, and claim/evidence integrity.
+The draft is checked for presence, a concrete scroll reason, a plausible reply, a reasonable counterargument, non-generic wording, a quotable line, and claim/evidence integrity.
 
 ## Performance feedback
 
@@ -84,4 +101,4 @@ The stored schema supports later comparisons between predicted scores and actual
 
 ## Runtime output
 
-The normal publishable text remains `state/latest_threads.txt`. The new evaluation artifact is `state/latest_content_evaluation.txt`, which contains the topic, fact status, angles, top pick, scores, stress test, and final decision.
+The normal publishable text remains `state/latest_threads.txt`. The evaluation artifact is `state/latest_content_evaluation.txt`, which contains the topic, fact status, angles, top pick, scores, stress test, and final decision.
