@@ -27,6 +27,30 @@ class StrategyRunnerTests(unittest.TestCase):
         ]
         self.assertEqual(strategy_runner._pick_article(articles, "gaming")["title"], "game")
 
+    def test_topic_and_editorial_brief_are_separate(self):
+        recipe = strategy_runner.STRATEGY_POSTS[1]
+        article = {"title": "Source story", "description": "Source facts."}
+        relatable = ("passwords", "People reuse passwords even when they work in tech")
+        topic = strategy_runner._topic_from_slot(recipe, article)
+        brief = strategy_runner._editorial_brief_from_slot(recipe, relatable)
+        self.assertEqual(topic, "Source story. Source facts.")
+        self.assertNotIn("Format:", topic)
+        self.assertNotIn("Hook direction:", topic)
+        self.assertNotIn("Relatable context:", topic)
+        self.assertIn("Format:", brief)
+        self.assertIn("Hook direction:", brief)
+        self.assertIn("Relatable context:", brief)
+
+    def test_editorial_brief_is_not_sent_to_fact_prompt(self):
+        topic = "Source story. Source facts."
+        brief = "Format: question. Editorial instruction: ask for experience. Relatable context: passwords."
+        fact_prompt = content_engine.build_fact_prompt(topic, [{"title": "Source story", "description": "Source facts.", "url": "https://example.com"}])
+        angle_prompt = content_engine.build_angle_prompt(topic, {"claims": []}, [{"title": "Source story"}], editorial_brief=brief)
+        self.assertIn("Source story. Source facts.", fact_prompt)
+        self.assertNotIn("Relatable context: passwords", fact_prompt)
+        self.assertIn("Relatable context: passwords", angle_prompt)
+        self.assertIn("NOT factual evidence", angle_prompt)
+
     def test_record_performance_normalizes_metrics(self):
         state = {}
         row = strategy_runner.record_performance(state, {
