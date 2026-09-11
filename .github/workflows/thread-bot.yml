@@ -1,6 +1,9 @@
 name: Thread Bot Weekly Strategy
 
 on:
+  push:
+    branches:
+      - main
   schedule:
     # All times are UTC/GMT and match the 30-day Threads strategy.
     - cron: '0 14 * * 3' # Wednesday 14:00
@@ -24,6 +27,7 @@ env:
 
 jobs:
   build:
+    if: github.event_name != 'push' || contains(github.event.head_commit.message, '[run-bot]')
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
