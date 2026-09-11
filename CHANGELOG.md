@@ -2,6 +2,13 @@
 
 All notable changes to Thread Bot are documented here.
 
+## [2.2.1] — 2026-09-11
+
+### Fixed
+- Strategy editorial instructions and relatable context are now passed as an editorial brief instead of being mixed into the source topic sent to fact checking.
+- Fact checking is restricted to source-topic claims, while editorial format, hook, and audience direction are applied during angle generation and drafting.
+- Added regression coverage for the source-topic/editorial-brief boundary.
+
 ## [2.2.0] — 2026-09-11
 
 ### Added
