@@ -24,7 +24,6 @@
     "beta_tester_unpaid"
   ],
   "recent_post_titles": [
-    "Citrix just bolted a tiny Linux OS onto Windows",
     "Gamescom Congress 2026 hit a new attendance record",
     "pawnlogic 0.3.5 just dropped on PyPI",
     "New Chitose Airport is leveling up",
@@ -83,7 +82,8 @@
     "Apple’s A20 Pro chip bets big on on‑device AI",
     "Barry Melrose, the ESPN hockey guru, passes at 70",
     "That feeling when your code looks perfect but you’re still a fraud",
-    "Controller rage after a lag spike decides the match"
+    "Controller rage after a lag spike decides the match",
+    "AI isn’t replacing designers here. It’s unlocking rides nobody thought could exist."
   ],
   "seen_article_urls": [
     "https://torrentfreak.com/take-two-expands-gta-6-leak-hunt-with-dmca-subpoenas/",
@@ -256,8 +256,19 @@
     "https://financialpost.com/globe-newswire/thrive-advances-nextgen-platform-with-enhanced-security-architecture-powered-by-elastic-and-cato-networks",
     "https://reason.com/volokh/2026/09/10/court-blocks-investigation-of-ai-generated-video-about-vermont-political-candidates-because-video-is-obviously-ridiculous",
     "https://uk.pcmag.com/ai/167225/a20-pro-iphone-chip-explained-apple-event",
-    "https://slashdot.org/firehose.pl?op=view&amp%3Bid=185582850"
+    "https://slashdot.org/firehose.pl?op=view&amp%3Bid=185582850",
+    "https://nypost.com/2026/09/10/us-news/six-flags-reveals-first-of-its-kind-roller-coaster-featuring-hovercycles"
   ],
-  "last_run_at": "2026-09-11T12:33:57.163611+00:00",
-  "schema_version": 2
+  "last_run_at": "2026-09-11T23:05:57.271614+00:00",
+  "schema_version": 2,
+  "strategy_cursor": 1,
+  "strategy_last_format": "news_opinion",
+  "strategy_last_run_at": "2026-09-11T23:05:57.271225+00:00",
+  "strategy_targets": {
+    "views": "20,000-30,000 / 30 days",
+    "spectators": "12,000+ / 30 days",
+    "followers": "75-150 / 30 days",
+    "conversion": "0.3-0.6% views-to-followers",
+    "posts": "20-25 / 30 days"
+  }
 }
