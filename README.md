@@ -4,9 +4,17 @@ Automated social-content bot for current **cybersecurity, technology, AI, gaming
 
 ## Current architecture
 
-`NewsAPI → filtering/deduplication → strategy slot → OpenRouter generation → strict parsing/validation → optional LLM quality scoring → report/state → optional images/email`
+`NewsAPI → filtering/deduplication → strategy slot → content evaluation pipeline → report/state → optional images/email`
 
-The maintained implementation is `bot.py`. `main.py` remains a compatibility entrypoint. `strategy_runner.py` is the scheduled growth layer: it asks for **one targeted post per scheduled run** and rotates through the 30-day editorial plan.
+The maintained implementation is `bot.py`. `main.py` remains a compatibility entrypoint. `strategy_runner.py` is the scheduled growth layer: it asks for **one targeted post per scheduled run** and rotates through the 30-day editorial plan. `content_engine.py` owns the staged fact-checking, angle generation, deterministic scoring, stress tests, final decision, and performance-metric normalization.
+
+### Content evaluation pipeline
+
+The strategy path now separates the content lifecycle:
+
+`TOPIC → FACT CHECK → ANGLES → IDEA SCORE → TOP IDEA → DRAFT → QUALITY SCORE → STRESS TEST → FINAL DECISION`
+
+Fact status, idea score, quality score, final score, and decision are stored separately. A strong viral score cannot override a failed factuality gate. See `docs/CONTENT_ENGINE.md` for the exact weights and gates.
 
 ### 30-day Threads strategy
 
@@ -69,7 +77,7 @@ Current-news posts remain source-grounded. Relatable posts use the existing cura
 - Rejects duplicate titles and exact repeats from recent history.
 - Preserves Unicode and writes state atomically.
 - Treats Gmail and image generation as non-fatal enrichment channels.
-- Makes the optional LLM quality scorer opt-in so a normal run does not double its model traffic.
+- The scheduled strategy pipeline is now gated by factuality, idea quality, draft quality, and stress-test results.
 
 ## Required secrets
 
@@ -94,7 +102,7 @@ Optional:
 | Variable | Default | Effect |
 |---|---:|---|
 | `IMAGE_POST_COUNT` | `0` | Optional AI images for the base bot |
-| `ENABLE_LLM_SCORING` | `false` | Adds an OpenRouter scoring pass for higher quality gating |
+| `ENABLE_LLM_SCORING` | `false` | Legacy base-bot optional scorer; scheduled strategy scoring is now always part of the content pipeline |
 | `HF_IMAGE_MODEL` | `black-forest-labs/FLUX.1-schnell` | Hugging Face image model used when `HF_TOKEN` is configured |
 
 `TOTAL_POSTS` is intentionally fixed to `1` by the strategy workflow. The base `bot.py` remains capable of multi-post generation for compatibility/local use.
@@ -107,7 +115,11 @@ GitHub Actions uses current Node 24-compatible action releases (`checkout@v7`, `
 
 ## State files
 
-`state/history.json` is the persistent deduplication and strategy state. `state/latest_threads.txt` and `state/latest_sources.txt` are runtime outputs and are ignored by Git. The workflow uploads all three as an artifact for 14 days.
+`state/history.json` is the persistent deduplication, strategy, and optional performance-feedback state. `state/latest_threads.txt` contains the publishable text. `state/latest_sources.txt` contains the sources actually used. `state/latest_content_evaluation.txt` contains the content-engine audit: facts, angles, scores, stress tests, and final decision. The workflow should archive the evaluation file together with the other state outputs.
+
+## Performance feedback
+
+Real post metrics can be recorded with `strategy_runner.record_performance()`. The engine stores impressions, views, likes, replies, reposts, quotes, profile visits, follows, plus normalized rates. These are diagnostic ratios, not a claim that a single metric equals "virality". No statistical learning is claimed until sufficient real observations exist.
 
 ## Safety around leaks
 
@@ -118,5 +130,5 @@ The bot may discuss reported leaks and legal actions, but it does not distribute
 ```bash
 python -m pip install -r requirements.txt
 python -m unittest discover -s tests -v
-python -m py_compile bot.py strategy_runner.py main.py
+python -m py_compile bot.py strategy_runner.py content_engine.py main.py
 ```
