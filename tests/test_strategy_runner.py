@@ -25,20 +25,55 @@ class StrategyRunnerTests(unittest.TestCase):
         ]
         self.assertEqual(strategy_runner._pick_article(articles, "gaming")["title"], "game")
 
+    def test_parse_single_strategy_post_accepts_one_post(self):
+        raw = """Here is the draft:
+POST 1
+A better AI workflow matters more than another benchmark.
+Most people are still learning how to use the models they already have.
+The interesting part is what this changes for builders.
+KEYWORDS: AI, builders
+TOPIC_TAG: current_news
+SOURCE: NEWS 2
+"""
+        posts = strategy_runner._parse_single_strategy_post(raw)
+        self.assertEqual(posts[0]["number"], 1)
+        self.assertEqual(posts[0]["title"], "A better AI workflow matters more than another benchmark.")
+        self.assertEqual(posts[0]["keywords"], ["AI", "builders"])
+        self.assertEqual(posts[0]["topic_tag"], "current_news")
+        self.assertEqual(posts[0]["source"], "NEWS 2")
+
+    def test_parse_single_strategy_post_rejects_extra_posts(self):
+        raw = """POST 1
+One title
+One body.
+KEYWORDS: one
+TOPIC_TAG: current_news
+SOURCE: NEWS 1
+
+POST 2
+Another title
+Another body.
+KEYWORDS: two
+TOPIC_TAG: current_news
+SOURCE: NEWS 2
+"""
+        with self.assertRaisesRegex(ValueError, "exactly one post"):
+            strategy_runner._parse_single_strategy_post(raw)
+
     def test_validate_strategy_rejects_repeat_title(self):
         post = [{
             "number": 1,
             "title": "Same title",
             "body": "Same title\nA post.",
-            "source": "NONE",
-            "topic_tag": "ai_hype_fatigue",
+            "source": "NEWS 1",
+            "topic_tag": "current_news",
         }]
         with self.assertRaisesRegex(ValueError, "repeated"):
             strategy_runner._validate_strategy_post(
                 post,
                 {"category": "technology"},
-                "NONE",
-                "ai_hype_fatigue",
+                "NEWS 1",
+                "current_news",
                 ["Same title"],
             )
 
@@ -63,6 +98,15 @@ SOURCE: NEWS 1
         self.assertIn("AI NPCs", content)
         self.assertEqual(posts[0]["source"], "NEWS 1")
         self.assertEqual(state["strategy_cursor"], 4)
+
+    def test_all_strategy_slots_use_current_news_for_single_post_validation(self):
+        for _, _, _, _ in strategy_runner.STRATEGY_POSTS:
+            self.assertEqual("current_news", strategy_runner._build_prompt(
+                ("question", None, "hook", "instruction"),
+                {"category": "technology", "title": "title", "description": "summary", "published": "date", "url": "url"},
+                None,
+                "NEWS 1",
+            ).split("TOPIC_TAG: ")[1].splitlines()[0])
 
 
 if __name__ == "__main__":
