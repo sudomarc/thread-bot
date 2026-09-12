@@ -175,6 +175,7 @@ def _instrument_provider(provider, attempt):
         )
         return content
 
+    call._provider = provider
     return call
 
 
@@ -182,9 +183,6 @@ def _diagnose_result(result):
     diagnosed = dict(result)
     decision = str(diagnosed.get("decision", "UNKNOWN")).upper()
     if decision != "REJECT":
-        diagnosed.setdefault("stage", "final_decision")
-        diagnosed.setdefault("rejection_reason", "")
-        diagnosed.setdefault("recoverable", False)
         return diagnosed
 
     fact_confidence = diagnosed.get("fact_confidence")
@@ -267,7 +265,7 @@ def _log_pipeline_result(result):
             f"reason={result.get('rejection_reason', 'unknown')}"
         )
     else:
-        print(f"PIPELINE event=decision outcome={result.get('decision', 'UNKNOWN')} stage={result.get('stage', 'final_decision')}")
+        print(f"PIPELINE event=decision outcome={result.get('decision', 'UNKNOWN')} stage=final_decision")
     return result
 
 
@@ -336,6 +334,10 @@ def _run_pipeline(topic, article, editorial_brief=""):
             topic, article, editorial_brief, bot.openrouter_chat_json, attempt=1
         )
     except PipelineError as first_error:
+        print(
+            f"PIPELINE event=validation_result outcome=error stage={_provider_stage(' '.join(['Validation stage'] if False else []))} "
+            f"error_kind={_provider_error_kind(first_error)}"
+        )
         retry_brief = _retry_brief(editorial_brief, first_error)
         print(
             f"PIPELINE event=retry trigger=validation_or_provider_error attempt=2 "
@@ -348,12 +350,20 @@ def _run_pipeline(topic, article, editorial_brief=""):
                 attempt=2,
             )
         except Exception as retry_error:
+            print(
+                f"PIPELINE event=final_outcome outcome=FAILURE stage=validation_or_provider "
+                f"error_kind={_provider_error_kind(retry_error)}"
+            )
             raise PipelineError(
                 f"Pipeline retry failed after {type(first_error).__name__}: "
                 f"{type(retry_error).__name__}: {retry_error}"
             ) from retry_error
     except RuntimeError as first_error:
         if not _is_retryable_provider_error(first_error):
+            print(
+                f"PIPELINE event=final_outcome outcome=FAILURE stage=provider "
+                f"error_kind={_provider_error_kind(first_error)}"
+            )
             raise
         retry_brief = _retry_brief(editorial_brief, first_error)
         print(
@@ -365,6 +375,10 @@ def _run_pipeline(topic, article, editorial_brief=""):
                 topic, article, retry_brief, _retry_openrouter_chat, attempt=2
             )
         except Exception as retry_error:
+            print(
+                f"PIPELINE event=final_outcome outcome=FAILURE stage=provider "
+                f"error_kind={_provider_error_kind(retry_error)}"
+            )
             raise PipelineError(
                 f"Pipeline provider output failed: {type(first_error).__name__}; "
                 f"retry failed: {type(retry_error).__name__}: {retry_error}"
@@ -383,8 +397,17 @@ def _run_pipeline(topic, article, editorial_brief=""):
         retried = _evaluate_with_diagnostics(
             topic, article, retry_brief, bot.openrouter_chat_json, attempt=2
         )
-        return _diagnose_result(retried)
+        final_result = _diagnose_result(retried)
+        print(
+            f"PIPELINE event=final_outcome outcome={final_result.get('decision', 'UNKNOWN')} "
+            f"stage={final_result.get('stage', 'final_decision')}"
+        )
+        return final_result
     except Exception as retry_error:
+        print(
+            f"PIPELINE event=final_outcome outcome=FAILURE stage=decision_retry "
+            f"error_kind={_provider_error_kind(retry_error)}"
+        )
         raise PipelineError(
             f"Pipeline rejection retry failed: {type(retry_error).__name__}: {retry_error}"
         ) from retry_error
