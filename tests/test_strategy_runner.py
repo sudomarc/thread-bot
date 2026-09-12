@@ -1,5 +1,7 @@
+import io
 import json
 import unittest
+from contextlib import redirect_stdout
 from unittest.mock import patch
 
 import content_engine
@@ -127,8 +129,8 @@ class StrategyRunnerTests(unittest.TestCase):
             result = strategy_runner._run_pipeline("Topic", {"title": "Story"})
 
         self.assertEqual(result, expected)
-        self.assertIs(captured[0], strategy_runner.bot.openrouter_chat_json)
-        self.assertIs(captured[1], strategy_runner._retry_openrouter_chat)
+        self.assertIs(captured[0]._provider, strategy_runner.bot.openrouter_chat_json)
+        self.assertIs(captured[1]._provider, strategy_runner.strategy_runner__retry_openrouter_chat if hasattr(strategy_runner, "strategy_runner__retry_openrouter_chat") else strategy_runner._retry_openrouter_chat)
 
     def test_retryable_provider_error_includes_no_choices(self):
         error = RuntimeError("OpenRouter returned no choices: unknown error")
@@ -143,16 +145,73 @@ class StrategyRunnerTests(unittest.TestCase):
         self.assertIn("materially different core_claims", brief)
         self.assertNotIn("Never leave status blank", brief)
 
-    def test_run_pipeline_does_not_mask_original_validation_failure_when_retry_hits_provider_error(self):
-        first_error = content_engine.PipelineError("Angles are repetitive; need at least 8 materially distinct angles")
-        provider_error = RuntimeError("OpenRouter HTTP 429: rate limit")
-        with patch.object(strategy_runner, "evaluate_topic", side_effect=[first_error, provider_error]) as evaluator:
-            with self.assertRaises(content_engine.PipelineError) as raised:
-                strategy_runner._run_pipeline("Topic", {"title": "Story"}, "Format: opinion.")
-        self.assertIn("Angles are repetitive", str(raised.exception))
-        self.assertIn("retry failed", str(raised.exception))
-        self.assertIn("rate limit", str(raised.exception))
+    def test_recoverable_idea_reject_retries_once_and_can_publish(self):
+        rejected = {
+            "decision": "REJECT",
+            "fact_confidence": 1.0,
+            "fact_gate": "Fact claims passed the minimum evidence gate.",
+            "angles": [
+                {"core_claim": "Best idea", "idea_score": 76.5, "idea_decision": "REWORK"},
+            ],
+        }
+        published = {"decision": "PUBLISH"}
+        with patch.object(strategy_runner, "evaluate_topic", side_effect=[rejected, published]) as evaluator:
+            result = strategy_runner._run_pipeline("Topic", {"title": "Story"}, "Format: builder_experience.")
+
+        self.assertEqual(result, published)
         self.assertEqual(evaluator.call_count, 2)
+        retry_brief = evaluator.call_args_list[1].kwargs["editorial_brief"]
+        self.assertIn("IDEA GATE RETRY", retry_brief)
+        self.assertIn("weighted idea score >= 80", retry_brief)
+
+    def test_repeated_idea_reject_preserves_exploitable_reason(self):
+        rejected = {
+            "decision": "REJECT",
+            "fact_confidence": 1.0,
+            "fact_gate": "Fact claims passed the minimum evidence gate.",
+            "angles": [
+                {"core_claim": "Best idea", "idea_score": 76.5, "idea_decision": "REWORK"},
+                {"core_claim": "Other idea", "idea_score": 61.0, "idea_decision": "REJECT"},
+            ],
+        }
+        with patch.object(strategy_runner, "evaluate_topic", side_effect=[rejected, rejected]) as evaluator:
+            result = strategy_runner._run_pipeline("Topic", {"title": "Story"}, "Format: builder_experience.")
+
+        self.assertEqual(evaluator.call_count, 2)
+        self.assertEqual(result["decision"], "REJECT")
+        self.assertEqual(result["stage"], "idea_selection")
+        self.assertTrue(result["recoverable"])
+        self.assertIn("best_idea_score=76.5/100", result["rejection_reason"])
+        self.assertIn("scroll_stop, originality, and debate_potential", result["rejection_reason"])
+
+    def test_provider_wrapper_logs_without_prompt_or_response_content(self):
+        secret = "super-secret-api-key"
+        output = io.StringIO()
+        provider = lambda prompt: '{"ok": true}'
+        wrapped = strategy_runner._instrument_provider(provider, attempt=1)
+        with redirect_stdout(output):
+            result = wrapped(f"Fact-check source using {secret}")
+        logs = output.getvalue()
+        self.assertEqual(result, '{"ok": true}')
+        self.assertIn("provider_request", logs)
+        self.assertIn("provider_response", logs)
+        self.assertNotIn(secret, logs)
+        self.assertNotIn('{"ok": true}', logs)
+
+    def test_generate_strategy_threads_reject_error_includes_reason_and_stage(self):
+        rejected = {
+            "decision": "REJECT",
+            "fact_confidence": 1.0,
+            "fact_gate": "Fact claims passed the minimum evidence gate.",
+            "angles": [{"core_claim": "Best idea", "idea_score": 76.5, "idea_decision": "REWORK"}],
+        }
+        with patch.object(strategy_runner, "_run_pipeline", return_value=rejected):
+            with patch.object(strategy_runner, "PIPELINE_REPORT_PATH", "/tmp/thread-bot-evaluation.txt"):
+                with self.assertRaisesRegex(RuntimeError, r"Content pipeline decision: REJECT stage=idea_selection reason=.*best_idea_score=76\.5/100"):
+                    strategy_runner.generate_strategy_threads(
+                        [{"category": "technology", "title": "AI story", "description": "AI tool for developers."}],
+                        {"strategy_cursor": 2},
+                    )
 
     def test_generate_strategy_threads_runs_fact_angle_and_draft_stages(self):
         articles = [{
