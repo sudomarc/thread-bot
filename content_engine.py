@@ -39,14 +39,19 @@ EVIDENCE_REQUIRED_STATUSES = {"VERIFIED", "PARTIALLY_VERIFIED", "UNVERIFIED", "C
 class PipelineError(ValueError):
     """Raised when a pipeline stage cannot produce a safe, valid result."""
 
+    def __init__(self, message: str, *, stage: str = "unknown", code: str = "PIPELINE_ERROR"):
+        super().__init__(message)
+        self.stage = stage
+        self.code = code
+
 
 def _finite_score(value: Any) -> float:
     try:
         score = float(value)
     except (TypeError, ValueError):
-        raise PipelineError(f"Invalid score: {value!r}")
+        raise PipelineError(f"Invalid score: {value!r}", stage="scoring", code="INVALID_SCORE")
     if not math.isfinite(score) or not 0 <= score <= 10:
-        raise PipelineError(f"Score must be finite and in [0, 10]: {value!r}")
+        raise PipelineError(f"Score must be finite and in [0, 10]: {value!r}", stage="scoring", code="INVALID_SCORE")
     return score
 
 
@@ -54,9 +59,9 @@ def _finite_percent_score(value: Any, name: str) -> float:
     try:
         score = float(value)
     except (TypeError, ValueError):
-        raise PipelineError(f"Invalid {name}: {value!r}")
+        raise PipelineError(f"Invalid {name}: {value!r}", stage="scoring", code="INVALID_SCORE")
     if not math.isfinite(score) or not 0 <= score <= 100:
-        raise PipelineError(f"{name} must be finite and in [0, 100]: {value!r}")
+        raise PipelineError(f"{name} must be finite and in [0, 100]: {value!r}", stage="scoring", code="INVALID_SCORE")
     return score
 
 
@@ -64,18 +69,18 @@ def _finite_confidence(value: Any) -> float:
     try:
         confidence = float(value)
     except (TypeError, ValueError):
-        raise PipelineError(f"Invalid fact confidence: {value!r}")
+        raise PipelineError(f"Invalid fact confidence: {value!r}", stage="facts", code="INVALID_CONFIDENCE")
     if not math.isfinite(confidence) or not 0 <= confidence <= 1:
-        raise PipelineError(f"fact_confidence must be finite and in [0, 1]: {value!r}")
+        raise PipelineError(f"fact_confidence must be finite and in [0, 1]: {value!r}", stage="facts", code="INVALID_CONFIDENCE")
     return confidence
 
 
 def weighted_score(values: Mapping[str, Any], weights: Mapping[str, int]) -> float:
     missing = [name for name in weights if name not in values]
     if missing:
-        raise PipelineError(f"Missing score dimensions: {', '.join(missing)}")
+        raise PipelineError(f"Missing score dimensions: {', '.join(missing)}", stage="scoring", code="MISSING_SCORE_DIMENSIONS")
     if not weights or sum(weights.values()) <= 0:
-        raise PipelineError("Score weights must have a positive total")
+        raise PipelineError("Score weights must have a positive total", stage="scoring", code="INVALID_SCORE_WEIGHTS")
     total_weight = sum(weights.values())
     return round(sum(_finite_score(values[name]) * weight for name, weight in weights.items()) / total_weight * 10, 1)
 
@@ -116,10 +121,10 @@ def factuality_gate(claims: Sequence[Mapping[str, Any]]) -> tuple[bool, float, s
     central_statuses = []
     for claim in claims:
         if not isinstance(claim, Mapping):
-            raise PipelineError("Each factual claim must be an object")
+            raise PipelineError("Each factual claim must be an object", stage="facts", code="INVALID_CLAIM")
         status = str(claim.get("status", "")).upper().strip()
         if status not in FACT_STATUSES:
-            raise PipelineError(f"Unknown factual status: {status!r}")
+            raise PipelineError(f"Unknown factual status: {status!r}", stage="facts", code="UNKNOWN_STATUS")
         confidence = _finite_score(claim.get("confidence", 0)) / 10
         evidence = str(claim.get("evidence", "")).strip()
         if status in EVIDENCE_REQUIRED_STATUSES and not evidence:
@@ -165,7 +170,7 @@ def final_decision(idea: float, quality: float, fact_confidence: float, stress: 
 def extract_json(raw: str) -> Any:
     text = str(raw or "").strip()
     if not text:
-        raise PipelineError("Model returned empty content")
+        raise PipelineError("Model returned empty content", stage="provider", code="EMPTY_RESPONSE")
     try:
         return json.loads(text)
     except json.JSONDecodeError:
@@ -182,31 +187,38 @@ def extract_json(raw: str) -> Any:
                 return value
             except json.JSONDecodeError:
                 continue
-        raise PipelineError("Model did not return valid JSON")
+        raise PipelineError("Model did not return valid JSON", stage="provider", code="INVALID_JSON")
 
 
 def validate_angles(angles: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
     if not isinstance(angles, Sequence) or isinstance(angles, (str, bytes)):
-        raise PipelineError("Angles must be a JSON array")
+        raise PipelineError("Angles must be a JSON array", stage="angles", code="INVALID_SHAPE")
     if len(angles) < 8:
-        raise PipelineError(f"Expected at least 8 angles, got {len(angles)}")
+        raise PipelineError(f"Expected at least 8 angles, got {len(angles)}", stage="angles", code="INSUFFICIENT_ANGLES")
     normalized = []
     seen_claims = set()
+    seen_types = set()
     for angle in angles:
         if not isinstance(angle, Mapping):
-            raise PipelineError("Each angle must be a JSON object")
+            raise PipelineError("Each angle must be a JSON object", stage="angles", code="INVALID_ANGLE")
         required = ("angle", "core_claim", "why_it_matters", "target_reaction", "supporting_facts", "potential_counterargument")
         if any(not str(angle.get(key, "")).strip() for key in required):
-            raise PipelineError("Angle missing required fields")
+            raise PipelineError("Angle missing required fields", stage="angles", code="MISSING_FIELDS")
+        angle_type = str(angle["angle"]).strip().lower()
+        if angle_type not in ANGLE_TYPES:
+            raise PipelineError(f"Unknown angle type: {angle_type!r}", stage="angles", code="UNKNOWN_ANGLE_TYPE")
         if not isinstance(angle.get("supporting_facts"), Sequence) or isinstance(angle.get("supporting_facts"), (str, bytes)):
-            raise PipelineError("Angle supporting_facts must be an array")
+            raise PipelineError("Angle supporting_facts must be an array", stage="angles", code="INVALID_FACT_LIST")
         key = re.sub(r"\W+", " ", str(angle["core_claim"]).lower()).strip()
         if key in seen_claims:
             continue
         seen_claims.add(key)
+        seen_types.add(angle_type)
         normalized.append(dict(angle))
     if len(normalized) < 8:
-        raise PipelineError("Angles are repetitive; need at least 8 materially distinct angles")
+        raise PipelineError("Angles are repetitive; need at least 8 materially distinct angles", stage="angles", code="INSUFFICIENT_DIVERSITY")
+    if len(seen_types) < 8:
+        raise PipelineError(f"Angles need at least 8 distinct angle types; got {len(seen_types)}", stage="angles", code="INSUFFICIENT_DIVERSITY")
     return normalized
 
 
@@ -292,13 +304,13 @@ def normalized_metrics(row: Mapping[str, Any]) -> dict[str, float]:
 
 def _require_object(value: Any, name: str) -> Mapping[str, Any]:
     if not isinstance(value, Mapping):
-        raise PipelineError(f"Model returned invalid {name}: expected a JSON object")
+        raise PipelineError(f"Model returned invalid {name}: expected a JSON object", stage="provider", code="INVALID_SHAPE")
     return value
 
 
 def _require_sequence(value: Any, name: str) -> Sequence[Any]:
     if not isinstance(value, Sequence) or isinstance(value, (str, bytes)):
-        raise PipelineError(f"Model returned invalid {name}: expected a JSON array")
+        raise PipelineError(f"Model returned invalid {name}: expected a JSON array", stage="provider", code="INVALID_SHAPE")
     return value
 
 
