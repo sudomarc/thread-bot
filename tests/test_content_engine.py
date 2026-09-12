@@ -101,7 +101,46 @@ class ContentEngineTests(unittest.TestCase):
         self.assertFalse(result["draft_present"])
         self.assertFalse(result["all_pass"])
 
-    def test_stress_test_catches_generic_posts_and_missing_claim_evidence(self):
+    def test_stress_test_accepts_opinion_without_evidence(self):
+        result = stress_test(
+            "draft",
+            scroll_answer="A concrete reason",
+            reply_example="A plausible reply",
+            counterargument="A reasonable counterargument",
+            generic=False,
+            quotable_line="A quote",
+            claims=[{"status": "OPINION", "confidence": 9}],
+        )
+        self.assertTrue(result["claim_integrity"])
+        self.assertTrue(result["all_pass"])
+
+    def test_stress_test_rejects_missing_evidence_for_factual_claim(self):
+        result = stress_test(
+            "draft",
+            scroll_answer="A concrete reason",
+            reply_example="A plausible reply",
+            counterargument="A reasonable counterargument",
+            generic=False,
+            quotable_line="A quote",
+            claims=[{"status": "VERIFIED", "confidence": 9}],
+        )
+        self.assertFalse(result["claim_integrity"])
+        self.assertFalse(result["all_pass"])
+
+    def test_stress_test_rejects_contradicted_claim(self):
+        result = stress_test(
+            "draft",
+            scroll_answer="A concrete reason",
+            reply_example="A plausible reply",
+            counterargument="A reasonable counterargument",
+            generic=False,
+            quotable_line="A quote",
+            claims=[{"status": "CONTRADICTED", "evidence": "Source disagrees", "confidence": 9}],
+        )
+        self.assertFalse(result["claim_integrity"])
+        self.assertFalse(result["all_pass"])
+
+    def test_stress_test_catches_generic_posts(self):
         result = stress_test(
             "draft",
             scroll_answer="A concrete reason",
