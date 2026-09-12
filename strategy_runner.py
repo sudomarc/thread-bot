@@ -74,7 +74,7 @@ def _editorial_brief_from_slot(recipe, relatable_topic):
         f"Format: {kind}.",
         f"Hook direction: {hook}.",
         f"Editorial instruction: {instruction}.",
-        "Creator-safety rule: editorial context is not factual evidence. Never invent personal hardware, spending, actions, results, quotes, or experiences. If first-person wording is unsupported, use an observational or general-builder framing instead.",
+        "Creator-safety rule: editorial context is not factual evidence. never invent hardware, spending, actions, results, quotes, or experiences. If first-person wording is unsupported, use an observational or general-builder framing instead.",
     ]
     if relatable_topic:
         parts.append(f"Relatable context: {relatable_topic[1]}.")
