@@ -129,6 +129,161 @@ def _is_retryable_provider_error(error):
     return "openrouter returned empty content" in message or "openrouter returned no choices" in message
 
 
+def _provider_stage(prompt):
+    text = str(prompt or "").lstrip().lower()
+    if text.startswith("fact-check"):
+        return "fact_check"
+    if text.startswith("generate a diverse idea pool"):
+        return "angles"
+    if text.startswith("write one natural threads post"):
+        return "draft"
+    return "unknown"
+
+
+def _provider_error_kind(error):
+    message = str(error).lower()
+    if "empty content" in message:
+        return "empty_response"
+    if "no choices" in message:
+        return "missing_choices"
+    if "http 4" in message:
+        return "http_4xx"
+    if "http 5" in message:
+        return "http_5xx"
+    return type(error).__name__.lower()
+
+
+def _instrument_provider(provider, attempt):
+    def call(prompt):
+        stage = _provider_stage(prompt)
+        print(
+            f"PIPELINE event=provider_request stage={stage} provider=openrouter "
+            f"model=openrouter/free attempt={attempt}"
+        )
+        try:
+            content = provider(prompt)
+        except Exception as error:
+            print(
+                f"PIPELINE event=provider_response stage={stage} outcome=error "
+                f"error_kind={_provider_error_kind(error)}"
+            )
+            raise
+        content_length = len(content) if isinstance(content, str) else -1
+        print(
+            f"PIPELINE event=provider_response stage={stage} outcome=ok "
+            f"content_chars={content_length}"
+        )
+        return content
+
+    return call
+
+
+def _diagnose_result(result):
+    diagnosed = dict(result)
+    decision = str(diagnosed.get("decision", "UNKNOWN")).upper()
+    if decision != "REJECT":
+        diagnosed.setdefault("stage", "final_decision")
+        diagnosed.setdefault("rejection_reason", "")
+        diagnosed.setdefault("recoverable", False)
+        return diagnosed
+
+    fact_confidence = diagnosed.get("fact_confidence")
+    fact_reason = str(diagnosed.get("fact_gate", "")).strip()
+    if isinstance(fact_confidence, (int, float)) and fact_confidence < 0.7:
+        diagnosed["stage"] = "fact_check"
+        diagnosed["rejection_reason"] = fact_reason or "Fact confidence is below the 0.70 safety threshold."
+        diagnosed["recoverable"] = "contradicted" not in diagnosed["rejection_reason"].lower()
+        return diagnosed
+
+    angles = diagnosed.get("angles") or []
+    if angles and not diagnosed.get("top_pick"):
+        best = max(angles, key=lambda item: float(item.get("idea_score", 0)))
+        best_score = float(best.get("idea_score", 0))
+        best_decision = str(best.get("idea_decision", "REJECT"))
+        diagnosed["stage"] = "idea_selection"
+        diagnosed["rejection_reason"] = (
+            f"No eligible idea met the idea gate; best_idea_score={best_score:.1f}/100 "
+            f"best_idea_decision={best_decision} required_score>=80 and hard dimensions "
+            "scroll_stop, originality, and debate_potential must each be >=7/10."
+        )
+        diagnosed["recoverable"] = True
+        return diagnosed
+
+    stress = diagnosed.get("stress_test") or {}
+    if stress and not bool(stress.get("all_pass", False)):
+        failed = [name for name, passed in stress.items() if name != "all_pass" and not bool(passed)]
+        diagnosed["stage"] = "stress_test"
+        diagnosed["rejection_reason"] = (
+            "Stress test failed: " + ", ".join(failed or ["unknown_check"]) + "."
+        )
+        diagnosed["recoverable"] = True
+        return diagnosed
+
+    diagnosed["stage"] = "final_decision"
+    diagnosed["rejection_reason"] = diagnosed.get("rejection_reason") or fact_reason or "Final decision rejected the pipeline result."
+    diagnosed["recoverable"] = True
+    return diagnosed
+
+
+def _log_pipeline_result(result):
+    result = _diagnose_result(result)
+    keys = ",".join(sorted(str(key) for key in result.keys()))
+    print(
+        f"PIPELINE event=parsed_result outcome=ok decision={result.get('decision', 'UNKNOWN')} "
+        f"keys={keys}"
+    )
+
+    fact_gate = result.get("fact_gate")
+    if fact_gate is not None:
+        confidence = result.get("fact_confidence", "unknown")
+        print(
+            f"PIPELINE event=validation_result stage=fact_check outcome="
+            f"{'pass' if not result.get('stage') == 'fact_check' else 'reject'} "
+            f"fact_confidence={confidence}"
+        )
+
+    angles = result.get("angles") or []
+    if angles:
+        eligible = sum(1 for angle in angles if angle.get("idea_decision") in {"EXCEPTIONAL", "STRONG", "PROMISING"})
+        print(
+            f"PIPELINE event=quality_scoring stage=idea_selection angles={len(angles)} "
+            f"eligible={eligible} best_idea_score={max(float(a.get('idea_score', 0)) for a in angles):.1f}"
+        )
+
+    if "quality_score" in result or "final_score" in result:
+        print(
+            f"PIPELINE event=quality_scoring stage=final "
+            f"quality_score={result.get('quality_score', 'unknown')} "
+            f"final_score={result.get('final_score', 'unknown')}"
+        )
+
+    if result.get("decision") == "REJECT":
+        print(
+            f"PIPELINE event=decision outcome=REJECT stage={result.get('stage', 'unknown')} "
+            f"recoverable={bool(result.get('recoverable', False))}"
+        )
+        print(
+            f"PIPELINE event=rejection_reason stage={result.get('stage', 'unknown')} "
+            f"reason={result.get('rejection_reason', 'unknown')}"
+        )
+    else:
+        print(f"PIPELINE event=decision outcome={result.get('decision', 'UNKNOWN')} stage={result.get('stage', 'final_decision')}")
+    return result
+
+
+def _write_pipeline_report(result):
+    result = _diagnose_result(result)
+    with open(PIPELINE_REPORT_PATH, "w", encoding="utf-8") as handle:
+        handle.write(
+            "PIPELINE DIAGNOSTICS\n"
+            f"STAGE: {result.get('stage', 'unknown')}\n"
+            f"DECISION: {result.get('decision', 'UNKNOWN')}\n"
+            f"RECOVERABLE: {bool(result.get('recoverable', False))}\n"
+            f"REJECTION REASON: {result.get('rejection_reason', '')}\n\n"
+        )
+        handle.write(render_report(result))
+
+
 def _retry_brief(editorial_brief, error):
     message = str(error).lower()
     if "angles are repetitive" in message or "expected at least 8 angles" in message:
@@ -140,6 +295,15 @@ def _retry_brief(editorial_brief, error):
             "Do not restate the same thesis with different wording. Vary the mechanism, stakeholder, consequence, "
             "time horizon, incentive, behavior, trade-off, or question being explored. "
             "Keep every supporting fact grounded in the supplied fact check/source material."
+        ).strip()
+    if "no eligible idea met the idea gate" in message:
+        return (
+            f"{editorial_brief} "
+            "IDEA GATE RETRY: the previous angle pool produced no publishable idea. "
+            "Generate at least 10 materially different angles, but prioritize angles that can satisfy the existing idea gate. "
+            "Each angle must have scroll_stop >= 7, originality >= 7, debate_potential >= 7, and a weighted idea score >= 80. "
+            "Do not inflate scores without changing the underlying angle. Improve the actual hook, originality, and debate value. "
+            "Keep all factual claims grounded in the supplied fact check and sources."
         ).strip()
     if _is_retryable_provider_error(error):
         return (
@@ -156,31 +320,74 @@ def _retry_brief(editorial_brief, error):
     ).strip()
 
 
+def _evaluate_with_diagnostics(topic, article, editorial_brief, provider, attempt):
+    result = evaluate_topic(
+        topic,
+        [article],
+        _instrument_provider(provider, attempt),
+        editorial_brief=editorial_brief,
+    )
+    return _log_pipeline_result(result)
+
+
 def _run_pipeline(topic, article, editorial_brief=""):
     try:
-        return evaluate_topic(topic, [article], bot.openrouter_chat_json, editorial_brief=editorial_brief)
+        result = _evaluate_with_diagnostics(
+            topic, article, editorial_brief, bot.openrouter_chat_json, attempt=1
+        )
     except PipelineError as first_error:
         retry_brief = _retry_brief(editorial_brief, first_error)
-        print(f"Pipeline validation failed; retrying once: {type(first_error).__name__}: {first_error}")
+        print(
+            f"PIPELINE event=retry trigger=validation_or_provider_error attempt=2 "
+            f"error_kind={_provider_error_kind(first_error)}"
+        )
         try:
-            return evaluate_topic(topic, [article], bot.openrouter_chat_json, editorial_brief=retry_brief)
+            return _evaluate_with_diagnostics(
+                topic, article, retry_brief,
+                _retry_openrouter_chat if _is_retryable_provider_error(first_error) else bot.openrouter_chat_json,
+                attempt=2,
+            )
         except Exception as retry_error:
             raise PipelineError(
-                f"Pipeline validation failed: {first_error}; retry failed: "
+                f"Pipeline retry failed after {type(first_error).__name__}: "
                 f"{type(retry_error).__name__}: {retry_error}"
             ) from retry_error
     except RuntimeError as first_error:
         if not _is_retryable_provider_error(first_error):
             raise
         retry_brief = _retry_brief(editorial_brief, first_error)
-        print(f"Provider output failed; retrying once: {type(first_error).__name__}: {first_error}")
+        print(
+            f"PIPELINE event=retry trigger=provider_error attempt=2 "
+            f"error_kind={_provider_error_kind(first_error)}"
+        )
         try:
-            return evaluate_topic(topic, [article], _retry_openrouter_chat, editorial_brief=retry_brief)
+            return _evaluate_with_diagnostics(
+                topic, article, retry_brief, _retry_openrouter_chat, attempt=2
+            )
         except Exception as retry_error:
             raise PipelineError(
-                f"Pipeline provider output failed: {first_error}; retry failed: "
-                f"{type(retry_error).__name__}: {retry_error}"
+                f"Pipeline provider output failed: {type(first_error).__name__}; "
+                f"retry failed: {type(retry_error).__name__}: {retry_error}"
             ) from retry_error
+
+    result = _diagnose_result(result)
+    if result.get("decision") != "REJECT" or not result.get("recoverable", False):
+        return result
+
+    retry_brief = _retry_brief(editorial_brief, result["rejection_reason"])
+    print(
+        f"PIPELINE event=retry trigger=decision_reject attempt=2 "
+        f"stage={result.get('stage', 'unknown')} reason={result.get('rejection_reason', 'unknown')}"
+    )
+    try:
+        retried = _evaluate_with_diagnostics(
+            topic, article, retry_brief, bot.openrouter_chat_json, attempt=2
+        )
+        return _diagnose_result(retried)
+    except Exception as retry_error:
+        raise PipelineError(
+            f"Pipeline rejection retry failed: {type(retry_error).__name__}: {retry_error}"
+        ) from retry_error
 
 
 def _retry_openrouter_chat(prompt):
@@ -201,13 +408,16 @@ def generate_strategy_threads(articles, state):
     if result.get("decision") == "REWRITE":
         rewrite_brief = f"{editorial_brief} Rewrite pass: preserve the strongest defensible claim, increase specificity and tension, and remove generic wording."
         result = _run_pipeline(topic, article, rewrite_brief)
+    result = _diagnose_result(result)
     if result.get("decision") != "PUBLISH":
-        with open(PIPELINE_REPORT_PATH, "w", encoding="utf-8") as handle:
-            handle.write(render_report(result))
-        raise RuntimeError(f"Content pipeline decision: {result.get('decision', 'UNKNOWN')}")
+        _write_pipeline_report(result)
+        raise RuntimeError(
+            f"Content pipeline decision: {result.get('decision', 'UNKNOWN')} "
+            f"stage={result.get('stage', 'unknown')} "
+            f"reason={result.get('rejection_reason', 'unspecified')}"
+        )
 
-    with open(PIPELINE_REPORT_PATH, "w", encoding="utf-8") as handle:
-        handle.write(render_report(result))
+    _write_pipeline_report(result)
 
     post = {
         "number": 1,
