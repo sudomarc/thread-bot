@@ -108,6 +108,7 @@ def _editorial_brief_from_slot(recipe, relatable_topic):
         f"Format: {kind}.",
         f"Hook direction: {hook}.",
         f"Editorial instruction: {instruction}.",
+        "Threads writing contract: write for a fast-scrolling feed. Keep the post compact, usually 3-7 short lines, with the hook immediately visible. Target a short read rather than an explanation; remove setup, repetition, filler, and essay-style context. End with the strongest line in the post: a sharp consequence, contrast, tension, or memorable takeaway. The final line should hit harder than the opening and should not merely summarize. Do not use a generic call to action or 'What do you think?' ending.",
         "Creator-safety rule: editorial context is not factual evidence. never invent hardware, spending, actions, results, quotes, or experiences. If first-person wording is unsupported, use an observational or general-builder framing instead.",
     ]
     if relatable_topic:
