@@ -90,6 +90,11 @@ def record_performance(state, data):
     return row
 
 
+def _is_retryable_provider_error(error):
+    message = str(error).lower()
+    return "openrouter returned empty content" in message or "openrouter returned no choices" in message
+
+
 def _retry_brief(editorial_brief, error):
     message = str(error).lower()
     if "angles are repetitive" in message or "expected at least 8 angles" in message:
@@ -101,6 +106,13 @@ def _retry_brief(editorial_brief, error):
             "Do not restate the same thesis with different wording. Vary the mechanism, stakeholder, consequence, "
             "time horizon, incentive, behavior, trade-off, or question being explored. "
             "Keep every supporting fact grounded in the supplied fact check/source material."
+        ).strip()
+    if _is_retryable_provider_error(error):
+        return (
+            f"{editorial_brief} "
+            "PROVIDER OUTPUT RETRY: the previous provider response contained no usable text. "
+            "Return one complete valid JSON object with every required field explicitly populated. "
+            "Do not return an empty response, null content, markdown, or explanation outside the JSON object."
         ).strip()
     return (
         f"{editorial_brief} "
@@ -121,6 +133,18 @@ def _run_pipeline(topic, article, editorial_brief=""):
         except Exception as retry_error:
             raise PipelineError(
                 f"Pipeline validation failed: {first_error}; retry failed: "
+                f"{type(retry_error).__name__}: {retry_error}"
+            ) from retry_error
+    except RuntimeError as first_error:
+        if not _is_retryable_provider_error(first_error):
+            raise
+        retry_brief = _retry_brief(editorial_brief, first_error)
+        print(f"Provider output failed; retrying once: {type(first_error).__name__}: {first_error}")
+        try:
+            return evaluate_topic(topic, [article], bot.openrouter_chat_json, editorial_brief=retry_brief)
+        except Exception as retry_error:
+            raise PipelineError(
+                f"Pipeline provider output failed: {first_error}; retry failed: "
                 f"{type(retry_error).__name__}: {retry_error}"
             ) from retry_error
 
