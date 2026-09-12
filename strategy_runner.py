@@ -175,12 +175,17 @@ def _run_pipeline(topic, article, editorial_brief=""):
         retry_brief = _retry_brief(editorial_brief, first_error)
         print(f"Provider output failed; retrying once: {type(first_error).__name__}: {first_error}")
         try:
-            return evaluate_topic(topic, [article], bot.openrouter_chat_json, editorial_brief=retry_brief)
+            return evaluate_topic(topic, [article], _retry_openrouter_chat, editorial_brief=retry_brief)
         except Exception as retry_error:
             raise PipelineError(
                 f"Pipeline provider output failed: {first_error}; retry failed: "
                 f"{type(retry_error).__name__}: {retry_error}"
             ) from retry_error
+
+
+def _retry_openrouter_chat(prompt):
+    """Retry JSON stages without provider-enforced JSON mode; content_engine still validates JSON."""
+    return bot.openrouter_chat(prompt, json_mode=False)
 
 
 def generate_strategy_threads(articles, state):
