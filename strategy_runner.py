@@ -48,14 +48,48 @@ STRATEGY_POSTS = [
 
 PIPELINE_REPORT_PATH = "state/latest_content_evaluation.txt"
 
+ARTICLE_RELEVANCE_KEYWORDS = {
+    "builder_experience": {
+        "ai", "artificial intelligence", "developer", "coding", "code", "software", "automation", "workflow",
+        "model", "open source", "api", "cloud", "gpu", "chip", "semiconductor", "startup", "robotics",
+        "tool", "platform", "computer", "hardware", "infrastructure",
+    },
+    "opinion_observation": {
+        "ai", "artificial intelligence", "developer", "coding", "software", "automation", "model", "openai",
+        "anthropic", "nvidia", "google", "microsoft", "apple", "cloud", "startup", "open source",
+    },
+    "humor": {"ai", "developer", "coding", "software", "game", "gaming", "internet", "tech"},
+    "question": {"ai", "developer", "coding", "software", "game", "gaming", "tech", "technology"},
+    "news_explainer": {"security", "cybersecurity", "ransomware", "breach", "vulnerability", "zero-day", "hacker", "malware", "phishing", "data leak"},
+    "gaming": {"game", "gaming", "gta", "playstation", "xbox", "nintendo", "steam", "esports", "rockstar", "rockstar games"},
+}
 
-def _pick_article(articles, category):
-    if category:
-        matches = [item for item in articles if item.get("category") == category]
-        if matches:
-            return matches[0]
-    preferred = [item for item in articles if item.get("category") == "technology"]
-    return (preferred or articles)[0]
+
+def _article_relevance(article, strategy_kind):
+    keywords = ARTICLE_RELEVANCE_KEYWORDS.get(strategy_kind, set())
+    if not keywords:
+        return 0
+    text = f"{article.get('title', '')} {article.get('description', '')}".lower()
+    return sum(1 for keyword in keywords if keyword in text)
+
+
+def _pick_article(articles, category, strategy_kind=None):
+    if not articles:
+        raise RuntimeError("No articles available for strategy selection")
+    candidates = [item for item in articles if category and item.get("category") == category] if category else list(articles)
+    if not candidates:
+        candidates = list(articles)
+
+    if strategy_kind:
+        ranked = sorted(
+            enumerate(candidates),
+            key=lambda pair: (_article_relevance(pair[1], strategy_kind), -pair[0]),
+            reverse=True,
+        )
+        best_score = _article_relevance(ranked[0][1], strategy_kind)
+        if best_score > 0:
+            return ranked[0][1]
+    return candidates[0]
 
 
 def _fresh_topic(state):
@@ -153,7 +187,7 @@ def generate_strategy_threads(articles, state):
     cursor = int(state.get("strategy_cursor", 0))
     recipe = STRATEGY_POSTS[cursor % len(STRATEGY_POSTS)]
     kind, preferred_category, _, _ = recipe
-    article = _pick_article(articles, preferred_category)
+    article = _pick_article(articles, preferred_category, kind)
     relatable_topic = _fresh_topic(state) if preferred_category is None else None
     topic = _topic_from_slot(recipe, article)
     editorial_brief = _editorial_brief_from_slot(recipe, relatable_topic)
