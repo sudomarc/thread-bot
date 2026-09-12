@@ -55,6 +55,16 @@ class StrategyRunnerTests(unittest.TestCase):
         self.assertIn("Creator-safety rule", brief)
         self.assertIn("never invent hardware", brief)
 
+    def test_editorial_brief_requires_compact_punchy_threads_copy(self):
+        recipe = strategy_runner.STRATEGY_POSTS[2]
+        brief = strategy_runner._editorial_brief_from_slot(recipe, None)
+        self.assertIn("fast-scrolling feed", brief)
+        self.assertIn("3-7 short lines", brief)
+        self.assertIn("remove setup, repetition, filler, and essay-style context", brief)
+        self.assertIn("End with the strongest line in the post", brief)
+        self.assertIn("should hit harder than the opening", brief)
+        self.assertIn("Do not use a generic call to action", brief)
+
     def test_builder_brief_requires_source_supported_first_person(self):
         recipe = next(item for item in strategy_runner.STRATEGY_POSTS if item[0] == "builder_experience")
         brief = strategy_runner._editorial_brief_from_slot(recipe, None)
