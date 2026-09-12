@@ -2,6 +2,22 @@
 
 All notable changes to Thread Bot are documented here.
 
+## [2.3.0] — 2026-09-12 — Vesper
+
+### Added
+- Structured, sanitized pipeline diagnostics covering provider requests/responses, validation, scoring, rejection stage, and final outcome.
+- Recovery for recoverable idea-gate and stress-test rejections with a stricter retry brief.
+- Regression coverage for compact, punchy editorial briefs and strategy-pipeline recovery/diagnostics.
+
+### Changed
+- Strategy pipeline failures now preserve the original validation/provider cause when a retry also fails.
+- Rejection errors now report the pipeline stage and reason instead of collapsing distinct failure modes into a generic validation failure.
+- Editorial briefs now explicitly enforce compact Threads copy, stronger closing lines, and avoidance of generic calls to action.
+
+### Verified
+- Latest GitHub Actions workflow run passed the full `test` job, including unit tests and Python compilation.
+- The same run passed the scheduled strategy job and persisted state successfully.
+
 ## [2.2.2] — 2026-09-11
 
 ### Fixed
