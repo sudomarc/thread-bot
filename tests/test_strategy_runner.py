@@ -102,6 +102,30 @@ class StrategyRunnerTests(unittest.TestCase):
         self.assertIn("rate limit", str(raised.exception))
         self.assertEqual(evaluator.call_count, 2)
 
+    def test_generate_strategy_threads_handles_reject_without_failing(self):
+        articles = [{
+            "category": "gaming",
+            "title": "Rejected story",
+            "description": "The pipeline should safely reject this story.",
+            "published": "2026-09-12T00:00:00Z",
+            "url": "https://example.com/rejected",
+        }]
+        state = {"strategy_cursor": 3, "recent_post_titles": [], "recent_relatable_topic_tags": []}
+        rejected = {
+            "topic": "Rejected story.",
+            "angles": [],
+            "decision": "REJECT",
+            "fact_confidence": 0.4,
+            "fact_gate": "No eligible idea",
+        }
+        with patch.object(strategy_runner, "_run_pipeline", return_value=rejected):
+            with patch.object(strategy_runner, "PIPELINE_REPORT_PATH", "/tmp/thread-bot-rejected-evaluation.txt"):
+                content, posts = strategy_runner.generate_strategy_threads(articles, state)
+        self.assertEqual(posts, [])
+        self.assertIn("No publishable content", content)
+        self.assertEqual(state["strategy_cursor"], 4)
+        self.assertEqual(state["last_pipeline_decision"], "REJECT")
+
     def test_generate_strategy_threads_runs_fact_angle_and_draft_stages(self):
         articles = [{
             "category": "gaming",
