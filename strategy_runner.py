@@ -356,8 +356,8 @@ def _run_pipeline(topic, article, editorial_brief=""):
                 f"error_kind={_provider_error_kind(retry_error)}"
             )
             raise PipelineError(
-                f"Pipeline retry failed after {type(first_error).__name__}: "
-                f"{type(retry_error).__name__}: {retry_error}"
+                f"Pipeline retry failed after {type(first_error).__name__}: {first_error}; "
+                f"retry failed: {type(retry_error).__name__}: {retry_error}"
             ) from retry_error
     except RuntimeError as first_error:
         if not _is_retryable_provider_error(first_error):
@@ -382,7 +382,7 @@ def _run_pipeline(topic, article, editorial_brief=""):
                 f"error_kind={_provider_error_kind(retry_error)}"
             )
             raise PipelineError(
-                f"Pipeline provider output failed: {type(first_error).__name__}; "
+                f"Pipeline provider output failed: {type(first_error).__name__}: {first_error}; "
                 f"retry failed: {type(retry_error).__name__}: {retry_error}"
             ) from retry_error
 
