@@ -10,6 +10,18 @@ class StrategyRunnerTests(unittest.TestCase):
     def test_strategy_contains_20_slots_for_four_weeks(self):
         self.assertEqual(len(strategy_runner.STRATEGY_POSTS), 20)
 
+    def test_strategy_mix_matches_observed_content_direction(self):
+        counts = {}
+        for recipe in strategy_runner.STRATEGY_POSTS:
+            counts[recipe[0]] = counts.get(recipe[0], 0) + 1
+        self.assertEqual(counts, strategy_runner.STRATEGY_MIX)
+        self.assertEqual(counts["builder_experience"], 8)
+        self.assertEqual(counts["humor"], 4)
+        self.assertEqual(counts["opinion_observation"], 4)
+        self.assertEqual(counts["question"], 2)
+        self.assertEqual(counts["news_explainer"], 1)
+        self.assertEqual(counts["gaming"], 1)
+
     def test_strategy_targets_match_30_day_plan(self):
         self.assertEqual(strategy_runner.STRATEGY_TARGETS["followers"], "75-150 / 30 days")
         self.assertEqual(strategy_runner.STRATEGY_TARGETS["conversion"], "0.3-0.6% views-to-followers")
@@ -40,6 +52,14 @@ class StrategyRunnerTests(unittest.TestCase):
         self.assertIn("Format:", brief)
         self.assertIn("Hook direction:", brief)
         self.assertIn("Relatable context:", brief)
+        self.assertIn("Creator-safety rule", brief)
+        self.assertIn("never invent hardware", brief)
+
+    def test_builder_brief_requires_source_supported_first_person(self):
+        recipe = next(item for item in strategy_runner.STRATEGY_POSTS if item[0] == "builder_experience")
+        brief = strategy_runner._editorial_brief_from_slot(recipe, None)
+        self.assertIn("Use first person only when the supplied material or configured creator context supports it", brief)
+        self.assertIn("never invent hardware, spending, actions, or results", brief)
 
     def test_editorial_brief_is_not_sent_to_fact_prompt(self):
         topic = "Source story. Source facts."
@@ -146,6 +166,7 @@ class StrategyRunnerTests(unittest.TestCase):
         self.assertEqual(posts[0]["decision"], "PUBLISH")
         self.assertGreaterEqual(posts[0]["idea_score"], 90)
         self.assertEqual(state["strategy_cursor"], 4)
+        self.assertEqual(state["strategy_mix"], strategy_runner.STRATEGY_MIX)
 
 
 if __name__ == "__main__":

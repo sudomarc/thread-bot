@@ -12,27 +12,38 @@ STRATEGY_TARGETS = {
     "posts": "20-25 / 30 days",
 }
 
+# Observed winning pattern: AI/tech + a concrete builder constraint or experience +
+# a strong hook. The mix keeps humor/conversation while reducing generic news posts.
+STRATEGY_MIX = {
+    "builder_experience": 8,
+    "humor": 4,
+    "opinion_observation": 4,
+    "question": 2,
+    "news_explainer": 1,
+    "gaming": 1,
+}
+
 STRATEGY_POSTS = [
-    ("news_opinion", "technology", "AI isn't replacing everyone. It's changing who can build what.", "Take a strong, defensible position on the supplied story and invite disagreement."),
-    ("question", None, "What's one AI product you genuinely couldn't live without anymore?", "Ask a simple question that makes AI/tech people want to answer from experience."),
-    ("humor", None, "Me: I'll only use AI for 5 minutes.", "Write a short, highly relatable tech/AI joke using the supplied story as context."),
-    ("gaming", "gaming", "AI NPCs could change gaming more than better graphics ever did.", "Use a current gaming story to make a forward-looking claim about games and AI."),
-    ("big_idea", "technology", "The internet is entering a weird phase.", "Turn the supplied story into a broader observation about AI, the internet, or software."),
-    ("news_explainer", "technology", "Something interesting is happening in AI right now.", "Explain the supplied story in plain English, then say why it matters to builders/users."),
-    ("question", None, "What are you actually building with AI right now?", "Ask builders to share projects. Optimize for replies, not a lecture."),
-    ("humor", None, "Developers when the code works on the first try:", "Write a short developer/AI joke grounded in the supplied story."),
-    ("news_opinion", "cybersecurity", "Security gets interesting when the easiest attack is also the cheapest.", "Give a sharp security/technology take grounded in the supplied current story."),
-    ("ai_observation", None, "We're making the distance between 'I have an idea' and 'I built it' smaller.", "Write a concise observation about AI lowering the barrier to building."),
-    ("gaming", "gaming", "What game would you want an AI-powered NPC to actually remember you in?", "Use the gaming source as context, but make the post primarily a question that invites stories."),
-    ("big_idea", "technology", "Most people don't need a better model. They need to use the one they have better.", "Make a provocative but useful point about AI usage, grounded in the current story."),
-    ("news_explainer", "cybersecurity", "This security story matters for one reason:", "Explain the practical implication of the supplied cybersecurity story without fearmongering."),
-    ("question", None, "If AI became 10x smarter tomorrow, what would you actually use it for?", "Invite concrete answers. Avoid generic 'make the world better' responses."),
-    ("humor", None, "Me opening my code after asking AI to 'just fix one thing'...", "Write a concise coding/AI joke using the current story as context."),
-    ("news_opinion", "gaming", "We're probably underestimating what games can become.", "Turn the current gaming story into a strong opinion about the future of games."),
-    ("ai_observation", None, "The best AI users aren't always the smartest people in the room.", "Make a concise point about better questions, workflows, or judgment."),
-    ("news_opinion", "technology", "Hot take: most AI products are adding features faster than people can build habits around them.", "Take a clear position using the supplied current story as evidence or context."),
-    ("question", None, "What tech trend do you think everyone is overhyping right now?", "Create a debate-friendly question for the AI/tech audience, informed by the supplied story."),
-    ("big_idea", "technology", "One person can build what used to require a team.", "Use the current story to frame what one builder can now do with AI/software."),
+    ("builder_experience", "technology", "I shouldn't be able to build this with the resources I have.", "Turn the supplied story into a concrete builder-perspective post. Focus on a real constraint, workaround, leverage point, or surprising result. Use first person only when the supplied material or configured creator context supports it; never invent hardware, spending, actions, or results."),
+    ("builder_experience", "technology", "The interesting part isn't the AI. It's what a small builder can do with it.", "Frame the supplied story through the lens of a resource-constrained builder. Make the constraint visible, then show the practical leverage. Do not invent personal facts."),
+    ("builder_experience", "technology", "A weak setup can still do a ridiculous amount with the right workflow.", "Extract a practical lesson for a small or solo builder from the supplied story. Prefer a concrete trade-off over generic AI hype. Do not fabricate the creator's setup."),
+    ("builder_experience", "technology", "I thought the hardware would be the bottleneck. It wasn't.", "Use the supplied story to explore how software, AI tools, automation, or workflow can move a bottleneck. First-person wording is allowed only when supported; otherwise use an observational framing."),
+    ("builder_experience", "technology", "This is what AI changes for people without a giant budget.", "Translate the supplied story into a resource-constrained builder perspective: what becomes possible, what remains hard, and what trade-off matters. Keep claims source-grounded."),
+    ("builder_experience", "technology", "One person can now get surprisingly close to what used to require a team.", "Use the supplied story as evidence/context for solo-builder leverage. Be specific about the mechanism and avoid unsupported productivity or cost claims."),
+    ("builder_experience", "technology", "The hack isn't having better hardware. It's removing the bottleneck.", "Find the most defensible bottleneck/workaround in the supplied story and turn it into a concise builder lesson. Do not invent a personal anecdote."),
+    ("builder_experience", "technology", "Trying to build with limited resources teaches you what the tool is actually good at.", "Make the post feel lived-in and practical without fabricating personal experience. Center a real constraint, what the technology changes, and the remaining limitation."),
+    ("humor", None, "Me: I'll only use AI for 5 minutes.", "Write a short, highly relatable tech/AI joke using the supplied story as context. No invented factual claims."),
+    ("humor", None, "Developers when the code works on the first try:", "Write a short developer/AI joke grounded in the supplied story. Keep it punchy and recognizable."),
+    ("humor", None, "Me opening my code after asking AI to 'just fix one thing'...", "Write a concise coding/AI joke using the current story as context. Avoid generic setup if the source offers a better specific joke."),
+    ("humor", None, "Having AI do one tiny task was a mistake.", "Turn the supplied story into a relatable AI/developer humor post. Keep the joke short enough to scan immediately."),
+    ("opinion_observation", "technology", "AI isn't replacing everyone. It's changing who can build what.", "Take a strong, defensible position on the supplied story and invite disagreement. Make the consequence for builders explicit."),
+    ("opinion_observation", "technology", "The distance between 'I have an idea' and 'I built it' keeps shrinking.", "Write a concise observation about AI lowering the barrier to building, grounded in the supplied story."),
+    ("opinion_observation", "technology", "Most people don't need a better model. They need to use the one they have better.", "Make a provocative but useful point about AI usage, grounded in the current story."),
+    ("opinion_observation", "technology", "Hot take: most AI products add features faster than people can build habits around them.", "Take a clear position using the supplied current story as evidence or context. Avoid hype and explain the trade-off."),
+    ("question", None, "What are you actually building with AI right now?", "Ask builders to share projects. Optimize for replies, not a lecture. Use the source only as context and never invent details about commenters."),
+    ("question", None, "What AI tool genuinely earns a place in your daily workflow?", "Ask for concrete experiences rather than generic favorites. Make the question easy to answer in one sentence."),
+    ("news_explainer", "cybersecurity", "This security story matters for one reason:", "Explain the supplied cybersecurity story in plain English, then give the practical implication without fearmongering or unsupported technical claims."),
+    ("gaming", "gaming", "What game would you want an AI-powered NPC to actually remember you in?", "Use the gaming source as context, but make the post primarily a question that invites stories and debate."),
 ]
 
 PIPELINE_REPORT_PATH = "state/latest_content_evaluation.txt"
@@ -63,6 +74,7 @@ def _editorial_brief_from_slot(recipe, relatable_topic):
         f"Format: {kind}.",
         f"Hook direction: {hook}.",
         f"Editorial instruction: {instruction}.",
+        "Creator-safety rule: editorial context is not factual evidence. never invent hardware, spending, actions, results, quotes, or experiences. If first-person wording is unsupported, use an observational or general-builder framing instead.",
     ]
     if relatable_topic:
         parts.append(f"Relatable context: {relatable_topic[1]}.")
@@ -151,6 +163,7 @@ def generate_strategy_threads(articles, state):
     state["strategy_last_format"] = kind
     state["strategy_last_run_at"] = datetime.now(timezone.utc).isoformat()
     state["strategy_targets"] = STRATEGY_TARGETS
+    state["strategy_mix"] = STRATEGY_MIX
     state["last_pipeline_decision"] = result["decision"]
     state["last_pipeline_scores"] = {
         "idea_score": post["idea_score"],
