@@ -113,6 +113,10 @@ class StrategyRunnerTests(unittest.TestCase):
         self.assertIn("PROVIDER OUTPUT RETRY", retry_brief)
         self.assertIn("no usable text", retry_brief)
 
+    def test_retryable_provider_error_includes_no_choices(self):
+        error = RuntimeError("OpenRouter returned no choices: unknown error")
+        self.assertTrue(strategy_runner._is_retryable_provider_error(error))
+
     def test_angle_retry_brief_demands_material_diversity(self):
         error = content_engine.PipelineError("Angles are repetitive; need at least 8 materially distinct angles")
         brief = strategy_runner._retry_brief("Format: news_opinion.", error)
