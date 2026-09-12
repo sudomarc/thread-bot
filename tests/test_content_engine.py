@@ -50,17 +50,31 @@ class ContentEngineTests(unittest.TestCase):
             final_decision(90, -1, 0.9, {"all_pass": True})
 
     def test_factuality_gate_rejects_contradicted_claim(self):
-        ok, confidence, reason = factuality_gate([{"status": "CONTRADICTED", "confidence": 10, "evidence": "Source disagrees", "central": True}])
+        ok, confidence, reason = factuality_gate([{
+            "status": "CONTRADICTED",
+            "confidence": 10,
+            "evidence": "Source disagrees",
+            "central": True,
+        }])
         self.assertFalse(ok)
         self.assertLessEqual(confidence, 1)
         self.assertIn("contradicted", reason.lower())
 
     def test_factuality_gate_rejects_unverified_central_claim(self):
-        ok, _, _ = factuality_gate([{"status": "UNVERIFIED", "confidence": 5, "evidence": "No supporting source", "central": True}])
+        ok, _, _ = factuality_gate([{
+            "status": "UNVERIFIED",
+            "confidence": 5,
+            "evidence": "No supporting source",
+            "central": True,
+        }])
         self.assertFalse(ok)
 
     def test_factuality_gate_rejects_factual_claim_without_evidence(self):
-        ok, _, reason = factuality_gate([{"status": "VERIFIED", "confidence": 9, "central": True}])
+        ok, _, reason = factuality_gate([{
+            "status": "VERIFIED",
+            "confidence": 9,
+            "central": True,
+        }])
         self.assertFalse(ok)
         self.assertIn("evidence", reason.lower())
 
@@ -77,36 +91,86 @@ class ContentEngineTests(unittest.TestCase):
         self.assertEqual(final_decision(90, 85, 0.9, {"all_pass": False}), "REWRITE")
 
     def test_stress_test_requires_a_nonempty_draft(self):
-        result = stress_test("", scroll_answer="A concrete reason", reply_example="A plausible reply", counterargument="A reasonable counterargument", generic=False, quotable_line="A quote", claims=[{"status": "VERIFIED", "evidence": "Source text", "confidence": 9}])
+        result = stress_test(
+            "",
+            scroll_answer="A concrete reason",
+            reply_example="A plausible reply",
+            counterargument="A reasonable counterargument",
+            generic=False,
+            quotable_line="A quote",
+            claims=[{"status": "VERIFIED", "evidence": "Source text", "confidence": 9}],
+        )
         self.assertFalse(result["draft_present"])
         self.assertFalse(result["all_pass"])
 
+    def test_stress_test_catches_generic_posts_and_missing_claim_evidence(self):
+        result = stress_test(
+            "draft",
+            scroll_answer="A concrete reason",
+            reply_example="A plausible reply",
+            counterargument="A reasonable counterargument",
+            generic=True,
+            quotable_line="A quote",
+            claims=[{"status": "VERIFIED", "evidence": "Source text", "confidence": 9}],
+        )
+        self.assertFalse(result["genericity"])
+        self.assertFalse(result["all_pass"])
+
     def test_stress_test_accepts_opinion_without_evidence(self):
-        result = stress_test("draft", scroll_answer="A concrete reason", reply_example="A plausible reply", counterargument="A reasonable counterargument", generic=False, quotable_line="A quote", claims=[{"status": "OPINION", "confidence": 9}])
+        result = stress_test(
+            "draft",
+            scroll_answer="A concrete reason",
+            reply_example="A plausible reply",
+            counterargument="A reasonable counterargument",
+            generic=False,
+            quotable_line="A quote",
+            claims=[{"status": "OPINION", "confidence": 9}],
+        )
         self.assertTrue(result["claim_integrity"])
         self.assertTrue(result["all_pass"])
 
     def test_stress_test_rejects_missing_evidence_for_factual_claim(self):
-        result = stress_test("draft", scroll_answer="A concrete reason", reply_example="A plausible reply", counterargument="A reasonable counterargument", generic=False, quotable_line="A quote", claims=[{"status": "VERIFIED", "confidence": 9}])
+        result = stress_test(
+            "draft",
+            scroll_answer="A concrete reason",
+            reply_example="A plausible reply",
+            counterargument="A reasonable counterargument",
+            generic=False,
+            quotable_line="A quote",
+            claims=[{"status": "VERIFIED", "confidence": 9}],
+        )
         self.assertFalse(result["claim_integrity"])
         self.assertFalse(result["all_pass"])
 
     def test_stress_test_rejects_contradicted_claim(self):
-        result = stress_test("draft", scroll_answer="A concrete reason", reply_example="A plausible reply", counterargument="A reasonable counterargument", generic=False, quotable_line="A quote", claims=[{"status": "CONTRADICTED", "evidence": "Source disagrees", "confidence": 9}])
+        result = stress_test(
+            "draft",
+            scroll_answer="A concrete reason",
+            reply_example="A plausible reply",
+            counterargument="A reasonable counterargument",
+            generic=False,
+            quotable_line="A quote",
+            claims=[{"status": "CONTRADICTED", "evidence": "Source disagrees", "confidence": 9}],
+        )
         self.assertFalse(result["claim_integrity"])
-        self.assertFalse(result["all_pass"])
-
-    def test_stress_test_catches_generic_posts(self):
-        result = stress_test("draft", scroll_answer="A concrete reason", reply_example="A plausible reply", counterargument="A reasonable counterargument", generic=True, quotable_line="A quote", claims=[{"status": "VERIFIED", "evidence": "Source text", "confidence": 9}])
-        self.assertFalse(result["genericity"])
         self.assertFalse(result["all_pass"])
 
     def test_validate_angles_requires_allowed_distinct_types(self):
         valid = []
         for index, angle_type in enumerate(ANGLE_TYPES[:8]):
-            valid.append({"angle": angle_type, "core_claim": f"claim {index}", "why_it_matters": "matter", "target_reaction": "reaction", "supporting_facts": ["fact"], "potential_counterargument": "counter"})
+            valid.append({
+                "angle": angle_type,
+                "core_claim": f"claim {index}",
+                "why_it_matters": "matter",
+                "target_reaction": "reaction",
+                "supporting_facts": ["fact"],
+                "potential_counterargument": "counter",
+            })
         self.assertEqual(len(validate_angles(valid)), 8)
-        repeated_types = [dict(valid[index], angle="contrarian", core_claim=f"other claim {index}") for index in range(8)]
+        repeated_types = [
+            dict(valid[index], angle="contrarian", core_claim=f"other claim {index}")
+            for index in range(8)
+        ]
         with self.assertRaises(ValueError) as raised:
             validate_angles(repeated_types)
         self.assertEqual(getattr(raised.exception, "stage", None), "angles")
@@ -129,7 +193,21 @@ class ContentEngineTests(unittest.TestCase):
         self.assertEqual(responder.call_count, 2)
 
     def test_performance_metrics_are_normalized(self):
-        row = performance_row({"post_id": "p1", "date": "2026-09-11", "topic": "AI", "angle": "economic", "idea_score": 88, "quality_score": 84, "final_score": 86, "views": 1000, "likes": 100, "replies": 20, "reposts": 30, "quotes": 10, "follows": 15})
+        row = performance_row({
+            "post_id": "p1",
+            "date": "2026-09-11",
+            "topic": "AI",
+            "angle": "economic",
+            "idea_score": 88,
+            "quality_score": 84,
+            "final_score": 86,
+            "views": 1000,
+            "likes": 100,
+            "replies": 20,
+            "reposts": 30,
+            "quotes": 10,
+            "follows": 15,
+        })
         metrics = normalized_metrics(row)
         self.assertEqual(metrics["like_rate"], 0.1)
         self.assertEqual(metrics["reply_rate"], 0.02)
@@ -138,14 +216,32 @@ class ContentEngineTests(unittest.TestCase):
         self.assertEqual(metrics["engagement_rate"], 0.16)
 
     def test_performance_row_rejects_fractional_and_boolean_metrics(self):
-        base = {"post_id": "p1", "date": "2026-09-11", "topic": "AI", "angle": "economic", "idea_score": 88, "quality_score": 84, "final_score": 86}
+        base = {
+            "post_id": "p1",
+            "date": "2026-09-11",
+            "topic": "AI",
+            "angle": "economic",
+            "idea_score": 88,
+            "quality_score": 84,
+            "final_score": 86,
+        }
         with self.assertRaises(ValueError):
             performance_row({**base, "views": 1.5})
         with self.assertRaises(ValueError):
             performance_row({**base, "likes": True})
 
     def test_follow_conversion_is_zero_without_views(self):
-        row = performance_row({"post_id": "p1", "date": "2026-09-11", "topic": "AI", "angle": "economic", "idea_score": 88, "quality_score": 84, "final_score": 86, "impressions": 100, "follows": 10})
+        row = performance_row({
+            "post_id": "p1",
+            "date": "2026-09-11",
+            "topic": "AI",
+            "angle": "economic",
+            "idea_score": 88,
+            "quality_score": 84,
+            "final_score": 86,
+            "impressions": 100,
+            "follows": 10,
+        })
         self.assertEqual(normalized_metrics(row)["follow_conversion"], 0.0)
 
 
