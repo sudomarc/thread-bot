@@ -24,7 +24,6 @@
     "beta_tester_unpaid"
   ],
   "recent_post_titles": [
-    "Gamescom Congress 2026 hit a new attendance record",
     "pawnlogic 0.3.5 just dropped on PyPI",
     "New Chitose Airport is leveling up",
     "Steam sale hits and suddenly you're rich",
@@ -83,7 +82,8 @@
     "Barry Melrose, the ESPN hockey guru, passes at 70",
     "That feeling when your code looks perfect but you’re still a fraud",
     "Controller rage after a lag spike decides the match",
-    "AI isn’t replacing designers here. It’s unlocking rides nobody thought could exist."
+    "AI isn’t replacing designers here. It’s unlocking rides nobody thought could exist.",
+    "What is the one AI product you genuinely couldn't live without anymore, and will the iPhone Duo's foldable AI interface make it even more indispensable?"
   ],
   "seen_article_urls": [
     "https://torrentfreak.com/take-two-expands-gta-6-leak-hunt-with-dmca-subpoenas/",
@@ -257,18 +257,29 @@
     "https://reason.com/volokh/2026/09/10/court-blocks-investigation-of-ai-generated-video-about-vermont-political-candidates-because-video-is-obviously-ridiculous",
     "https://uk.pcmag.com/ai/167225/a20-pro-iphone-chip-explained-apple-event",
     "https://slashdot.org/firehose.pl?op=view&amp%3Bid=185582850",
-    "https://nypost.com/2026/09/10/us-news/six-flags-reveals-first-of-its-kind-roller-coaster-featuring-hovercycles"
+    "https://nypost.com/2026/09/10/us-news/six-flags-reveals-first-of-its-kind-roller-coaster-featuring-hovercycles",
+    "https://news.livedoor.com/article/detail/32297887"
   ],
-  "last_run_at": "2026-09-11T23:05:57.271614+00:00",
+  "last_run_at": "2026-09-12T02:28:02.754940+00:00",
   "schema_version": 2,
-  "strategy_cursor": 1,
-  "strategy_last_format": "news_opinion",
-  "strategy_last_run_at": "2026-09-11T23:05:57.271225+00:00",
+  "strategy_cursor": 2,
+  "strategy_last_format": "question",
+  "strategy_last_run_at": "2026-09-12T02:28:02.754628+00:00",
   "strategy_targets": {
     "views": "20,000-30,000 / 30 days",
     "spectators": "12,000+ / 30 days",
     "followers": "75-150 / 30 days",
     "conversion": "0.3-0.6% views-to-followers",
     "posts": "20-25 / 30 days"
-  }
+  },
+  "last_pipeline_decision": "PUBLISH",
+  "last_pipeline_scores": {
+    "idea_score": 86.0,
+    "quality_score": 90.5,
+    "final_score": 88.0,
+    "fact_confidence": 1.0
+  },
+  "recent_content_topics": [
+    "iPhone Duoは2026年に折りたたみスマホ市場で25％のシェアを獲得するとの予測"
+  ]
 }
