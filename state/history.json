@@ -24,7 +24,6 @@
     "beta_tester_unpaid"
   ],
   "recent_post_titles": [
-    "pawnlogic 0.3.5 just dropped on PyPI",
     "New Chitose Airport is leveling up",
     "Steam sale hits and suddenly you're rich",
     "Cloudflare is letting its bot rules rewrite themselves mid-attack.",
@@ -83,7 +82,8 @@
     "That feeling when your code looks perfect but you’re still a fraud",
     "Controller rage after a lag spike decides the match",
     "AI isn’t replacing designers here. It’s unlocking rides nobody thought could exist.",
-    "What is the one AI product you genuinely couldn't live without anymore, and will the iPhone Duo's foldable AI interface make it even more indispensable?"
+    "What is the one AI product you genuinely couldn't live without anymore, and will the iPhone Duo's foldable AI interface make it even more indispensable?",
+    "Should solo builders invest time mastering a proprietary SDK like scc-firewall-manager-sdk, or prioritize building custom, open solutions?"
   ],
   "seen_article_urls": [
     "https://torrentfreak.com/take-two-expands-gta-6-leak-hunt-with-dmca-subpoenas/",
@@ -258,13 +258,14 @@
     "https://uk.pcmag.com/ai/167225/a20-pro-iphone-chip-explained-apple-event",
     "https://slashdot.org/firehose.pl?op=view&amp%3Bid=185582850",
     "https://nypost.com/2026/09/10/us-news/six-flags-reveals-first-of-its-kind-roller-coaster-featuring-hovercycles",
-    "https://news.livedoor.com/article/detail/32297887"
+    "https://news.livedoor.com/article/detail/32297887",
+    "https://economictimes.indiatimes.com/news/india/abu-dhabi-crown-prince-malaysian-pm-arrives-in-india-for-18th-brics-summit/articleshow/134077073.cms"
   ],
-  "last_run_at": "2026-09-12T02:28:02.754940+00:00",
+  "last_run_at": "2026-09-12T16:00:54.774006+00:00",
   "schema_version": 2,
-  "strategy_cursor": 2,
-  "strategy_last_format": "question",
-  "strategy_last_run_at": "2026-09-12T02:28:02.754628+00:00",
+  "strategy_cursor": 3,
+  "strategy_last_format": "builder_experience",
+  "strategy_last_run_at": "2026-09-12T16:00:54.773794+00:00",
   "strategy_targets": {
     "views": "20,000-30,000 / 30 days",
     "spectators": "12,000+ / 30 days",
@@ -274,12 +275,21 @@
   },
   "last_pipeline_decision": "PUBLISH",
   "last_pipeline_scores": {
-    "idea_score": 86.0,
-    "quality_score": 90.5,
-    "final_score": 88.0,
+    "idea_score": 91.0,
+    "quality_score": 92.5,
+    "final_score": 91.7,
     "fact_confidence": 1.0
   },
   "recent_content_topics": [
-    "iPhone Duoは2026年に折りたたみスマホ市場で25％のシェアを獲得するとの予測"
-  ]
+    "iPhone Duoは2026年に折りたたみスマホ市場で25％のシェアを獲得するとの予測",
+    "scc-firewall-manager-sdk 1.22.1333"
+  ],
+  "strategy_mix": {
+    "builder_experience": 8,
+    "humor": 4,
+    "opinion_observation": 4,
+    "question": 2,
+    "news_explainer": 1,
+    "gaming": 1
+  }
 }
