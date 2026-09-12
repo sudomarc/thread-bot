@@ -24,12 +24,17 @@ LLM output is untrusted data and is validated before it reaches the next stage.
 - Idea and quality component scores must be finite values in `[0, 10]`.
 - Aggregate scores must be finite values in `[0, 100]`.
 - Factual claims with factual statuses must include supporting evidence.
+- `OPINION` and `PREDICTION` claims are allowed without evidence when explicitly labeled as such.
 - Contradicted claims and unverified central claims fail the factuality gate.
 - A draft must be non-empty and must pass all stress checks before publication.
 - Performance metrics must be non-negative integer values; fractional and boolean counters are rejected instead of silently truncated.
 - Follow conversion is `0` when there are no recorded views because a views-based denominator is unavailable.
 
 These checks fail closed: malformed provider output is not treated as a valid success state.
+
+## Angle diversity invariant
+
+Every accepted angle must use one of the configured angle types. The accepted pool must contain at least eight angles and at least eight distinct angle types. Duplicate or near-duplicate claims are not sufficient merely because wording differs.
 
 ## Idea scoring
 
@@ -91,7 +96,7 @@ A `REWRITE` result is never published by the strategy runner; it receives one ad
 
 ## Stress tests
 
-The draft is checked for presence, a concrete scroll reason, a plausible reply, a reasonable counterargument, non-generic wording, a quotable line, and claim/evidence integrity.
+The draft is checked for presence, a concrete scroll reason, a plausible reply, a reasonable counterargument, non-generic wording, a quotable line, and claim/evidence integrity. Claim integrity follows the same status contract as the factuality gate: factual statuses require evidence; opinions and predictions do not.
 
 ## Performance feedback
 
