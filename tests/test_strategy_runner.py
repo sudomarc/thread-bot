@@ -98,7 +98,7 @@ class StrategyRunnerTests(unittest.TestCase):
         expected = {"decision": "PUBLISH"}
         with patch.object(strategy_runner, "evaluate_topic", side_effect=[first_error, expected]) as evaluator:
             result = strategy_runner._run_pipeline("Topic", {"title": "Story"}, "Format: opinion.")
-        self.assertEqual(result["decision"], "PUBLISH")
+        self.assertEqual(result, expected)
         self.assertEqual(evaluator.call_count, 2)
         retry_brief = evaluator.call_args_list[1].kwargs["editorial_brief"]
         self.assertIn("VALIDATION RETRY", retry_brief)
@@ -109,7 +109,7 @@ class StrategyRunnerTests(unittest.TestCase):
         expected = {"decision": "PUBLISH"}
         with patch.object(strategy_runner, "evaluate_topic", side_effect=[first_error, expected]) as evaluator:
             result = strategy_runner._run_pipeline("Topic", {"title": "Story"}, "Format: opinion.")
-        self.assertEqual(result["decision"], "PUBLISH")
+        self.assertEqual(result, expected)
         self.assertEqual(evaluator.call_count, 2)
         retry_brief = evaluator.call_args_list[1].kwargs["editorial_brief"]
         self.assertIn("PROVIDER OUTPUT RETRY", retry_brief)
@@ -128,11 +128,9 @@ class StrategyRunnerTests(unittest.TestCase):
         with patch.object(strategy_runner, "evaluate_topic", side_effect=fake_evaluate):
             result = strategy_runner._run_pipeline("Topic", {"title": "Story"})
 
-        self.assertEqual(result["decision"], "PUBLISH")
-        self.assertEqual(len(captured), 2)
-        self.assertTrue(callable(captured[0]))
-        self.assertTrue(callable(captured[1]))
-        self.assertIsNot(captured[0], captured[1])
+        self.assertEqual(result, expected)
+        self.assertIs(captured[0]._provider, strategy_runner.bot.openrouter_chat_json)
+        self.assertIs(captured[1]._provider, strategy_runner._retry_openrouter_chat)
 
     def test_retryable_provider_error_includes_no_choices(self):
         error = RuntimeError("OpenRouter returned no choices: unknown error")
@@ -147,6 +145,17 @@ class StrategyRunnerTests(unittest.TestCase):
         self.assertIn("materially different core_claims", brief)
         self.assertNotIn("Never leave status blank", brief)
 
+    def test_run_pipeline_does_not_mask_original_validation_failure_when_retry_hits_provider_error(self):
+        first_error = content_engine.PipelineError("Angles are repetitive; need at least 8 materially distinct angles")
+        provider_error = RuntimeError("OpenRouter HTTP 429: rate limit")
+        with patch.object(strategy_runner, "evaluate_topic", side_effect=[first_error, provider_error]) as evaluator:
+            with self.assertRaises(content_engine.PipelineError) as raised:
+                strategy_runner._run_pipeline("Topic", {"title": "Story"}, "Format: opinion.")
+        self.assertIn("Angles are repetitive", str(raised.exception))
+        self.assertIn("retry failed", str(raised.exception))
+        self.assertIn("rate limit", str(raised.exception))
+        self.assertEqual(evaluator.call_count, 2)
+
     def test_recoverable_idea_reject_retries_once_and_can_publish(self):
         rejected = {
             "decision": "REJECT",
@@ -160,7 +169,7 @@ class StrategyRunnerTests(unittest.TestCase):
         with patch.object(strategy_runner, "evaluate_topic", side_effect=[rejected, published]) as evaluator:
             result = strategy_runner._run_pipeline("Topic", {"title": "Story"}, "Format: builder_experience.")
 
-        self.assertEqual(result["decision"], "PUBLISH")
+        self.assertEqual(result, published)
         self.assertEqual(evaluator.call_count, 2)
         retry_brief = evaluator.call_args_list[1].kwargs["editorial_brief"]
         self.assertIn("IDEA GATE RETRY", retry_brief)
