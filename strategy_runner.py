@@ -234,9 +234,9 @@ def _log_pipeline_result(result):
     fact_gate = result.get("fact_gate")
     if fact_gate is not None:
         confidence = result.get("fact_confidence", "unknown")
+        outcome = "reject" if result.get("stage") == "fact_check" else "pass"
         print(
-            f"PIPELINE event=validation_result stage=fact_check outcome="
-            f"{'pass' if not result.get('stage') == 'fact_check' else 'reject'} "
+            f"PIPELINE event=validation_result stage=fact_check outcome={outcome} "
             f"fact_confidence={confidence}"
         )
 
@@ -335,7 +335,7 @@ def _run_pipeline(topic, article, editorial_brief=""):
         )
     except PipelineError as first_error:
         print(
-            f"PIPELINE event=validation_result outcome=error stage={_provider_stage(' '.join(['Validation stage'] if False else []))} "
+            f"PIPELINE event=validation_result outcome=error stage=validation "
             f"error_kind={_provider_error_kind(first_error)}"
         )
         retry_brief = _retry_brief(editorial_brief, first_error)
@@ -344,11 +344,12 @@ def _run_pipeline(topic, article, editorial_brief=""):
             f"error_kind={_provider_error_kind(first_error)}"
         )
         try:
-            return _evaluate_with_diagnostics(
+            result = _evaluate_with_diagnostics(
                 topic, article, retry_brief,
                 _retry_openrouter_chat if _is_retryable_provider_error(first_error) else bot.openrouter_chat_json,
                 attempt=2,
             )
+            return result
         except Exception as retry_error:
             print(
                 f"PIPELINE event=final_outcome outcome=FAILURE stage=validation_or_provider "
@@ -371,9 +372,10 @@ def _run_pipeline(topic, article, editorial_brief=""):
             f"error_kind={_provider_error_kind(first_error)}"
         )
         try:
-            return _evaluate_with_diagnostics(
+            result = _evaluate_with_diagnostics(
                 topic, article, retry_brief, _retry_openrouter_chat, attempt=2
             )
+            return result
         except Exception as retry_error:
             print(
                 f"PIPELINE event=final_outcome outcome=FAILURE stage=provider "
@@ -386,6 +388,10 @@ def _run_pipeline(topic, article, editorial_brief=""):
 
     result = _diagnose_result(result)
     if result.get("decision") != "REJECT" or not result.get("recoverable", False):
+        print(
+            f"PIPELINE event=final_outcome outcome={result.get('decision', 'UNKNOWN')} "
+            f"stage={result.get('stage', 'final_decision')}"
+        )
         return result
 
     retry_brief = _retry_brief(editorial_brief, result["rejection_reason"])
