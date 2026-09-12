@@ -113,6 +113,23 @@ class StrategyRunnerTests(unittest.TestCase):
         self.assertIn("PROVIDER OUTPUT RETRY", retry_brief)
         self.assertIn("no usable text", retry_brief)
 
+    def test_run_pipeline_uses_plain_openrouter_on_empty_provider_retry(self):
+        expected = {"decision": "PUBLISH"}
+        captured = []
+
+        def fake_evaluate(topic, sources, chat, editorial_brief=""):
+            captured.append(chat)
+            if len(captured) == 1:
+                raise RuntimeError("OpenRouter returned empty content")
+            return expected
+
+        with patch.object(strategy_runner, "evaluate_topic", side_effect=fake_evaluate):
+            result = strategy_runner._run_pipeline("Topic", {"title": "Story"})
+
+        self.assertEqual(result, expected)
+        self.assertIs(captured[0], strategy_runner.bot.openrouter_chat_json)
+        self.assertIs(captured[1], strategy_runner._retry_openrouter_chat)
+
     def test_retryable_provider_error_includes_no_choices(self):
         error = RuntimeError("OpenRouter returned no choices: unknown error")
         self.assertTrue(strategy_runner._is_retryable_provider_error(error))
