@@ -129,10 +129,23 @@ def generate_strategy_threads(articles, state):
     if result.get("decision") == "REWRITE":
         rewrite_brief = f"{editorial_brief} Rewrite pass: preserve the strongest defensible claim, increase specificity and tension, and remove generic wording."
         result = _run_pipeline(topic, article, rewrite_brief)
-    if result.get("decision") != "PUBLISH":
+
+    decision = result.get("decision")
+    if decision == "REJECT":
         with open(PIPELINE_REPORT_PATH, "w", encoding="utf-8") as handle:
             handle.write(render_report(result))
-        raise RuntimeError(f"Content pipeline decision: {result.get('decision', 'UNKNOWN')}")
+        state["strategy_cursor"] = cursor + 1
+        state["strategy_last_format"] = kind
+        state["strategy_last_run_at"] = datetime.now(timezone.utc).isoformat()
+        state["strategy_targets"] = STRATEGY_TARGETS
+        state["last_pipeline_decision"] = decision
+        print(f"Strategy slot {cursor + 1}: {kind} rejected; no publishable content produced.")
+        return f"No publishable content for strategy slot {cursor + 1} ({kind}).", []
+
+    if decision != "PUBLISH":
+        with open(PIPELINE_REPORT_PATH, "w", encoding="utf-8") as handle:
+            handle.write(render_report(result))
+        raise RuntimeError(f"Unexpected content pipeline decision: {decision or 'UNKNOWN'}")
 
     with open(PIPELINE_REPORT_PATH, "w", encoding="utf-8") as handle:
         handle.write(render_report(result))
