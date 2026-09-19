@@ -2,103 +2,132 @@
 
 The scheduled strategy runner uses a staged content pipeline:
 
-`TOPIC → FACT CHECK → ANGLES → IDEA SCORE → TOP IDEA → DRAFT → QUALITY SCORE → STRESS TEST → FINAL DECISION`
+TOPIC → FACT CHECK → ANGLES → POST TYPE → TYPE-SPECIFIC IDEA SCORE → TOP IDEA → DRAFT → TYPE-SPECIFIC QUALITY SCORE → TYPE-SPECIFIC STRESS TEST → FINAL DECISION
 
 The levels are kept separate:
 
-- **Topic**: the source material or editorial subject.
-- **Fact**: a claim plus evidence, status, and confidence.
-- **Angle**: a distinct editorial interpretation of the topic.
-- **Idea**: an angle with a weighted 0–100 score.
-- **Draft**: the written Threads copy selected from the top eligible idea.
-- **Score**: idea score, quality score, and final score are stored separately.
-- **Decision**: `PUBLISH`, `REWRITE`, or `REJECT`.
-- **Result**: real post metrics can be appended later for calibration.
+- Topic: source material or editorial subject.
+- Fact: a claim plus evidence, status, and confidence.
+- Angle: a distinct editorial interpretation.
+- Post type: the editorial objective selected by the strategy layer.
+- Idea: an angle scored against the selected post type.
+- Draft: written copy selected from the top eligible idea.
+- Quality: execution scored against the selected post type.
+- Decision: PUBLISH, REWRITE, or REJECT.
+
+## Post-type contract
+
+Post type is chosen by the deterministic strategy layer. The LLM cannot choose its own validation contract.
+
+Supported post types:
+
+- NEWS
+- OPINION
+- ENGAGEMENT_QUESTION
+- DEBATE
+- EXPERIENCE
+- COMPARISON
+- EXPLANATION
+- PREDICTION
+- RELATABLE
+
+Each type owns its own idea weights, quality weights, hard idea dimensions, and stress checks in POST_TYPE_CONTRACTS in content_engine.py. The scoring engine still uses the same deterministic weighted-score mechanism, but the dimensions change with the editorial objective.
+
+The current strategy mapping is:
+
+| Strategy slot | Post type |
+|---|---|
+| builder_experience | EXPERIENCE |
+| humor | RELATABLE |
+| opinion_observation | OPINION |
+| question | ENGAGEMENT_QUESTION |
+| news_explainer | EXPLANATION |
+| gaming | ENGAGEMENT_QUESTION |
+
+Gaming remains a domain/context signal, not a post type.
+
+## Factuality gate
+
+Allowed claim statuses are VERIFIED, PARTIALLY_VERIFIED, UNVERIFIED, CONTRADICTED, OPINION, and PREDICTION.
+
+Factual statuses require evidence. A contradicted claim fails the gate. A central unverified claim fails the gate. Opinions and predictions may be evidence-free when explicitly labeled.
+
+Fact confidence is calculated only from evidence-bearing factual statuses. OPINION and PREDICTION confidence values do not lower the factuality score.
+
+Claim-free content is valid for formats such as engagement questions. An empty claim set returns a safe factuality result and does not fail claim-integrity stress checks.
 
 ## Boundary validation
 
 LLM output is untrusted data and is validated before it reaches the next stage.
 
-- JSON payloads that are required to be objects must decode to objects; valid arrays, strings, numbers, or `null` are rejected and retried once with a strict JSON-only instruction.
-- Required nested arrays/objects are validated before dereferencing them.
-- Idea and quality component scores must be finite values in `[0, 10]`.
-- Aggregate scores must be finite values in `[0, 100]`.
-- Factual claims with factual statuses must include supporting evidence.
-- Contradicted claims and unverified central claims fail the factuality gate.
-- A draft must be non-empty and must pass all stress checks before publication.
-- Performance metrics must be non-negative integer values; fractional and boolean counters are rejected instead of silently truncated.
-- Follow conversion is `0` when there are no recorded views because a views-based denominator is unavailable.
+- JSON objects are validated before dereferencing.
+- Claims require a valid status, non-empty claim text, confidence, and boolean central flag.
+- Factual claims require evidence.
+- Angle types must belong to ANGLE_TYPES.
+- Angle arrays need at least 8 materially distinct core claims.
+- Score dimensions must be finite values in [0, 10].
+- Typed draft stress payloads require explicit boolean type checks.
+- Malformed provider output receives at most one retry through the existing retry path, then fails closed.
 
-These checks fail closed: malformed provider output is not treated as a valid success state.
+## Stress testing
 
-## Idea scoring
+Every typed post has common safety checks for draft presence, a usable opening, genericity, and claim integrity, plus type-specific checks.
 
-The engine calculates the idea score in code from 0–10 component ratings:
+Examples:
 
-| Dimension | Weight |
-|---|---:|
-| Scroll-stop / hook | 20 |
-| Curiosity / tension | 15 |
-| Originality | 15 |
-| Debate potential | 15 |
-| Shareability | 10 |
-| Clarity | 10 |
-| Positioning / identity | 10 |
-| Surprise / emotion | 5 |
+- ENGAGEMENT_QUESTION: replyability, specificity, conversation quality.
+- OPINION: position clarity, counterargument, specificity.
+- EXPERIENCE: concreteness, narrative interest, relatability.
+- COMPARISON: alternative clarity, trade-off, decision interest.
+- PREDICTION: prediction framing, uncertainty clarity, reasoning.
+- EXPLANATION: clarity, usefulness, source grounding.
 
-The weighted average is multiplied by 10, so `10/10` on every dimension equals `100/100`.
+A question therefore does not need to contain a counterargument or a quotable line merely because those checks made sense for the previous universal stress contract.
 
-An angle is not eligible for normal progression when originality, hook, or debate potential is below 7/10. Fact confidence below 0.70 also blocks the idea.
+## Idea and quality decisions
 
-## Factuality gate
+Typed idea scores use the selected type contract. Hard idea dimensions must each be at least 7/10 and the weighted score must reach the existing progression thresholds.
 
-Allowed claim statuses are `VERIFIED`, `PARTIALLY_VERIFIED`, `UNVERIFIED`, `CONTRADICTED`, `OPINION`, and `PREDICTION`.
+Legacy APIs remain available:
 
-Factual statuses require evidence. A contradicted material claim or an unverified central claim is rejected. Predictions and opinions are allowed only when labeled as such. The engine never converts an inference into a verified claim merely because the idea scores highly.
+- idea_score(values)
+- quality_score(values)
+- idea_decision(...)
+- evaluate_topic(..., post_type=None)
 
-## Quality scoring
+Passing a post_type activates the new contract; omitting it preserves legacy behavior.
 
-The quality score is independently calculated from:
+Publishing still requires:
 
-- factual accuracy 20%
-- reasoning 15%
-- originality 15%
-- clarity 15%
-- writing quality 10%
-- specificity 10%
-- credibility 10%
-- information density 5%
-
-## Final scoring and decisions
-
-`final_score = idea_score × 0.55 + quality_score × 0.45`, but the formula is only active after the factuality gate and stress tests pass.
-
-Publishing additionally requires:
-
-- idea score ≥ 85
-- quality score ≥ 80
-- fact confidence ≥ 0.80
-- every stress test passed
+- idea score >= 85
+- quality score >= 80
+- fact confidence >= 0.80
+- every relevant stress check passes
 - a non-empty draft
 
-The final decision is then exactly one of:
+The final score remains:
 
-- `PUBLISH`: strong idea and draft, adequate evidence, all tests pass.
-- `REWRITE`: the concept is viable but the idea/draft/stress result needs improvement.
-- `REJECT`: the factuality gate fails or no eligible idea exists.
+final_score = idea_score × 0.55 + quality_score × 0.45
 
-A `REWRITE` result is never published by the strategy runner; it receives one additional rewrite/evaluation pass.
+The formula is only active after factuality and stress gates pass.
 
-## Stress tests
+## State and diversity
 
-The draft is checked for presence, a concrete scroll reason, a plausible reply, a reasonable counterargument, non-generic wording, a quotable line, and claim/evidence integrity.
+The strategy state now records:
 
-## Performance feedback
+- recent_post_types
+- recent_engagement_patterns
+- strategy_last_post_type
+- strategy_last_engagement_pattern
 
-`strategy_runner.record_performance()` stores real metrics without claiming that any one metric equals "virality". It also derives reply rate, repost rate, like rate, follow conversion, and engagement rate.
+Existing strategy cursor, title history, source history, and recent content topics remain intact.
 
-The stored schema supports later comparisons between predicted scores and actual outcomes. No statistical learning is claimed or performed until real performance data exists.
+Engagement patterns include mechanisms such as PROJECT_SHARE, PREFERENCE, SCENARIO_CHOICE, CONSTRAINT_WORKAROUND, POSITION, RECOGNITION_HUMOR, and DISCOVERY. This is deterministic state tracking, not an ML recommender.
 
 ## Runtime output
 
-The normal publishable text remains `state/latest_threads.txt`. The evaluation artifact is `state/latest_content_evaluation.txt`, which contains the topic, fact status, angles, top pick, scores, stress test, and final decision.
+The publishable text remains state/latest_threads.txt and is not polluted with metadata.
+
+The evaluation artifact is state/latest_content_evaluation.txt and now records the post type, typed scores, stress checks, and final decision.
+
+Performance metrics remain diagnostic observations. No statistical learning or claim of guaranteed virality is introduced.
