@@ -353,6 +353,58 @@ class ContentEngineTests(unittest.TestCase):
         self.assertEqual(result["fact_confidence"], 1.0)
         self.assertEqual(result["decision"], "PUBLISH")
 
+    def test_evaluate_topic_reuses_fact_result_without_provider_fact_check(self):
+        fact_result = {
+            "claims": [{
+                "claim": "Source fact",
+                "status": "VERIFIED",
+                "evidence": "Supplied source evidence",
+                "confidence": 9,
+                "central": True,
+            }]
+        }
+        idea_weights = POST_TYPE_CONTRACTS["ENGAGEMENT_QUESTION"]["idea_weights"]
+        quality_weights = POST_TYPE_CONTRACTS["ENGAGEMENT_QUESTION"]["quality_weights"]
+        angles = [{
+            "angle": ANGLE_TYPES[index],
+            "core_claim": f"Distinct angle {index}",
+            "why_it_matters": "Concrete conversation",
+            "target_reaction": "A reader shares an example",
+            "supporting_facts": [],
+            "potential_counterargument": "Some readers differ",
+            "scores": {key: 9 for key in idea_weights},
+        } for index in range(8)]
+        responses = [
+            json.dumps({"angles": angles}),
+            json.dumps({
+                "draft": "What tool would you keep if you could only keep one?",
+                "quality": {key: 9 for key in quality_weights},
+                "stress": {
+                    "scroll_answer": "Easy to answer with one concrete choice.",
+                    "reply_example": "A reader names a tool and explains why.",
+                    "counterargument": "",
+                    "generic": False,
+                    "quotable_line": "",
+                    "type_checks": {
+                        key: True
+                        for key in POST_TYPE_CONTRACTS["ENGAGEMENT_QUESTION"]["stress_checks"]
+                    },
+                },
+                "claims": [],
+            }),
+        ]
+        provider = Mock(side_effect=responses)
+        result = evaluate_topic(
+            "A source topic",
+            [{"title": "Source", "description": "Context", "url": "https://example.com"}],
+            provider,
+            post_type="ENGAGEMENT_QUESTION",
+            fact_result_override=fact_result,
+        )
+        self.assertEqual(result["fact_confidence"], 1.0)
+        self.assertEqual(result["decision"], "PUBLISH")
+        self.assertEqual(provider.call_count, 2)
+
     def test_performance_metrics_are_normalized(self):
         row = performance_row({
             "post_id": "p1", "date": "2026-09-11", "topic": "AI", "angle": "economic",
