@@ -54,6 +54,23 @@ class BotUnitTests(unittest.TestCase):
         self.assertEqual(mocked.call_args_list[0].kwargs["json"]["model"], "openrouter/free")
         self.assertEqual(mocked.call_args_list[1].kwargs["json"]["model"], "google/gemma-4-31b-it:free")
 
+    def test_openrouter_chat_falls_back_on_primary_429_without_burning_http_retries(self):
+        limited = MagicMock(status_code=429, text='{"error":{"message":"temporarily rate-limited"}}')
+        accepted = MagicMock(status_code=200)
+        accepted.json.return_value = {"model": "nvidia/nemotron-3-super-120b-a12b:free", "choices": [{"message": {"content": '{"ok": true}'}}]}
+        with patch.object(bot, "OPENROUTER_API_KEY", "test-key"), \
+             patch.object(bot, "OPENROUTER_MODEL", "openrouter/free"), \
+             patch.object(bot, "OPENROUTER_FALLBACK_MODELS", (
+                 "google/gemma-4-31b-it:free",
+                 "nvidia/nemotron-3-super-120b-a12b:free",
+             )), \
+             patch.object(bot, "request_with_retries", side_effect=[limited, accepted]) as mocked:
+            result = bot.openrouter_chat_json("prompt")
+        self.assertEqual(result, '{"ok": true}')
+        self.assertEqual(mocked.call_count, 2)
+        self.assertEqual(mocked.call_args_list[0].kwargs["retryable_statuses"], set())
+        self.assertEqual(mocked.call_args_list[1].kwargs["json"]["model"], "google/gemma-4-31b-it:free")
+
     def test_clean_text_preserves_unicode(self):
         text = bot.clean_text("Take-Two’s GTA 6 — c’est réel.\x00")
         self.assertIn("’", text)
