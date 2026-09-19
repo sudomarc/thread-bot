@@ -199,7 +199,7 @@ class ContentEngineTests(unittest.TestCase):
             post_type="ENGAGEMENT_QUESTION",
             type_checks=checks,
         )
-        self.assertFalse(result["specificity"])
+        self.assertFalse(result["type_checks"]["specificity"])
         self.assertFalse(result["all_pass"])
 
     def test_stress_test_allows_labeled_opinion_and_prediction_without_evidence(self):
