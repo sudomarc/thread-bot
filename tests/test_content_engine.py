@@ -114,6 +114,34 @@ class ContentEngineTests(unittest.TestCase):
         self.assertFalse(result["genericity"])
         self.assertFalse(result["all_pass"])
 
+    def test_stress_test_allows_labeled_opinion_and_prediction_without_evidence(self):
+        for status in ("OPINION", "PREDICTION"):
+            with self.subTest(status=status):
+                result = stress_test(
+                    "draft",
+                    scroll_answer="A concrete reason",
+                    reply_example="A plausible reply",
+                    counterargument="A reasonable counterargument",
+                    generic=False,
+                    quotable_line="A quote",
+                    claims=[{"status": status, "evidence": ""}],
+                )
+                self.assertTrue(result["claim_integrity"])
+                self.assertTrue(result["all_pass"])
+
+    def test_stress_test_rejects_unsupported_claim_status(self):
+        result = stress_test(
+            "draft",
+            scroll_answer="A concrete reason",
+            reply_example="A plausible reply",
+            counterargument="A reasonable counterargument",
+            generic=False,
+            quotable_line="A quote",
+            claims=[{"status": "CONTRADICTED", "evidence": "Source text"}],
+        )
+        self.assertFalse(result["claim_integrity"])
+        self.assertFalse(result["all_pass"])
+
     def test_extract_json_accepts_surrounding_prose(self):
         payload = extract_json("Here is the requested JSON:\n{\"claims\": []}\nDone.")
         self.assertEqual(payload, {"claims": []})
