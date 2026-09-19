@@ -39,6 +39,21 @@ class BotUnitTests(unittest.TestCase):
         self.assertEqual(mocked.call_count, 2)
         self.assertNotIn("response_format", mocked.call_args_list[1].kwargs["json"])
 
+    def test_openrouter_chat_falls_back_when_primary_content_is_empty(self):
+        empty = MagicMock(status_code=200)
+        empty.json.return_value = {"model": "openrouter/free", "choices": [{"message": {"content": ""}}]}
+        accepted = MagicMock(status_code=200)
+        accepted.json.return_value = {"model": "google/gemma-4-31b-it:free", "choices": [{"message": {"content": '{"ok": true}'}}]}
+        with patch.object(bot, "OPENROUTER_API_KEY", "test-key"), \
+             patch.object(bot, "OPENROUTER_MODEL", "openrouter/free"), \
+             patch.object(bot, "OPENROUTER_FALLBACK_MODELS", ("google/gemma-4-31b-it:free",)), \
+             patch.object(bot, "request_with_retries", side_effect=[empty, accepted]) as mocked:
+            result = bot.openrouter_chat_json("prompt")
+        self.assertEqual(result, '{"ok": true}')
+        self.assertEqual(mocked.call_count, 2)
+        self.assertEqual(mocked.call_args_list[0].kwargs["json"]["model"], "openrouter/free")
+        self.assertEqual(mocked.call_args_list[1].kwargs["json"]["model"], "google/gemma-4-31b-it:free")
+
     def test_clean_text_preserves_unicode(self):
         text = bot.clean_text("Take-Two’s GTA 6 — c’est réel.\x00")
         self.assertIn("’", text)
