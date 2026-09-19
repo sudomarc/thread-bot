@@ -104,6 +104,12 @@ SOURCE: NEWS 3
             with self.assertRaises(ValueError):
                 bot.validate_posts(posts, articles)
 
+    def test_default_state_includes_strategy_diversity_fields(self):
+        state = bot.default_state()
+        self.assertEqual(state["schema_version"], 2)
+        self.assertEqual(state["recent_post_types"], [])
+        self.assertEqual(state["recent_engagement_patterns"], [])
+
     def test_state_save_is_atomic_and_preserves_schema(self):
         state = bot.default_state()
         with tempfile.TemporaryDirectory() as directory:
@@ -114,7 +120,25 @@ SOURCE: NEWS 3
                 loaded = bot.load_state()
                 self.assertTrue(loaded["last_run_at"])
                 self.assertEqual(loaded["schema_version"], 2)
+                self.assertEqual(loaded["recent_post_types"], [])
+                self.assertEqual(loaded["recent_engagement_patterns"], [])
                 self.assertTrue(os.path.exists(bot.STATE_FILE_PATH))
+            finally:
+                bot.STATE_FILE_PATH = old_path
+
+    def test_state_save_caps_strategy_diversity_history(self):
+        state = bot.default_state()
+        state["recent_post_types"] = [f"type-{i}" for i in range(25)]
+        state["recent_engagement_patterns"] = [f"pattern-{i}" for i in range(25)]
+        with tempfile.TemporaryDirectory() as directory:
+            old_path = bot.STATE_FILE_PATH
+            bot.STATE_FILE_PATH = os.path.join(directory, "history.json")
+            try:
+                bot.save_state(state)
+                self.assertEqual(len(state["recent_post_types"]), bot.MAX_HISTORY_POST_TYPES)
+                self.assertEqual(len(state["recent_engagement_patterns"]), bot.MAX_HISTORY_ENGAGEMENT_PATTERNS)
+                self.assertEqual(state["recent_post_types"][-1], "type-24")
+                self.assertEqual(state["recent_engagement_patterns"][-1], "pattern-24")
             finally:
                 bot.STATE_FILE_PATH = old_path
 

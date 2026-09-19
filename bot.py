@@ -31,6 +31,8 @@ SOURCES_FILE_PATH = "state/latest_sources.txt"
 MAX_HISTORY_TOPICS = 40
 MAX_HISTORY_TITLES = 60
 MAX_HISTORY_URLS = 200
+MAX_HISTORY_POST_TYPES = 20
+MAX_HISTORY_ENGAGEMENT_PATTERNS = 20
 QUALITY_SCORE_THRESHOLD = 6.5
 MAX_GENERATION_ATTEMPTS = 3
 NEWS_MAX_AGE_HOURS = 72
@@ -126,6 +128,8 @@ def default_state():
         "recent_relatable_topic_tags": [],
         "recent_post_titles": [],
         "seen_article_urls": [],
+        "recent_post_types": [],
+        "recent_engagement_patterns": [],
         "last_run_at": None,
     }
 
@@ -142,7 +146,13 @@ def load_state():
         return default
     if not isinstance(data, dict):
         return default
-    for key in ("recent_relatable_topic_tags", "recent_post_titles", "seen_article_urls"):
+    for key in (
+        "recent_relatable_topic_tags",
+        "recent_post_titles",
+        "seen_article_urls",
+        "recent_post_types",
+        "recent_engagement_patterns",
+    ):
         if not isinstance(data.get(key), list):
             data[key] = []
     if data.get("last_run_at") is not None and not isinstance(data.get("last_run_at"), str):
@@ -156,6 +166,8 @@ def save_state(state):
     state["recent_relatable_topic_tags"] = list(dict.fromkeys(state.get("recent_relatable_topic_tags", [])))[-MAX_HISTORY_TOPICS:]
     state["recent_post_titles"] = list(dict.fromkeys(state.get("recent_post_titles", [])))[-MAX_HISTORY_TITLES:]
     state["seen_article_urls"] = list(dict.fromkeys(state.get("seen_article_urls", [])))[-MAX_HISTORY_URLS:]
+    state["recent_post_types"] = list(dict.fromkeys(state.get("recent_post_types", [])))[-MAX_HISTORY_POST_TYPES:]
+    state["recent_engagement_patterns"] = list(dict.fromkeys(state.get("recent_engagement_patterns", [])))[-MAX_HISTORY_ENGAGEMENT_PATTERNS:]
     state["last_run_at"] = datetime.now(timezone.utc).isoformat()
     state_dir = os.path.dirname(STATE_FILE_PATH) or "."
     os.makedirs(state_dir, exist_ok=True)

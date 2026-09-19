@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 
 import bot
-from content_engine import PipelineError, evaluate_topic, normalized_metrics, performance_row, render_report
+from content_engine import POST_TYPE_CONTRACTS, PipelineError, evaluate_topic, normalized_metrics, performance_row, render_report
 
 
 STRATEGY_TARGETS = {
@@ -21,6 +21,21 @@ STRATEGY_MIX = {
     "question": 2,
     "news_explainer": 1,
     "gaming": 1,
+}
+
+POST_TYPE_BY_STRATEGY = {
+    "builder_experience": "EXPERIENCE",
+    "humor": "RELATABLE",
+    "opinion_observation": "OPINION",
+    "question": "ENGAGEMENT_QUESTION",
+    "news_explainer": "EXPLANATION",
+    "gaming": "ENGAGEMENT_QUESTION",
+}
+
+ENGAGEMENT_PATTERN_BY_HOOK = {
+    "What are you actually building with AI right now?": "PROJECT_SHARE",
+    "What AI tool genuinely earns a place in your daily workflow?": "PREFERENCE",
+    "What game would you want an AI-powered NPC to actually remember you in?": "SCENARIO_CHOICE",
 }
 
 STRATEGY_POSTS = [
@@ -100,6 +115,20 @@ def _fresh_topic(state):
 
 def _topic_from_slot(recipe, article):
     return f"{article['title']}. {article.get('description', '')}".strip()
+
+
+def _engagement_pattern(kind, hook):
+    return ENGAGEMENT_PATTERN_BY_HOOK.get(
+        hook,
+        {
+            "builder_experience": "CONSTRAINT_WORKAROUND",
+            "humor": "RECOGNITION_HUMOR",
+            "opinion_observation": "POSITION",
+            "question": "OPEN_QUESTION",
+            "news_explainer": "DISCOVERY",
+            "gaming": "SCENARIO_CHOICE",
+        }.get(kind, kind.upper()),
+    )
 
 
 def _editorial_brief_from_slot(recipe, relatable_topic):
@@ -200,17 +229,30 @@ def _diagnose_result(result):
         best_score = float(best.get("idea_score", 0))
         best_decision = str(best.get("idea_decision", "REJECT"))
         diagnosed["stage"] = "idea_selection"
+        if diagnosed.get("post_type"):
+            hard_dimensions = ", ".join(
+                POST_TYPE_CONTRACTS[diagnosed["post_type"]]["hard_idea_dimensions"]
+            )
+        else:
+            hard_dimensions = "scroll_stop, originality, and debate_potential"
         diagnosed["rejection_reason"] = (
             f"No eligible idea met the idea gate; best_idea_score={best_score:.1f}/100 "
             f"best_idea_decision={best_decision} required_score>=80 and hard dimensions "
-            "scroll_stop, originality, and debate_potential must each be >=7/10."
+            f"{hard_dimensions} must each be >=7/10."
         )
         diagnosed["recoverable"] = True
         return diagnosed
 
     stress = diagnosed.get("stress_test") or {}
     if stress and not bool(stress.get("all_pass", False)):
-        failed = [name for name, passed in stress.items() if name != "all_pass" and not bool(passed)]
+        failed = []
+        for name, passed in stress.items():
+            if name == "all_pass":
+                continue
+            if isinstance(passed, dict):
+                failed.extend(key for key, value in passed.items() if not bool(value))
+            elif not bool(passed):
+                failed.append(name)
         diagnosed["stage"] = "stress_test"
         diagnosed["rejection_reason"] = (
             "Stress test failed: " + ", ".join(failed or ["unknown_check"]) + "."
@@ -283,7 +325,7 @@ def _write_pipeline_report(result):
         handle.write(render_report(result))
 
 
-def _retry_brief(editorial_brief, error):
+def _retry_brief(editorial_brief, error, post_type=None):
     message = str(error).lower()
     if "angles are repetitive" in message or "expected at least 8 angles" in message:
         return (
@@ -300,7 +342,7 @@ def _retry_brief(editorial_brief, error):
             f"{editorial_brief} "
             "IDEA GATE RETRY: the previous angle pool produced no publishable idea. "
             "Generate at least 10 materially different angles, but prioritize angles that can satisfy the existing idea gate. "
-            "Each angle must have scroll_stop >= 7, originality >= 7, debate_potential >= 7, and a weighted idea score >= 80. "
+            f"Each angle must meet the hard dimensions for {post_type or 'the legacy contract'} at >= 7/10 and have a weighted idea score >= 80. "
             "Do not inflate scores without changing the underlying angle. Improve the actual hook, originality, and debate value. "
             "Keep all factual claims grounded in the supplied fact check and sources."
         ).strip()
@@ -319,27 +361,28 @@ def _retry_brief(editorial_brief, error):
     ).strip()
 
 
-def _evaluate_with_diagnostics(topic, article, editorial_brief, provider, attempt):
+def _evaluate_with_diagnostics(topic, article, editorial_brief, provider, attempt, post_type=None):
     result = evaluate_topic(
         topic,
         [article],
         _instrument_provider(provider, attempt),
         editorial_brief=editorial_brief,
+        post_type=post_type,
     )
     return _log_pipeline_result(result)
 
 
-def _run_pipeline(topic, article, editorial_brief=""):
+def _run_pipeline(topic, article, editorial_brief="", post_type=None):
     try:
         result = _evaluate_with_diagnostics(
-            topic, article, editorial_brief, bot.openrouter_chat_json, attempt=1
+            topic, article, editorial_brief, bot.openrouter_chat_json, attempt=1, post_type=post_type
         )
     except PipelineError as first_error:
         print(
             f"PIPELINE event=validation_result outcome=error stage=validation "
             f"error_kind={_provider_error_kind(first_error)}"
         )
-        retry_brief = _retry_brief(editorial_brief, first_error)
+        retry_brief = _retry_brief(editorial_brief, first_error, post_type)
         print(
             f"PIPELINE event=retry trigger=validation_or_provider_error attempt=2 "
             f"error_kind={_provider_error_kind(first_error)}"
@@ -348,7 +391,7 @@ def _run_pipeline(topic, article, editorial_brief=""):
             result = _evaluate_with_diagnostics(
                 topic, article, retry_brief,
                 _retry_openrouter_chat if _is_retryable_provider_error(first_error) else bot.openrouter_chat_json,
-                attempt=2,
+                attempt=2, post_type=post_type,
             )
             return result
         except Exception as retry_error:
@@ -367,14 +410,14 @@ def _run_pipeline(topic, article, editorial_brief=""):
                 f"error_kind={_provider_error_kind(first_error)}"
             )
             raise
-        retry_brief = _retry_brief(editorial_brief, first_error)
+        retry_brief = _retry_brief(editorial_brief, first_error, post_type)
         print(
             f"PIPELINE event=retry trigger=provider_error attempt=2 "
             f"error_kind={_provider_error_kind(first_error)}"
         )
         try:
             result = _evaluate_with_diagnostics(
-                topic, article, retry_brief, _retry_openrouter_chat, attempt=2
+                topic, article, retry_brief, _retry_openrouter_chat, attempt=2, post_type=post_type
             )
             return result
         except Exception as retry_error:
@@ -395,14 +438,14 @@ def _run_pipeline(topic, article, editorial_brief=""):
         )
         return result
 
-    retry_brief = _retry_brief(editorial_brief, result["rejection_reason"])
+    retry_brief = _retry_brief(editorial_brief, result["rejection_reason"], post_type)
     print(
         f"PIPELINE event=retry trigger=decision_reject attempt=2 "
         f"stage={result.get('stage', 'unknown')} reason={result.get('rejection_reason', 'unknown')}"
     )
     try:
         retried = _evaluate_with_diagnostics(
-            topic, article, retry_brief, bot.openrouter_chat_json, attempt=2
+            topic, article, retry_brief, bot.openrouter_chat_json, attempt=2, post_type=post_type
         )
         final_result = _diagnose_result(retried)
         print(
@@ -428,16 +471,17 @@ def _retry_openrouter_chat(prompt):
 def generate_strategy_threads(articles, state):
     cursor = int(state.get("strategy_cursor", 0))
     recipe = STRATEGY_POSTS[cursor % len(STRATEGY_POSTS)]
-    kind, preferred_category, _, _ = recipe
+    kind, preferred_category, hook, _ = recipe
+    post_type = POST_TYPE_BY_STRATEGY[kind]
     article = _pick_article(articles, preferred_category, kind)
     relatable_topic = _fresh_topic(state) if preferred_category is None else None
     topic = _topic_from_slot(recipe, article)
     editorial_brief = _editorial_brief_from_slot(recipe, relatable_topic)
 
-    result = _run_pipeline(topic, article, editorial_brief)
+    result = _run_pipeline(topic, article, editorial_brief, post_type=post_type)
     if result.get("decision") == "REWRITE":
         rewrite_brief = f"{editorial_brief} Rewrite pass: preserve the strongest defensible claim, increase specificity and tension, and remove generic wording."
-        result = _run_pipeline(topic, article, rewrite_brief)
+        result = _run_pipeline(topic, article, rewrite_brief, post_type=post_type)
     result = _diagnose_result(result)
     if result.get("decision") != "PUBLISH":
         _write_pipeline_report(result)
@@ -456,6 +500,8 @@ def generate_strategy_threads(articles, state):
         "keywords": [kind, article.get("category", "technology")],
         "topic_tag": "current_news",
         "source": "NEWS 1",
+        "post_type": post_type,
+        "engagement_pattern": _engagement_pattern(kind, hook),
         "idea_score": result["top_pick"]["idea_score"],
         "quality_score": result["quality_score"],
         "final_score": result["final_score"],
@@ -464,6 +510,8 @@ def generate_strategy_threads(articles, state):
     }
     state["strategy_cursor"] = cursor + 1
     state["strategy_last_format"] = kind
+    state["strategy_last_post_type"] = post_type
+    state["strategy_last_engagement_pattern"] = post["engagement_pattern"]
     state["strategy_last_run_at"] = datetime.now(timezone.utc).isoformat()
     state["strategy_targets"] = STRATEGY_TARGETS
     state["strategy_mix"] = STRATEGY_MIX
@@ -475,6 +523,11 @@ def generate_strategy_threads(articles, state):
         "fact_confidence": post["fact_confidence"],
     }
     state.setdefault("recent_content_topics", []).append(article.get("title", topic))
+    state["recent_content_topics"] = state["recent_content_topics"][-40:]
+    state.setdefault("recent_post_types", []).append(post_type)
+    state["recent_post_types"] = state["recent_post_types"][-20:]
+    state.setdefault("recent_engagement_patterns", []).append(post["engagement_pattern"])
+    state["recent_engagement_patterns"] = state["recent_engagement_patterns"][-20:]
     print(
         f"Strategy slot {cursor + 1}: {kind} / {preferred_category or 'relatable'} "
         f"idea={post['idea_score']:.1f} quality={post['quality_score']:.1f} "
