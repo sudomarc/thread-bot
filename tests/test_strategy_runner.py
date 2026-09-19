@@ -285,7 +285,7 @@ class StrategyRunnerTests(unittest.TestCase):
         self.assertIn("AI-powered NPC", content)
         self.assertEqual(posts[0]["decision"], "PUBLISH")
         self.assertEqual(posts[0]["post_type"], "ENGAGEMENT_QUESTION")
-        self.assertEqual(posts[0]["engagement_pattern"], "SCENARIO_CHOICE")
+        self.assertEqual(posts[0]["engagement_pattern"], "PROJECT_SHARE")
         self.assertGreaterEqual(posts[0]["idea_score"], 90)
         self.assertEqual(state["strategy_cursor"], 17)
         self.assertEqual(state["recent_post_types"][-1], "ENGAGEMENT_QUESTION")
