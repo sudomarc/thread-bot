@@ -224,9 +224,19 @@ def validate_claims(claims: Any) -> list[dict[str, Any]]:
 
 
 def factuality_gate(claims: Sequence[Mapping[str, Any]]) -> tuple[bool, float, str]:
-    normalized = validate_claims(claims)
-    if not normalized:
+    if not isinstance(claims, Sequence) or isinstance(claims, (str, bytes)):
+        raise PipelineError("Claims must be a JSON array")
+    if not claims:
         return True, 1.0, "No factual claims; treat content as opinion/observation."
+    normalized = []
+    for claim in claims:
+        try:
+            normalized.append(_validate_claim(claim))
+        except PipelineError as error:
+            if str(error) == "Factual claim is missing supporting evidence." and isinstance(claim, Mapping):
+                confidence = _finite_score(claim.get("confidence", 0)) / 10
+                return False, confidence, "Factual claim is missing supporting evidence."
+            raise
     factual_confidences = []
     central_statuses = []
     for claim in normalized:
