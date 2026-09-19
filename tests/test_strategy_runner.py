@@ -185,11 +185,8 @@ class StrategyRunnerTests(unittest.TestCase):
         self.assertIn("IDEA GATE RETRY", retry_brief)
         self.assertIn("weighted idea score >= 80", retry_brief)
         self.assertEqual(evaluator.call_args_list[0].kwargs["post_type"], "EXPERIENCE")
-        self.assertIsNone(evaluator.call_args_list[0].kwargs["fact_result_override"])
-        self.assertEqual(
-            evaluator.call_args_list[1].kwargs["fact_result_override"],
-            None,
-        )
+        self.assertNotIn("fact_result_override", evaluator.call_args_list[0].kwargs)
+        self.assertNotIn("fact_result_override", evaluator.call_args_list[1].kwargs)
 
     def test_decision_retry_reuses_original_fact_result(self):
         rejected = {
