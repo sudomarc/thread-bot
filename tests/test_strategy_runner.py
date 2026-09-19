@@ -185,6 +185,39 @@ class StrategyRunnerTests(unittest.TestCase):
         self.assertIn("IDEA GATE RETRY", retry_brief)
         self.assertIn("weighted idea score >= 80", retry_brief)
         self.assertEqual(evaluator.call_args_list[0].kwargs["post_type"], "EXPERIENCE")
+        self.assertIsNone(evaluator.call_args_list[0].kwargs["fact_result_override"])
+        self.assertEqual(
+            evaluator.call_args_list[1].kwargs["fact_result_override"],
+            None,
+        )
+
+    def test_decision_retry_reuses_original_fact_result(self):
+        rejected = {
+            "decision": "REJECT",
+            "post_type": "EXPERIENCE",
+            "fact_status": {
+                "claims": [{
+                    "claim": "Source claim",
+                    "status": "VERIFIED",
+                    "evidence": "Source evidence",
+                    "confidence": 9,
+                    "central": True,
+                }]
+            },
+            "fact_confidence": 0.9,
+            "fact_gate": "Fact claims passed the minimum evidence gate.",
+            "angles": [{"core_claim": "Best idea", "idea_score": 76.5, "idea_decision": "REWORK"}],
+        }
+        published = {"decision": "PUBLISH"}
+        with patch.object(strategy_runner, "evaluate_topic", side_effect=[rejected, published]) as evaluator:
+            result = strategy_runner._run_pipeline(
+                "Topic", {"title": "Story"}, "Format: builder_experience.", post_type="EXPERIENCE"
+            )
+        self.assertEqual(result, published)
+        self.assertEqual(
+            evaluator.call_args_list[1].kwargs["fact_result_override"],
+            rejected["fact_status"],
+        )
 
     def test_repeated_idea_reject_preserves_exploitable_reason(self):
         rejected = {
