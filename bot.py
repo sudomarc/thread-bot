@@ -19,6 +19,15 @@ import requests
 
 NEWS_API_KEY = os.environ.get("NEWS_API_KEY", "").strip()
 OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY", "").strip()
+OPENROUTER_MODEL = os.environ.get("OPENROUTER_MODEL", "openrouter/free").strip() or "openrouter/free"
+OPENROUTER_FALLBACK_MODELS = tuple(
+    model.strip()
+    for model in os.environ.get(
+        "OPENROUTER_FALLBACK_MODELS",
+        "google/gemma-4-31b-it:free,nvidia/nemotron-3-super-120b-a12b:free",
+    ).split(",")
+    if model.strip()
+)
 GMAIL_USER = os.environ.get("GMAIL_USER", "").strip()
 GMAIL_APP_PASSWORD = os.environ.get("GMAIL_APP_PASSWORD", "").strip()
 TO_EMAIL = os.environ.get("RECIPIENT_EMAIL", "").strip()
@@ -363,9 +372,9 @@ RELATABLE TOPIC IDEAS:
 """
 
 
-def _openrouter_request(prompt, timeout, temperature, use_json_mode):
+def _openrouter_request(prompt, timeout, temperature, use_json_mode, model=None):
     payload = {
-        "model": "openrouter/free",
+        "model": model or OPENROUTER_MODEL,
         "messages": [{"role": "user", "content": prompt}],
         "temperature": temperature,
     }
@@ -389,24 +398,48 @@ def _openrouter_request(prompt, timeout, temperature, use_json_mode):
 def openrouter_chat(prompt, timeout=60, json_mode=False, temperature=None):
     if not OPENROUTER_API_KEY:
         raise RuntimeError("OPENROUTER_API_KEY is missing")
+
     effective_temperature = temperature if temperature is not None else (0.4 if json_mode else 0.85)
-    response = _openrouter_request(prompt, timeout, effective_temperature, json_mode)
-    if json_mode and response.status_code == 400:
-        # The free-tier auto-router can land on a model that rejects response_format.
-        # Retry once without it rather than failing the whole pipeline stage.
-        print("OpenRouter rejected response_format=json_object; retrying without it.")
-        response = _openrouter_request(prompt, timeout, effective_temperature, False)
-    if response.status_code >= 400:
-        raise RuntimeError(f"OpenRouter HTTP {response.status_code}: {response.text[:300]}")
-    data = response.json()
-    choices = data.get("choices") or []
-    if not choices:
-        error = data.get("error") or {}
-        raise RuntimeError(f"OpenRouter returned no choices: {error.get('message', 'unknown error')}")
-    content = choices[0].get("message", {}).get("content", "")
-    if not isinstance(content, str) or not content.strip():
-        raise RuntimeError("OpenRouter returned empty content")
-    return content.strip()
+    models = []
+    for model in (OPENROUTER_MODEL, *OPENROUTER_FALLBACK_MODELS):
+        if model and model not in models:
+            models.append(model)
+
+    last_error = None
+    for index, model in enumerate(models):
+        response = _openrouter_request(prompt, timeout, effective_temperature, json_mode, model=model)
+        if json_mode and response.status_code == 400:
+            # Some routed models reject response_format=json_object even though
+            # the router itself supports structured output. Retry this model
+            # once without response_format; the content_engine still validates JSON.
+            print(f"OpenRouter model={model} rejected response_format=json_object; retrying without it.")
+            response = _openrouter_request(prompt, timeout, effective_temperature, False, model=model)
+
+        if response.status_code >= 400:
+            raise RuntimeError(f"OpenRouter HTTP {response.status_code}: {response.text[:300]}")
+
+        data = response.json()
+        choices = data.get("choices") or []
+        if not choices:
+            error = data.get("error") or {}
+            last_error = RuntimeError(
+                f"OpenRouter returned no choices: {error.get('message', 'unknown error')}"
+            )
+        else:
+            message = choices[0].get("message") or {}
+            content = message.get("content", "")
+            if isinstance(content, str) and content.strip():
+                return content.strip()
+            last_error = RuntimeError("OpenRouter returned empty content")
+
+        if index + 1 < len(models):
+            next_model = models[index + 1]
+            print(
+                f"OpenRouter model={model} produced no usable content; "
+                f"trying fallback model={next_model}."
+            )
+
+    raise last_error or RuntimeError("OpenRouter returned no usable content")
 
 
 def openrouter_chat_json(prompt, timeout=60):
