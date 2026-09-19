@@ -6,15 +6,15 @@ Automated social-content bot for current **cybersecurity, technology, AI, gaming
 
 `NewsAPI → filtering/deduplication → strategy slot → content evaluation pipeline → report/state → optional images/email`
 
-The maintained implementation is `bot.py`. `main.py` remains a compatibility entrypoint. `strategy_runner.py` is the scheduled growth layer: it asks for **one targeted post per scheduled run** and rotates through the 30-day editorial plan. `content_engine.py` owns the staged fact-checking, angle generation, deterministic scoring, stress tests, final decision, and performance-metric normalization.
+The maintained implementation is `bot.py`. `main.py` remains a compatibility entrypoint. `strategy_runner.py` is the scheduled growth layer: it asks for **one targeted post per scheduled run** and rotates through the 30-day editorial plan. `content_engine.py` owns the staged fact-checking, angle generation, deterministic type-aware scoring, stress tests, final decision, and performance-metric normalization.
 
 ### Content evaluation pipeline
 
 The strategy path now separates the content lifecycle:
 
-`TOPIC → FACT CHECK → ANGLES → IDEA SCORE → TOP IDEA → DRAFT → QUALITY SCORE → STRESS TEST → FINAL DECISION`
+`TOPIC → FACT CHECK → ANGLES → POST TYPE → TYPE-SPECIFIC IDEA SCORE → TOP IDEA → DRAFT → TYPE-SPECIFIC QUALITY SCORE → TYPE-SPECIFIC STRESS TEST → FINAL DECISION`
 
-Fact status, idea score, quality score, final score, and decision are stored separately. A strong viral score cannot override a failed factuality gate. See `docs/CONTENT_ENGINE.md` for the exact weights and gates.
+Fact status, post type, idea score, quality score, final score, and decision are stored separately. Post type is selected by the deterministic strategy layer, while Python applies the matching score and stress contract. A strong engagement score cannot override a failed factuality gate. See `docs/CONTENT_ENGINE.md` for the exact contracts and gates.
 
 ### 30-day Threads strategy
 
@@ -23,7 +23,7 @@ The strategy is designed from the current audience signals:
 - Primary audience: AI/tech-oriented adults with strong gaming overlap.
 - Core objective: turn discovery into followers, not just maximize raw views.
 - Cadence: **5 targeted posts per week** at GMT/UTC times aligned with the strongest observed audience windows plus controlled test slots.
-- Formats: AI/tech opinions, questions, relatable humor, gaming/AI, explainers, and broader observations.
+- Post types: NEWS, OPINION, ENGAGEMENT_QUESTION, DEBATE, EXPERIENCE, COMPARISON, EXPLANATION, PREDICTION, and RELATABLE. The current 20-slot strategy maps to a subset of these and records the selected type in state/evaluation metadata.
 - Hook style: strong first line, short readable lines, direct questions when conversation is the goal.
 
 ### Target metrics
@@ -115,7 +115,7 @@ GitHub Actions uses current Node 24-compatible action releases (`checkout@v7`, `
 
 ## State files
 
-`state/history.json` is the persistent deduplication, strategy, and optional performance-feedback state. `state/latest_threads.txt` contains the publishable text. `state/latest_sources.txt` contains the sources actually used. `state/latest_content_evaluation.txt` contains the content-engine audit: facts, angles, scores, stress tests, and final decision. The workflow should archive the evaluation file together with the other state outputs.
+`state/history.json` is the persistent deduplication, strategy, post-type diversity, and optional performance-feedback state. `state/latest_threads.txt` contains the publishable text. `state/latest_sources.txt` contains the sources actually used. `state/latest_content_evaluation.txt` contains the content-engine audit: facts, angles, scores, stress tests, and final decision. The workflow should archive the evaluation file together with the other state outputs.
 
 ## Performance feedback
 
