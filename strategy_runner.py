@@ -409,13 +409,17 @@ def _evaluate_with_diagnostics(
     post_type=None,
     fact_result_override=None,
 ):
+    kwargs = {
+        "editorial_brief": editorial_brief,
+        "post_type": post_type,
+    }
+    if fact_result_override is not None:
+        kwargs["fact_result_override"] = fact_result_override
     result = evaluate_topic(
         topic,
         [article],
         _instrument_provider(provider, attempt),
-        editorial_brief=editorial_brief,
-        post_type=post_type,
-        fact_result_override=fact_result_override,
+        **kwargs,
     )
     return _log_pipeline_result(result)
 
@@ -493,14 +497,18 @@ def _run_pipeline(topic, article, editorial_brief="", post_type=None):
     )
     try:
         fact_result_override = result.get("fact_status")
+        retry_kwargs = {
+            "attempt": 2,
+            "post_type": post_type,
+        }
+        if fact_result_override is not None:
+            retry_kwargs["fact_result_override"] = fact_result_override
         retried = _evaluate_with_diagnostics(
             topic,
             article,
             retry_brief,
             bot.openrouter_chat_json,
-            attempt=2,
-            post_type=post_type,
-            fact_result_override=fact_result_override,
+            **retry_kwargs,
         )
         final_result = _diagnose_result(retried)
         print(
