@@ -207,14 +207,15 @@ def write_report(content, sources):
             )
 
 
-def request_with_retries(method, url, *, retries=3, timeout=20, **kwargs):
+def request_with_retries(method, url, *, retries=3, timeout=20, retryable_statuses=None, **kwargs):
     headers = dict(kwargs.pop("headers", {}) or {})
     headers.setdefault("User-Agent", REQUEST_USER_AGENT)
+    status_codes = RETRYABLE_HTTP if retryable_statuses is None else set(retryable_statuses)
     last_error = None
     for attempt in range(1, retries + 1):
         try:
             response = requests.request(method, url, timeout=timeout, headers=headers, **kwargs)
-            if response.status_code not in RETRYABLE_HTTP:
+            if response.status_code not in status_codes:
                 return response
             last_error = RuntimeError(f"HTTP {response.status_code}: {response.text[:250]}")
         except requests.RequestException as exc:
@@ -380,11 +381,14 @@ def _openrouter_request(prompt, timeout, temperature, use_json_mode, model=None)
     }
     if use_json_mode:
         payload["response_format"] = {"type": "json_object"}
+    # Let openrouter_chat own model failover. Do not burn four HTTP retries
+    # on a model-level 429/5xx before the fallback chain can run.
     return request_with_retries(
         "POST",
         "https://openrouter.ai/api/v1/chat/completions",
         retries=4,
         timeout=timeout,
+        retryable_statuses=set(),
         headers={
             "Authorization": f"Bearer {OPENROUTER_API_KEY}",
             "Content-Type": "application/json",
@@ -416,7 +420,17 @@ def openrouter_chat(prompt, timeout=60, json_mode=False, temperature=None):
             response = _openrouter_request(prompt, timeout, effective_temperature, False, model=model)
 
         if response.status_code >= 400:
-            raise RuntimeError(f"OpenRouter HTTP {response.status_code}: {response.text[:300]}")
+            last_error = RuntimeError(
+                f"OpenRouter HTTP {response.status_code} model={model}: {response.text[:300]}"
+            )
+            if index + 1 < len(models):
+                next_model = models[index + 1]
+                print(
+                    f"OpenRouter model={model} failed HTTP {response.status_code}; "
+                    f"trying fallback model={next_model}."
+                )
+                continue
+            raise last_error
 
         data = response.json()
         choices = data.get("choices") or []
