@@ -28,6 +28,14 @@ class StrategySelectionTests(unittest.TestCase):
         }
         self.assertEqual(strategy_runner._article_relevance(article, "builder_experience"), 0)
 
+    def test_relevance_matches_whole_words_not_substrings(self):
+        article = {"title": "Officials said the exam was held again", "description": "Nothing certain against the plan"}
+        self.assertEqual(strategy_runner._article_relevance(article, "builder_experience"), 0)
+
+    def test_relevance_accepts_simple_plurals(self):
+        article = {"title": "Developers ship new tools", "description": "Startups adopt AIs"}
+        self.assertGreaterEqual(strategy_runner._article_relevance(article, "builder_experience"), 3)
+
 
 if __name__ == "__main__":
     unittest.main()

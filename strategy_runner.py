@@ -1,4 +1,7 @@
+import os
+import re
 from datetime import datetime, timezone
+from functools import lru_cache
 
 import bot
 from content_engine import POST_TYPE_CONTRACTS, PipelineError, evaluate_topic, normalized_metrics, performance_row, render_report
@@ -80,12 +83,18 @@ ARTICLE_RELEVANCE_KEYWORDS = {
 }
 
 
+@lru_cache(maxsize=None)
+def _keyword_pattern(keyword):
+    # Whole words only ("ai" must not match "said" or "against"); allow simple plurals ("tools").
+    return re.compile(rf"\b{re.escape(keyword)}(?:s|es)?\b")
+
+
 def _article_relevance(article, strategy_kind):
     keywords = ARTICLE_RELEVANCE_KEYWORDS.get(strategy_kind, set())
     if not keywords:
         return 0
     text = f"{article.get('title', '')} {article.get('description', '')}".lower()
-    return sum(1 for keyword in keywords if keyword in text)
+    return sum(1 for keyword in keywords if _keyword_pattern(keyword).search(text))
 
 
 def _pick_article(articles, category, strategy_kind=None):
@@ -108,9 +117,21 @@ def _pick_article(articles, category, strategy_kind=None):
 
 
 def _fresh_topic(state):
-    used = set(state.get("recent_relatable_topic_tags", []))
-    topics = [item for item in bot.RELATABLE_TOPICS if item[0] not in used]
-    return (topics or bot.RELATABLE_TOPICS)[0]
+    used = list(state.get("recent_relatable_topic_tags", []))
+    unused = [item for item in bot.RELATABLE_TOPICS if item[0] not in used]
+    if unused:
+        return unused[0]
+    # Every topic was used: reuse the one used longest ago (a later position means more recent).
+    last_seen = {tag: position for position, tag in enumerate(used)}
+    return min(bot.RELATABLE_TOPICS, key=lambda item: last_seen[item[0]])
+
+
+def _source_marker(article, articles):
+    """Return the `NEWS N` marker (1-based) of the article actually selected from `articles`."""
+    for index, candidate in enumerate(articles, 1):
+        if candidate is article:
+            return f"NEWS {index}"
+    raise RuntimeError("Selected article is not part of the supplied article list")
 
 
 def _topic_from_slot(recipe, article):
@@ -163,7 +184,7 @@ def _provider_stage(prompt):
     text = str(prompt or "").lstrip().lower()
     if text.startswith("fact-check"):
         return "fact_check"
-    if text.startswith("generate a diverse idea pool"):
+    if text.startswith("generate at least"):
         return "angles"
     if text.startswith("write one natural threads post"):
         return "draft"
@@ -217,7 +238,15 @@ def _diagnose_result(result):
 
     fact_confidence = diagnosed.get("fact_confidence")
     fact_reason = str(diagnosed.get("fact_gate", "")).strip()
-    if isinstance(fact_confidence, (int, float)) and fact_confidence < 0.7:
+    # The fact gate rejects before any angle or draft exists. Its confidence is the claim's confidence in
+    # its own status, so a confidently contradicted claim reports a high value and must still be a fact reject.
+    rejected_at_fact_gate = (
+        "fact_gate" in diagnosed
+        and not diagnosed.get("angles")
+        and not diagnosed.get("top_pick")
+        and not diagnosed.get("stress_test")
+    )
+    if rejected_at_fact_gate or (isinstance(fact_confidence, (int, float)) and fact_confidence < 0.7):
         diagnosed["stage"] = "fact_check"
         diagnosed["rejection_reason"] = fact_reason or "Fact confidence is below the 0.70 safety threshold."
         diagnosed["recoverable"] = "contradicted" not in diagnosed["rejection_reason"].lower()
@@ -314,10 +343,11 @@ def _log_pipeline_result(result):
 
 def _write_pipeline_report(result):
     result = _diagnose_result(result)
+    os.makedirs(os.path.dirname(PIPELINE_REPORT_PATH) or ".", exist_ok=True)
     with open(PIPELINE_REPORT_PATH, "w", encoding="utf-8") as handle:
         handle.write(
             "PIPELINE DIAGNOSTICS\n"
-            f"STAGE: {result.get('stage', 'unknown')}\n"
+            f"STAGE: {result.get('stage', 'final_decision')}\n"
             f"DECISION: {result.get('decision', 'UNKNOWN')}\n"
             f"RECOVERABLE: {bool(result.get('recoverable', False))}\n"
             f"REJECTION REASON: {result.get('rejection_reason', '')}\n\n"
@@ -345,6 +375,15 @@ def _retry_brief(editorial_brief, error, post_type=None):
             f"Each angle must meet the hard dimensions for {post_type or 'the legacy contract'} at >= 7/10 and have a weighted idea score >= 80. "
             "Do not inflate scores without changing the underlying angle. Improve the actual hook, originality, and debate value. "
             "Keep all factual claims grounded in the supplied fact check and sources."
+        ).strip()
+    if message.startswith("stress test failed"):
+        failed = str(error).split(":", 1)[1].strip().rstrip(".") if ":" in str(error) else "unknown checks"
+        return (
+            f"{editorial_brief} "
+            f"STRESS TEST RETRY: the previous draft failed these checks: {failed}. "
+            f"Rewrite the post so every stress check for {post_type or 'the legacy contract'} passes. "
+            "Keep every factual claim grounded in the supplied sources, label opinions and predictions as such, "
+            "never invent facts, and return the same JSON structure with complete type_checks."
         ).strip()
     if _is_retryable_provider_error(error):
         return (
@@ -499,7 +538,7 @@ def generate_strategy_threads(articles, state):
         "body": result["draft"],
         "keywords": [kind, article.get("category", "technology")],
         "topic_tag": "current_news",
-        "source": "NEWS 1",
+        "source": _source_marker(article, articles),
         "post_type": post_type,
         "engagement_pattern": _engagement_pattern(kind, hook),
         "idea_score": result["top_pick"]["idea_score"],
@@ -522,6 +561,8 @@ def generate_strategy_threads(articles, state):
         "final_score": post["final_score"],
         "fact_confidence": post["fact_confidence"],
     }
+    if relatable_topic:
+        state.setdefault("recent_relatable_topic_tags", []).append(relatable_topic[0])
     state.setdefault("recent_content_topics", []).append(article.get("title", topic))
     state["recent_content_topics"] = state["recent_content_topics"][-40:]
     state.setdefault("recent_post_types", []).append(post_type)
