@@ -407,7 +407,12 @@ def stress_test(
         })
     else:
         result["type_checks"] = _validate_type_checks(type_checks or {}, post_type)
-    result["all_pass"] = all(result.values())
+    if post_type is None:
+        result["all_pass"] = all(result.values())
+    else:
+        result["all_pass"] = all(
+            value for key, value in result.items() if key != "type_checks"
+        ) and all(result["type_checks"].values())
     return result
 
 
