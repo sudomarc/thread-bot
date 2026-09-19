@@ -70,6 +70,7 @@ LLM output is untrusted data and is validated before it reaches the next stage.
 - Score dimensions must be finite values in [0, 10].
 - Typed draft stress payloads require explicit boolean type checks.
 - Malformed provider output receives at most one retry through the existing retry path, then fails closed.
+- A successful provider response with empty content or no choices is treated as unusable and triggers the configured OpenRouter model fallback chain before failing closed.
 
 ## Stress testing
 
