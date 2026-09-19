@@ -210,14 +210,18 @@ def validate_angles(angles: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]
     return normalized
 
 
+def _stress_claim_integrity(claim: Any) -> bool:
+    if not isinstance(claim, Mapping):
+        return False
+    status = str(claim.get("status", "")).upper().strip()
+    if status in {"VERIFIED", "PARTIALLY_VERIFIED"}:
+        return bool(str(claim.get("evidence", "")).strip())
+    return status in {"OPINION", "PREDICTION"}
+
+
 def stress_test(draft: str, *, scroll_answer: str, reply_example: str, counterargument: str, generic: bool, quotable_line: str, claims: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
     normalized_draft = str(draft or "").strip()
-    claim_ok = bool(claims) and all(
-        isinstance(claim, Mapping)
-        and str(claim.get("status", "")).upper() in {"VERIFIED", "PARTIALLY_VERIFIED", "OPINION", "PREDICTION"}
-        and str(claim.get("evidence", "")).strip()
-        for claim in claims
-    )
+    claim_ok = bool(claims) and all(_stress_claim_integrity(claim) for claim in claims)
     result = {
         "draft_present": bool(normalized_draft),
         "scroll": bool(scroll_answer.strip()),
