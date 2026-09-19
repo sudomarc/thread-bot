@@ -175,6 +175,34 @@ SOURCE: NEWS 3
         self.assertNotIn("if: github.event_name != 'push' || contains(github.event.head_commit.message, '[run-bot]')", workflow)
         self.assertIn("if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && contains(github.event.head_commit.message, '[run-bot]'))", workflow)
 
+    def _save_and_return(self, state):
+        with tempfile.TemporaryDirectory() as directory:
+            old_path = bot.STATE_FILE_PATH
+            bot.STATE_FILE_PATH = os.path.join(directory, "history.json")
+            try:
+                bot.save_state(state)
+            finally:
+                bot.STATE_FILE_PATH = old_path
+        return state
+
+    def test_state_save_preserves_repeats_in_sequence_history(self):
+        state = bot.default_state()
+        state["recent_post_types"] = ["EXPERIENCE", "RELATABLE", "EXPERIENCE"]
+        state["recent_engagement_patterns"] = ["POSITION", "OPEN_QUESTION", "POSITION"]
+        self._save_and_return(state)
+        self.assertEqual(state["recent_post_types"], ["EXPERIENCE", "RELATABLE", "EXPERIENCE"])
+        self.assertEqual(state["recent_engagement_patterns"], ["POSITION", "OPEN_QUESTION", "POSITION"])
+
+    def test_state_save_dedup_keeps_latest_occurrence_for_set_history(self):
+        state = bot.default_state()
+        state["recent_relatable_topic_tags"] = ["a", "b", "a"]
+        state["recent_post_titles"] = ["one", "two", "one"]
+        state["seen_article_urls"] = ["u1", "u2", "u1"]
+        self._save_and_return(state)
+        self.assertEqual(state["recent_relatable_topic_tags"], ["b", "a"])
+        self.assertEqual(state["recent_post_titles"], ["two", "one"])
+        self.assertEqual(state["seen_article_urls"], ["u2", "u1"])
+
 
 if __name__ == "__main__":
     unittest.main()

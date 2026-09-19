@@ -24,6 +24,7 @@ from content_engine import (
     run_llm_json,
     stress_test,
     validate_angle_result,
+    validate_angles as content_engine_validate_angles,
     validate_draft_result,
     validate_stress_payload,
     weighted_score,
@@ -378,6 +379,41 @@ class ContentEngineTests(unittest.TestCase):
             "idea_score": 88, "quality_score": 84, "final_score": 86, "impressions": 100, "follows": 10,
         })
         self.assertEqual(normalized_metrics(row)["follow_conversion"], 0.0)
+
+    def test_render_report_labels_legacy_post_type(self):
+        import content_engine
+        report = content_engine.render_report({"topic": "t", "post_type": None, "editorial_brief": "", "fact_status": {}})
+        self.assertIn("POST TYPE\nLEGACY", report)
+        self.assertNotIn("POST TYPE\nNone", report)
+
+    def test_factuality_gate_rejects_low_confidence_without_central_claim(self):
+        ok, confidence, reason = factuality_gate([{
+            "claim": "Weakly supported detail", "status": "UNVERIFIED", "confidence": 2,
+            "evidence": "Only a passing mention", "central": False,
+        }])
+        self.assertFalse(ok)
+        self.assertEqual(confidence, 0.2)
+        self.assertIn("too low", reason.lower())
+
+    def test_typed_idea_decision_rejects_low_fact_confidence_like_legacy(self):
+        import content_engine
+        typed = {name: 9 for name in POST_TYPE_CONTRACTS["OPINION"]["idea_weights"]}
+        typed["originality"] = 5
+        legacy = {name: 9 for name in IDEA_WEIGHTS}
+        legacy["originality"] = 5
+        self.assertEqual(idea_decision(85.0, legacy, 0.5), "REJECT")
+        self.assertEqual(content_engine._type_idea_decision("OPINION", 85.0, typed, 0.5), "REJECT")
+
+    def test_validate_angles_stores_normalized_angle_type(self):
+        angles = [
+            {
+                "angle": " contrarian " if index == 0 else ANGLE_TYPES[index],
+                "core_claim": f"distinct claim {index}", "why_it_matters": "w", "target_reaction": "r",
+                "potential_counterargument": "c", "supporting_facts": ["f"], "scores": {},
+            }
+            for index in range(8)
+        ]
+        self.assertEqual(content_engine_validate_angles(angles)[0]["angle"], "contrarian")
 
 
 if __name__ == "__main__":

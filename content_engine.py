@@ -165,11 +165,11 @@ def _type_idea_decision(post_type: str, score: float, values: Mapping[str, Any],
     contract = POST_TYPE_CONTRACTS[_validate_post_type(post_type)]
     score = _finite_percent_score(score, "idea_score")
     fact_confidence = _finite_confidence(fact_confidence)
+    if fact_confidence < 0.7:
+        return "REJECT"
     for dimension in contract["hard_idea_dimensions"]:
         if _finite_score(values[dimension]) < 7:
             return "REWORK" if score >= 70 else "REJECT"
-    if fact_confidence < 0.7:
-        return "REJECT"
     if score >= 90:
         return "EXCEPTIONAL"
     if score >= 85:
@@ -238,20 +238,17 @@ def factuality_gate(claims: Sequence[Mapping[str, Any]]) -> tuple[bool, float, s
                 return False, confidence, "Factual claim is missing supporting evidence."
             raise
     factual_confidences = []
-    central_statuses = []
     for claim in normalized:
         status = claim["status"]
         confidence = claim["confidence"] / 10
         if status in EVIDENCE_REQUIRED_STATUSES:
             factual_confidences.append(confidence)
-        if claim["central"]:
-            central_statuses.append(status)
         if status == "CONTRADICTED":
             return False, confidence, "Central or material claim is contradicted by the supplied evidence."
         if status == "UNVERIFIED" and claim["central"]:
             return False, confidence, "Central claim is unverified."
     average = sum(factual_confidences) / len(factual_confidences) if factual_confidences else 1.0
-    if central_statuses and average < 0.7:
+    if factual_confidences and average < 0.7:
         return False, round(average, 2), "Fact confidence is too low to support the claim safely."
     return True, round(average, 2), "Fact claims passed the minimum evidence gate."
 
@@ -329,7 +326,7 @@ def validate_angles(angles: Any) -> list[dict[str, Any]]:
         if key in seen_claims:
             continue
         seen_claims.add(key)
-        normalized.append({**dict(angle), "supporting_facts": list(supporting_facts), "scores": dict(scores)})
+        normalized.append({**dict(angle), "angle": angle_type, "supporting_facts": list(supporting_facts), "scores": dict(scores)})
     if len(normalized) < 8:
         raise PipelineError("Angles are repetitive; need at least 8 materially distinct angles")
     return normalized
@@ -634,7 +631,7 @@ def evaluate_topic(
 def render_report(result: Mapping[str, Any]) -> str:
     lines = [
         f"TOPIC\n{result.get('topic', '')}",
-        f"POST TYPE\n{result.get('post_type', 'LEGACY')}",
+        f"POST TYPE\n{result.get('post_type') or 'LEGACY'}",
         f"EDITORIAL BRIEF\n{result.get('editorial_brief', '')}",
         "FACT STATUS",
         json.dumps(result.get("fact_status", {}), ensure_ascii=False, indent=2),

@@ -2,6 +2,23 @@
 
 All notable changes to Thread Bot are documented here.
 
+## [Unreleased]
+
+### Fixed
+- Strategy posts hardcoded `SOURCE: NEWS 1`, so the first fetched article was recorded as used and reported in `latest_sources.txt` instead of the article the pipeline actually selected. The real story stayed eligible for reuse on the next run.
+- Relatable topic rotation never advanced in strategy mode, so every humor/question slot reused the same topic; once all topics were used it also restarted at the first one instead of the least recently used.
+- `save_state` deduplicated `recent_post_types` and `recent_engagement_patterns`, erasing the repeat history the diversity fields exist to record, and kept the oldest occurrence of set-like history so re-used titles/URLs aged out early.
+- A confidently contradicted claim was diagnosed as a `final_decision` reject and marked recoverable, triggering a pointless full pipeline retry; it is now an unrecoverable `fact_check` reject.
+- The factuality gate passed weakly supported claim sets when no claim was flagged `central`; low average confidence now fails the gate.
+- The typed idea decision checked hard dimensions before fact confidence and disagreed with the legacy path on low fact confidence.
+- Provider diagnostics labeled the angle stage `unknown` (prefix mismatch with the real prompt), stress-test rejections were retried with a brief blaming invalid JSON, and successful runs were reported as `STAGE: unknown`.
+- Article relevance matched substrings (`ai` inside `said`, `against`); it now matches whole words with simple plurals.
+- `render_report` printed `POST TYPE None` for legacy runs, angle types were stored unnormalized, and the diagnostics report failed if `state/` did not exist.
+
+### Changed
+- Sequence history is capped, not deduplicated; set-like history keeps each item's latest position.
+- `.gitignore` excludes the atomic-write temp file `state/*.tmp`.
+
 ## [2.3.0] — 2026-09-12 — Vesper
 
 ### Added

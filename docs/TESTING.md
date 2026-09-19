@@ -24,6 +24,12 @@ Tests must cover both legacy and typed paths. Typed regression coverage should i
 - OPINION and PREDICTION claims can be evidence-free when labeled;
 - mixed opinion plus factual claims still require evidence for the factual claim;
 - contradicted claims and central unverified claims are rejected;
+- a low average fact confidence is rejected even when no claim is flagged central;
+- the typed and legacy idea decisions agree on low fact confidence;
+- provider stage labels match every prompt the content engine builds;
+- a strategy post's source marker, seen URLs, and relatable topic history reflect the article and topic actually used;
+- state saving preserves sequence repeats and keeps the latest occurrence for set-like history;
+- article relevance matches whole words, not substrings;
 - OPINION/PREDICTION confidence does not dilute factual confidence;
 - unknown angle types fail validation;
 - malformed nested draft/stress/type-check payloads fail closed;

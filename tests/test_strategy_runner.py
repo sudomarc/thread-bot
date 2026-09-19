@@ -292,6 +292,85 @@ class StrategyRunnerTests(unittest.TestCase):
         self.assertEqual(state["recent_engagement_patterns"][-1], "PROJECT_SHARE")
         self.assertEqual(state["strategy_mix"], strategy_runner.STRATEGY_MIX)
 
+    def test_provider_stage_recognizes_every_pipeline_prompt(self):
+        sources = [{"title": "Story", "description": "Facts", "url": "https://example.com/a"}]
+        angle = {"angle": "contrarian", "core_claim": "claim"}
+        self.assertEqual(strategy_runner._provider_stage(content_engine.build_fact_prompt("t", sources)), "fact_check")
+        self.assertEqual(strategy_runner._provider_stage(content_engine.build_angle_prompt("t", {"claims": []}, sources, "", "OPINION")), "angles")
+        self.assertEqual(strategy_runner._provider_stage(content_engine.build_draft_prompt(angle, {"claims": []}, sources, "", "OPINION")), "draft")
+
+    def test_diagnose_confident_contradiction_is_unrecoverable_fact_check_reject(self):
+        diagnosed = strategy_runner._diagnose_result({
+            "decision": "REJECT", "fact_confidence": 0.9, "angles": [],
+            "fact_gate": "Central or material claim is contradicted by the supplied evidence.",
+        })
+        self.assertEqual(diagnosed["stage"], "fact_check")
+        self.assertFalse(diagnosed["recoverable"])
+
+    def test_retry_brief_for_stress_failure_does_not_blame_json_contract(self):
+        brief = strategy_runner._retry_brief("BRIEF", "Stress test failed: scroll, replyability.", "ENGAGEMENT_QUESTION")
+        self.assertIn("STRESS TEST RETRY", brief)
+        self.assertIn("scroll, replyability", brief)
+        self.assertNotIn("JSON/data contract", brief)
+
+    def _published(self):
+        return {
+            "decision": "PUBLISH", "top_pick": {"core_claim": "claim", "idea_score": 90.0}, "draft": "body",
+            "quality_score": 90.0, "final_score": 90.0, "fact_confidence": 0.9,
+        }
+
+    def _articles(self):
+        return [
+            {"category": "technology", "title": "University exam result announced today", "description": "Scorecards", "url": "https://example.com/0"},
+            {"category": "technology", "title": "Open source AI coding tool adds local model support", "description": "Developers run an AI model", "url": "https://example.com/1"},
+            {"category": "gaming", "title": "Studio confirms a new game release date", "description": "Gaming news", "url": "https://example.com/2"},
+        ]
+
+    def test_strategy_post_source_marker_points_to_selected_article(self):
+        import bot
+        articles = self._articles()
+        state = {"strategy_cursor": 0, "recent_relatable_topic_tags": []}
+        with patch.object(strategy_runner, "_run_pipeline", return_value=self._published()), \
+             patch.object(strategy_runner, "_write_pipeline_report"), redirect_stdout(io.StringIO()):
+            _, posts = strategy_runner.generate_strategy_threads(articles, state)
+        self.assertEqual(posts[0]["source"], "NEWS 2")
+        self.assertEqual(bot.used_articles_from_posts(posts, articles)[0]["url"], "https://example.com/1")
+
+    def test_strategy_records_relatable_topic_tag_for_rotation(self):
+        state = {"strategy_cursor": 8, "recent_relatable_topic_tags": []}
+        expected = strategy_runner._fresh_topic(state)[0]
+        with patch.object(strategy_runner, "_run_pipeline", return_value=self._published()), \
+             patch.object(strategy_runner, "_write_pipeline_report"), redirect_stdout(io.StringIO()):
+            strategy_runner.generate_strategy_threads(self._articles(), state)
+        self.assertEqual(state["recent_relatable_topic_tags"], [expected])
+        self.assertNotEqual(strategy_runner._fresh_topic(state)[0], expected)
+
+    def test_fresh_topic_reuses_least_recent_topic_when_all_were_used(self):
+        topics = strategy_runner.bot.RELATABLE_TOPICS
+        state = {"recent_relatable_topic_tags": [item[0] for item in topics]}
+        self.assertEqual(strategy_runner._fresh_topic(state), topics[0])
+        state = {"recent_relatable_topic_tags": [item[0] for item in reversed(topics)]}
+        self.assertEqual(strategy_runner._fresh_topic(state), topics[-1])
+
+    def test_pipeline_report_creates_missing_state_directory(self):
+        import os
+        import tempfile
+        with tempfile.TemporaryDirectory() as directory:
+            path = os.path.join(directory, "missing", "report.txt")
+            with patch.object(strategy_runner, "PIPELINE_REPORT_PATH", path):
+                strategy_runner._write_pipeline_report({"decision": "REJECT", "topic": "t"})
+            self.assertTrue(os.path.exists(path))
+
+    def test_pipeline_report_labels_successful_run_with_final_decision_stage(self):
+        import os
+        import tempfile
+        with tempfile.TemporaryDirectory() as directory:
+            path = os.path.join(directory, "report.txt")
+            with patch.object(strategy_runner, "PIPELINE_REPORT_PATH", path):
+                strategy_runner._write_pipeline_report({"decision": "PUBLISH", "topic": "t"})
+            with open(path, encoding="utf-8") as handle:
+                self.assertIn("STAGE: final_decision", handle.read())
+
 
 if __name__ == "__main__":
     unittest.main()

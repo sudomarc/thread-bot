@@ -161,13 +161,20 @@ def load_state():
     return data
 
 
+def _latest_unique(items, limit):
+    """Deduplicate while keeping each item's most recent position, then keep the newest `limit`."""
+    return list(dict.fromkeys(reversed(list(items))))[::-1][-limit:]
+
+
 def save_state(state):
     state["schema_version"] = 2
-    state["recent_relatable_topic_tags"] = list(dict.fromkeys(state.get("recent_relatable_topic_tags", [])))[-MAX_HISTORY_TOPICS:]
-    state["recent_post_titles"] = list(dict.fromkeys(state.get("recent_post_titles", [])))[-MAX_HISTORY_TITLES:]
-    state["seen_article_urls"] = list(dict.fromkeys(state.get("seen_article_urls", [])))[-MAX_HISTORY_URLS:]
-    state["recent_post_types"] = list(dict.fromkeys(state.get("recent_post_types", [])))[-MAX_HISTORY_POST_TYPES:]
-    state["recent_engagement_patterns"] = list(dict.fromkeys(state.get("recent_engagement_patterns", [])))[-MAX_HISTORY_ENGAGEMENT_PATTERNS:]
+    # Set-like history: uniqueness matters, and a repeated item must count as recently used.
+    state["recent_relatable_topic_tags"] = _latest_unique(state.get("recent_relatable_topic_tags", []), MAX_HISTORY_TOPICS)
+    state["recent_post_titles"] = _latest_unique(state.get("recent_post_titles", []), MAX_HISTORY_TITLES)
+    state["seen_article_urls"] = _latest_unique(state.get("seen_article_urls", []), MAX_HISTORY_URLS)
+    # Sequence history: repeats are the diversity signal, so keep them and only cap the window.
+    state["recent_post_types"] = list(state.get("recent_post_types", []))[-MAX_HISTORY_POST_TYPES:]
+    state["recent_engagement_patterns"] = list(state.get("recent_engagement_patterns", []))[-MAX_HISTORY_ENGAGEMENT_PATTERNS:]
     state["last_run_at"] = datetime.now(timezone.utc).isoformat()
     state_dir = os.path.dirname(STATE_FILE_PATH) or "."
     os.makedirs(state_dir, exist_ok=True)
