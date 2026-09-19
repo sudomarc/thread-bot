@@ -400,13 +400,22 @@ def _retry_brief(editorial_brief, error, post_type=None):
     ).strip()
 
 
-def _evaluate_with_diagnostics(topic, article, editorial_brief, provider, attempt, post_type=None):
+def _evaluate_with_diagnostics(
+    topic,
+    article,
+    editorial_brief,
+    provider,
+    attempt,
+    post_type=None,
+    fact_result_override=None,
+):
     result = evaluate_topic(
         topic,
         [article],
         _instrument_provider(provider, attempt),
         editorial_brief=editorial_brief,
         post_type=post_type,
+        fact_result_override=fact_result_override,
     )
     return _log_pipeline_result(result)
 
@@ -483,8 +492,15 @@ def _run_pipeline(topic, article, editorial_brief="", post_type=None):
         f"stage={result.get('stage', 'unknown')} reason={result.get('rejection_reason', 'unknown')}"
     )
     try:
+        fact_result_override = result.get("fact_status")
         retried = _evaluate_with_diagnostics(
-            topic, article, retry_brief, bot.openrouter_chat_json, attempt=2, post_type=post_type
+            topic,
+            article,
+            retry_brief,
+            bot.openrouter_chat_json,
+            attempt=2,
+            post_type=post_type,
+            fact_result_override=fact_result_override,
         )
         final_result = _diagnose_result(retried)
         print(
