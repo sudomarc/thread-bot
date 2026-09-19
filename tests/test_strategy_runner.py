@@ -289,7 +289,7 @@ class StrategyRunnerTests(unittest.TestCase):
         self.assertGreaterEqual(posts[0]["idea_score"], 90)
         self.assertEqual(state["strategy_cursor"], 17)
         self.assertEqual(state["recent_post_types"][-1], "ENGAGEMENT_QUESTION")
-        self.assertEqual(state["recent_engagement_patterns"][-1], "SCENARIO_CHOICE")
+        self.assertEqual(state["recent_engagement_patterns"][-1], "PROJECT_SHARE")
         self.assertEqual(state["strategy_mix"], strategy_runner.STRATEGY_MIX)
 
 
