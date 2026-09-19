@@ -163,7 +163,7 @@ def _diagnose_result(result):
     if angles and not diagnosed.get("top_pick"):
         best = max(angles, key=lambda item: float(item.get("idea_score", 0)))
         contract = POST_TYPE_CONTRACTS.get(diagnosed.get("post_type"))
-        hard = ", ".join(contract["hard_idea_dimensions"]) if contract else "the configured hard dimensions"
+        hard = ", ".join(contract["hard_idea_dimensions"]) if contract else "scroll_stop, originality, and debate_potential"
         diagnosed["stage"] = "idea_selection"
         diagnosed["rejection_reason"] = (
             f"No eligible idea met the idea gate; best_idea_score={float(best.get('idea_score', 0)):.1f}/100 "
