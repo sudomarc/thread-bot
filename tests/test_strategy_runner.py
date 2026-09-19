@@ -24,6 +24,19 @@ class StrategyRunnerTests(unittest.TestCase):
         self.assertEqual(counts["news_explainer"], 1)
         self.assertEqual(counts["gaming"], 1)
 
+    def test_strategy_kind_maps_to_explicit_post_type(self):
+        self.assertEqual(strategy_runner.POST_TYPE_BY_STRATEGY["builder_experience"], "EXPERIENCE")
+        self.assertEqual(strategy_runner.POST_TYPE_BY_STRATEGY["question"], "ENGAGEMENT_QUESTION")
+        self.assertEqual(strategy_runner.POST_TYPE_BY_STRATEGY["opinion_observation"], "OPINION")
+        self.assertEqual(strategy_runner.POST_TYPE_BY_STRATEGY["news_explainer"], "EXPLANATION")
+        self.assertEqual(strategy_runner.POST_TYPE_BY_STRATEGY["gaming"], "ENGAGEMENT_QUESTION")
+
+    def test_engagement_patterns_are_distinct_for_question_slots(self):
+        self.assertNotEqual(
+            strategy_runner._engagement_pattern("question", "What are you actually building with AI right now?"),
+            strategy_runner._engagement_pattern("question", "What AI tool genuinely earns a place in your daily workflow?"),
+        )
+
     def test_strategy_targets_match_30_day_plan(self):
         self.assertEqual(strategy_runner.STRATEGY_TARGETS["followers"], "75-150 / 30 days")
         self.assertEqual(strategy_runner.STRATEGY_TARGETS["conversion"], "0.3-0.6% views-to-followers")
@@ -86,19 +99,9 @@ class StrategyRunnerTests(unittest.TestCase):
     def test_record_performance_normalizes_metrics(self):
         state = {}
         row = strategy_runner.record_performance(state, {
-            "post_id": "p1",
-            "date": "2026-09-11",
-            "topic": "AI",
-            "angle": "economic",
-            "idea_score": 90,
-            "quality_score": 85,
-            "final_score": 88,
-            "views": 1000,
-            "likes": 50,
-            "replies": 20,
-            "reposts": 10,
-            "quotes": 5,
-            "follows": 10,
+            "post_id": "p1", "date": "2026-09-11", "topic": "AI", "angle": "economic",
+            "idea_score": 90, "quality_score": 85, "final_score": 88, "views": 1000,
+            "likes": 50, "replies": 20, "reposts": 10, "quotes": 5, "follows": 10,
         })
         self.assertEqual(row["normalized"]["reply_rate"], 0.02)
         self.assertEqual(len(state["performance_history"]), 1)
@@ -113,6 +116,7 @@ class StrategyRunnerTests(unittest.TestCase):
         retry_brief = evaluator.call_args_list[1].kwargs["editorial_brief"]
         self.assertIn("VALIDATION RETRY", retry_brief)
         self.assertIn("Never leave status blank", retry_brief)
+        self.assertIsNone(evaluator.call_args_list[0].kwargs["post_type"])
 
     def test_run_pipeline_retries_empty_provider_output(self):
         first_error = RuntimeError("OpenRouter returned empty content")
@@ -129,7 +133,7 @@ class StrategyRunnerTests(unittest.TestCase):
         expected = {"decision": "PUBLISH"}
         captured = []
 
-        def fake_evaluate(topic, sources, chat, editorial_brief=""):
+        def fake_evaluate(topic, sources, chat, editorial_brief="", post_type=None):
             captured.append(chat)
             if len(captured) == 1:
                 raise RuntimeError("OpenRouter returned empty content")
@@ -137,7 +141,6 @@ class StrategyRunnerTests(unittest.TestCase):
 
         with patch.object(strategy_runner, "evaluate_topic", side_effect=fake_evaluate):
             result = strategy_runner._run_pipeline("Topic", {"title": "Story"})
-
         self.assertEqual(result, expected)
         self.assertIs(captured[0]._provider, strategy_runner.bot.openrouter_chat_json)
         self.assertIs(captured[1]._provider, strategy_runner._retry_openrouter_chat)
@@ -153,7 +156,6 @@ class StrategyRunnerTests(unittest.TestCase):
         self.assertIn("at least 10 angles", brief)
         self.assertIn("at least 8 different allowed angle types", brief)
         self.assertIn("materially different core_claims", brief)
-        self.assertNotIn("Never leave status blank", brief)
 
     def test_run_pipeline_does_not_mask_original_validation_failure_when_retry_hits_provider_error(self):
         first_error = content_engine.PipelineError("Angles are repetitive; need at least 8 materially distinct angles")
@@ -169,21 +171,20 @@ class StrategyRunnerTests(unittest.TestCase):
     def test_recoverable_idea_reject_retries_once_and_can_publish(self):
         rejected = {
             "decision": "REJECT",
+            "post_type": "EXPERIENCE",
             "fact_confidence": 1.0,
             "fact_gate": "Fact claims passed the minimum evidence gate.",
-            "angles": [
-                {"core_claim": "Best idea", "idea_score": 76.5, "idea_decision": "REWORK"},
-            ],
+            "angles": [{"core_claim": "Best idea", "idea_score": 76.5, "idea_decision": "REWORK"}],
         }
         published = {"decision": "PUBLISH"}
         with patch.object(strategy_runner, "evaluate_topic", side_effect=[rejected, published]) as evaluator:
-            result = strategy_runner._run_pipeline("Topic", {"title": "Story"}, "Format: builder_experience.")
-
+            result = strategy_runner._run_pipeline("Topic", {"title": "Story"}, "Format: builder_experience.", post_type="EXPERIENCE")
         self.assertEqual(result, published)
         self.assertEqual(evaluator.call_count, 2)
         retry_brief = evaluator.call_args_list[1].kwargs["editorial_brief"]
         self.assertIn("IDEA GATE RETRY", retry_brief)
         self.assertIn("weighted idea score >= 80", retry_brief)
+        self.assertEqual(evaluator.call_args_list[0].kwargs["post_type"], "EXPERIENCE")
 
     def test_repeated_idea_reject_preserves_exploitable_reason(self):
         rejected = {
@@ -197,7 +198,6 @@ class StrategyRunnerTests(unittest.TestCase):
         }
         with patch.object(strategy_runner, "evaluate_topic", side_effect=[rejected, rejected]) as evaluator:
             result = strategy_runner._run_pipeline("Topic", {"title": "Story"}, "Format: builder_experience.")
-
         self.assertEqual(evaluator.call_count, 2)
         self.assertEqual(result["decision"], "REJECT")
         self.assertEqual(result["stage"], "idea_selection")
@@ -234,7 +234,7 @@ class StrategyRunnerTests(unittest.TestCase):
                         {"strategy_cursor": 2},
                     )
 
-    def test_generate_strategy_threads_runs_fact_angle_and_draft_stages(self):
+    def test_generate_strategy_threads_runs_typed_pipeline_and_tracks_state(self):
         articles = [{
             "category": "gaming",
             "title": "A current gaming story",
@@ -242,42 +242,54 @@ class StrategyRunnerTests(unittest.TestCase):
             "published": "2026-09-11T10:00:00Z",
             "url": "https://example.com/story",
         }]
-        state = {"strategy_cursor": 3, "recent_post_titles": [], "recent_relatable_topic_tags": []}
+        state = {
+            "strategy_cursor": 3,
+            "recent_post_titles": [],
+            "recent_relatable_topic_tags": [],
+            "recent_post_types": [],
+            "recent_engagement_patterns": [],
+        }
+        idea_weights = content_engine.POST_TYPE_CONTRACTS["ENGAGEMENT_QUESTION"]["idea_weights"]
+        quality_weights = content_engine.POST_TYPE_CONTRACTS["ENGAGEMENT_QUESTION"]["quality_weights"]
         angles = []
-        for index in range(8):
-            scores = {key: 9 for key in content_engine.IDEA_WEIGHTS}
+        for index, angle_type in enumerate(content_engine.ANGLE_TYPES[:8]):
             angles.append({
-                "angle": f"angle_{index}",
-                "core_claim": f"Distinct claim {index}",
+                "angle": angle_type,
+                "core_claim": f"Distinct question idea {index}",
                 "why_it_matters": "Specific consequence",
-                "target_reaction": "Reasonable disagreement",
-                "supporting_facts": ["A supplied fact"],
-                "potential_counterargument": "A reasonable counterargument",
-                "scores": scores,
+                "target_reaction": "A reader shares a concrete experience",
+                "supporting_facts": [],
+                "potential_counterargument": "Some readers may disagree",
+                "scores": {key: 9 for key in idea_weights},
             })
         responses = [
             json.dumps({"claims": [{"claim": "The story happened", "status": "VERIFIED", "evidence": "A useful summary.", "confidence": 9, "central": True}]}),
             json.dumps({"angles": angles}),
             json.dumps({
-                "draft": "A specific take on why this gaming story changes the economics of the next wave of games.",
-                "quality": {key: 9 for key in content_engine.QUALITY_WEIGHTS},
+                "draft": "What game would you want an AI-powered NPC to actually remember you in?",
+                "quality": {key: 9 for key in quality_weights},
                 "stress": {
-                    "scroll_answer": "The opening makes a concrete claim.",
-                    "reply_example": "A reader could disagree about the business impact.",
-                    "counterargument": "Better technology does not guarantee adoption.",
+                    "scroll_answer": "It invites a specific scenario.",
+                    "reply_example": "A reader can name a game.",
+                    "counterargument": "",
                     "generic": False,
-                    "quotable_line": "The interesting shift is who controls the constraint.",
+                    "quotable_line": "",
+                    "type_checks": {key: True for key in content_engine.POST_TYPE_CONTRACTS["ENGAGEMENT_QUESTION"]["stress_checks"]},
                 },
-                "claims": [{"claim": "The story happened", "status": "VERIFIED", "evidence": "A useful summary.", "confidence": 9, "central": True}],
+                "claims": [],
             }),
         ]
         with patch.object(strategy_runner.bot, "openrouter_chat", side_effect=responses):
             with patch.object(strategy_runner, "PIPELINE_REPORT_PATH", "/tmp/thread-bot-evaluation.txt"):
                 content, posts = strategy_runner.generate_strategy_threads(articles, state)
-        self.assertIn("specific take", content)
+        self.assertIn("AI-powered NPC", content)
         self.assertEqual(posts[0]["decision"], "PUBLISH")
+        self.assertEqual(posts[0]["post_type"], "ENGAGEMENT_QUESTION")
+        self.assertEqual(posts[0]["engagement_pattern"], "SCENARIO_CHOICE")
         self.assertGreaterEqual(posts[0]["idea_score"], 90)
         self.assertEqual(state["strategy_cursor"], 4)
+        self.assertEqual(state["recent_post_types"][-1], "ENGAGEMENT_QUESTION")
+        self.assertEqual(state["recent_engagement_patterns"][-1], "SCENARIO_CHOICE")
         self.assertEqual(state["strategy_mix"], strategy_runner.STRATEGY_MIX)
 
 
