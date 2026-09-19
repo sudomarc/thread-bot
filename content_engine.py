@@ -564,9 +564,15 @@ def evaluate_topic(
     max_angles: int = 8,
     editorial_brief: str = "",
     post_type: str | None = None,
+    fact_result_override: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     normalized_type = _validate_post_type(post_type) if post_type is not None else None
-    fact_result, claims = validate_fact_result(run_llm_json(openrouter_chat, build_fact_prompt(topic, sources)))
+    if fact_result_override is None:
+        fact_result, claims = validate_fact_result(
+            run_llm_json(openrouter_chat, build_fact_prompt(topic, sources))
+        )
+    else:
+        fact_result, claims = validate_fact_result(fact_result_override)
     fact_ok, fact_confidence, fact_reason = factuality_gate(claims)
     if not fact_ok:
         return {"topic": topic, "post_type": normalized_type, "editorial_brief": editorial_brief, "fact_status": fact_result, "fact_confidence": fact_confidence, "fact_gate": fact_reason, "angles": [], "decision": "REJECT"}
