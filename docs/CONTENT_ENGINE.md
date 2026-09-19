@@ -54,6 +54,8 @@ Factual statuses require evidence. A contradicted claim fails the gate. A centra
 
 Fact confidence is calculated only from evidence-bearing factual statuses. OPINION and PREDICTION confidence values do not lower the factuality score.
 
+The gate also fails when the average confidence of the evidence-bearing claims is below 0.70, whether or not any claim is flagged `central`. A model that omits or mislabels `central` therefore cannot pass a weakly supported claim set. A gate rejection reports the claim's own confidence in its status, so a diagnosis must key on the gate outcome rather than on the reported value.
+
 Claim-free content is valid for formats such as engagement questions. An empty claim set returns a safe factuality result and does not fail claim-integrity stress checks.
 
 ## Boundary validation
@@ -121,6 +123,13 @@ The strategy state now records:
 - strategy_last_engagement_pattern
 
 Existing strategy cursor, title history, source history, and recent content topics remain intact.
+
+History semantics in `save_state`:
+
+- recent_post_types and recent_engagement_patterns are sequences. Repeats are kept because they are the diversity signal; only the window is capped.
+- recent_relatable_topic_tags, recent_post_titles, and seen_article_urls are sets. They are deduplicated keeping each item's most recent position, so a re-used item counts as recently used.
+- The strategy post's `source` marker (`NEWS N`) must identify the article the pipeline actually used. `bot.main` derives seen URLs and `state/latest_sources.txt` from it.
+- When every relatable topic has been used, rotation reuses the least recently used topic instead of restarting at the first one.
 
 Engagement patterns include mechanisms such as PROJECT_SHARE, PREFERENCE, SCENARIO_CHOICE, CONSTRAINT_WORKAROUND, POSITION, RECOGNITION_HUMOR, and DISCOVERY. This is deterministic state tracking, not an ML recommender.
 
