@@ -243,7 +243,7 @@ class StrategyRunnerTests(unittest.TestCase):
             "url": "https://example.com/story",
         }]
         state = {
-            "strategy_cursor": 3,
+            "strategy_cursor": 16,
             "recent_post_titles": [],
             "recent_relatable_topic_tags": [],
             "recent_post_types": [],
@@ -287,7 +287,7 @@ class StrategyRunnerTests(unittest.TestCase):
         self.assertEqual(posts[0]["post_type"], "ENGAGEMENT_QUESTION")
         self.assertEqual(posts[0]["engagement_pattern"], "SCENARIO_CHOICE")
         self.assertGreaterEqual(posts[0]["idea_score"], 90)
-        self.assertEqual(state["strategy_cursor"], 4)
+        self.assertEqual(state["strategy_cursor"], 17)
         self.assertEqual(state["recent_post_types"][-1], "ENGAGEMENT_QUESTION")
         self.assertEqual(state["recent_engagement_patterns"][-1], "SCENARIO_CHOICE")
         self.assertEqual(state["strategy_mix"], strategy_runner.STRATEGY_MIX)
