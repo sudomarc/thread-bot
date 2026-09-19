@@ -229,10 +229,16 @@ def _diagnose_result(result):
         best_score = float(best.get("idea_score", 0))
         best_decision = str(best.get("idea_decision", "REJECT"))
         diagnosed["stage"] = "idea_selection"
+        if diagnosed.get("post_type"):
+            hard_dimensions = ", ".join(
+                POST_TYPE_CONTRACTS[diagnosed["post_type"]]["hard_idea_dimensions"]
+            )
+        else:
+            hard_dimensions = "scroll_stop, originality, and debate_potential"
         diagnosed["rejection_reason"] = (
             f"No eligible idea met the idea gate; best_idea_score={best_score:.1f}/100 "
             f"best_idea_decision={best_decision} required_score>=80 and hard dimensions "
-            f"{', '.join(POST_TYPE_CONTRACTS.get(diagnosed.get('post_type'), {'hard_idea_dimensions': ('scroll_stop', 'originality', 'debate_potential')})['hard_idea_dimensions'])} must each be >=7/10."
+            f"{hard_dimensions} must each be >=7/10."
         )
         diagnosed["recoverable"] = True
         return diagnosed
