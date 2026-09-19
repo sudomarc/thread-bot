@@ -223,7 +223,7 @@ def _retry_brief(editorial_brief, error, post_type=None):
     if "no eligible idea met the idea gate" in message:
         contract = POST_TYPE_CONTRACTS.get(post_type)
         hard = ", ".join(contract["hard_idea_dimensions"]) if contract else "the configured hard dimensions"
-        return f"{editorial_brief} IDEA GATE RETRY: regenerate at least 10 materially different angles for the fixed post type. Each must have {hard} >=7/10 and weighted idea score >=80. Improve the actual angle; do not inflate scores.".strip()
+        return f"{editorial_brief} IDEA GATE RETRY: regenerate at least 10 materially different angles for the fixed post type. Each must have {hard} >=7/10 and weighted idea score >= 80. Improve the actual angle; do not inflate scores.".strip()
     if _is_retryable_provider_error(error):
         return f"{editorial_brief} PROVIDER OUTPUT RETRY: return one complete valid JSON object with every required field explicitly populated. Do not return empty content, null content, markdown, or prose outside JSON.".strip()
     return f"{editorial_brief} VALIDATION RETRY: the previous model response violated the JSON/data contract. Return every required field explicitly; factual claims need claim, status, evidence, confidence, and central. Never leave status blank.".strip()
