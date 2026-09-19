@@ -239,7 +239,14 @@ def _diagnose_result(result):
 
     stress = diagnosed.get("stress_test") or {}
     if stress and not bool(stress.get("all_pass", False)):
-        failed = [name for name, passed in stress.items() if name != "all_pass" and not bool(passed)]
+        failed = []
+        for name, passed in stress.items():
+            if name == "all_pass":
+                continue
+            if isinstance(passed, dict):
+                failed.extend(key for key, value in passed.items() if not bool(value))
+            elif not bool(passed):
+                failed.append(name)
         diagnosed["stage"] = "stress_test"
         diagnosed["rejection_reason"] = (
             "Stress test failed: " + ", ".join(failed or ["unknown_check"]) + "."
