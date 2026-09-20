@@ -428,7 +428,20 @@ def openrouter_chat(prompt, timeout=60, json_mode=False, temperature=None):
             # the router itself supports structured output. Retry this model
             # once without response_format; the content_engine still validates JSON.
             print(f"OpenRouter model={model} rejected response_format=json_object; retrying without it.")
-            response = _openrouter_request(prompt, timeout, effective_temperature, False, model=model)
+            try:
+                response = _openrouter_request(prompt, timeout, effective_temperature, False, model=model)
+            except RuntimeError as error:
+                last_error = RuntimeError(
+                    f"OpenRouter transport failure during JSON-mode fallback model={model}: {error}"
+                )
+                if index + 1 < len(models):
+                    next_model = models[index + 1]
+                    print(
+                        f"OpenRouter model={model} failed during JSON-mode fallback; "
+                        f"trying fallback model={next_model}."
+                    )
+                    continue
+                raise last_error from error
 
         if response.status_code >= 400:
             last_error = RuntimeError(
