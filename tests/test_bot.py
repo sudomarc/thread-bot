@@ -93,6 +93,29 @@ class BotUnitTests(unittest.TestCase):
             "google/gemma-4-31b-it:free",
         )
 
+    def test_openrouter_chat_falls_back_when_json_mode_compatibility_retry_has_transport_failure(self):
+        rejected = MagicMock(status_code=400, text="response_format not supported")
+        transport_error = RuntimeError(
+            "Request failed after 4 attempts: HTTPSConnectionPool(host='openrouter.ai')"
+        )
+        accepted = MagicMock(status_code=200)
+        accepted.json.return_value = {
+            "choices": [{"message": {"content": '{"ok": true}'}}]
+        }
+        with patch.object(bot, "OPENROUTER_API_KEY", "test-key"), \
+             patch.object(bot, "OPENROUTER_MODEL", "openrouter/free"), \
+             patch.object(bot, "OPENROUTER_FALLBACK_MODELS", (
+                 "google/gemma-4-31b-it:free",
+             )), \
+             patch.object(bot, "request_with_retries", side_effect=[rejected, transport_error, accepted]) as mocked:
+            result = bot.openrouter_chat_json("prompt")
+        self.assertEqual(result, '{"ok": true}')
+        self.assertEqual(mocked.call_count, 3)
+        self.assertEqual(
+            mocked.call_args_list[2].kwargs["json"]["model"],
+            "google/gemma-4-31b-it:free",
+        )
+
     def test_openrouter_chat_falls_back_after_invalid_response_envelope(self):
         malformed = MagicMock(status_code=200)
         malformed.json.side_effect = ValueError("invalid JSON")
