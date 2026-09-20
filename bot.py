@@ -411,13 +411,37 @@ def openrouter_chat(prompt, timeout=60, json_mode=False, temperature=None):
 
     last_error = None
     for index, model in enumerate(models):
-        response = _openrouter_request(prompt, timeout, effective_temperature, json_mode, model=model)
+        try:
+            response = _openrouter_request(prompt, timeout, effective_temperature, json_mode, model=model)
+        except RuntimeError as error:
+            last_error = RuntimeError(f"OpenRouter transport failure model={model}: {error}")
+            if index + 1 < len(models):
+                next_model = models[index + 1]
+                print(
+                    f"OpenRouter model={model} failed at transport layer; "
+                    f"trying fallback model={next_model}."
+                )
+                continue
+            raise last_error from error
         if json_mode and response.status_code == 400:
             # Some routed models reject response_format=json_object even though
             # the router itself supports structured output. Retry this model
             # once without response_format; the content_engine still validates JSON.
             print(f"OpenRouter model={model} rejected response_format=json_object; retrying without it.")
-            response = _openrouter_request(prompt, timeout, effective_temperature, False, model=model)
+            try:
+                response = _openrouter_request(prompt, timeout, effective_temperature, False, model=model)
+            except RuntimeError as error:
+                last_error = RuntimeError(
+                    f"OpenRouter transport failure during JSON-mode fallback model={model}: {error}"
+                )
+                if index + 1 < len(models):
+                    next_model = models[index + 1]
+                    print(
+                        f"OpenRouter model={model} failed during JSON-mode fallback; "
+                        f"trying fallback model={next_model}."
+                    )
+                    continue
+                raise last_error from error
 
         if response.status_code >= 400:
             last_error = RuntimeError(
@@ -432,19 +456,41 @@ def openrouter_chat(prompt, timeout=60, json_mode=False, temperature=None):
                 continue
             raise last_error
 
-        data = response.json()
-        choices = data.get("choices") or []
-        if not choices:
-            error = data.get("error") or {}
+        try:
+            data = response.json()
+        except (TypeError, ValueError) as error:
             last_error = RuntimeError(
-                f"OpenRouter returned no choices: {error.get('message', 'unknown error')}"
+                f"OpenRouter returned invalid JSON model={model}: {error}"
+            )
+            if index + 1 < len(models):
+                next_model = models[index + 1]
+                print(
+                    f"OpenRouter model={model} returned an invalid response envelope; "
+                    f"trying fallback model={next_model}."
+                )
+                continue
+            raise last_error from error
+
+        if not isinstance(data, dict):
+            last_error = RuntimeError(
+                f"OpenRouter returned an invalid response envelope model={model}: expected object"
             )
         else:
-            message = choices[0].get("message") or {}
-            content = message.get("content", "")
-            if isinstance(content, str) and content.strip():
-                return content.strip()
-            last_error = RuntimeError("OpenRouter returned empty content")
+            choices = data.get("choices") or []
+            if not choices:
+                error = data.get("error") or {}
+                message = error.get("message", "unknown error") if isinstance(error, dict) else "unknown error"
+                last_error = RuntimeError(
+                    f"OpenRouter returned no choices: {message}"
+                )
+            else:
+                choice = choices[0]
+                message = choice.get("message") if isinstance(choice, dict) else {}
+                message = message if isinstance(message, dict) else {}
+                content = message.get("content", "")
+                if isinstance(content, str) and content.strip():
+                    return content.strip()
+                last_error = RuntimeError("OpenRouter returned empty content")
 
         if index + 1 < len(models):
             next_model = models[index + 1]
