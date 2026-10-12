@@ -1,7 +1,7 @@
 import math
 import json
 import unittest
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 from content_engine import (
     ANGLE_TYPES,
