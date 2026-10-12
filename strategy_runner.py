@@ -441,11 +441,13 @@ def _evaluate_with_diagnostics(
 
 
 def _run_pipeline(topic, article, editorial_brief="", post_type=None):
+    attempt = 1
     try:
         result = _evaluate_with_diagnostics(
-            topic, article, editorial_brief, bot.openrouter_chat_json, attempt=1, post_type=post_type
+            topic, article, editorial_brief, bot.openrouter_chat_json, attempt=attempt, post_type=post_type
         )
     except PipelineError as first_error:
+        attempt = 2
         print(
             f"PIPELINE event=validation_result outcome=error stage=validation "
             f"error_kind={_provider_error_kind(first_error)}"
@@ -459,7 +461,7 @@ def _run_pipeline(topic, article, editorial_brief="", post_type=None):
             result = _evaluate_with_diagnostics(
                 topic, article, retry_brief,
                 _retry_openrouter_chat if _is_retryable_provider_error(first_error) else bot.openrouter_chat_json,
-                attempt=2, post_type=post_type,
+                attempt=attempt, post_type=post_type,
             )
             # Let recoverable semantic rejections use the bounded decision-retry path.
         except Exception as retry_error:
@@ -478,6 +480,7 @@ def _run_pipeline(topic, article, editorial_brief="", post_type=None):
                 f"error_kind={_provider_error_kind(first_error)}"
             )
             raise
+        attempt = 2
         retry_brief = _retry_brief(editorial_brief, first_error, post_type)
         print(
             f"PIPELINE event=retry trigger=provider_error attempt=2 "
@@ -485,7 +488,7 @@ def _run_pipeline(topic, article, editorial_brief="", post_type=None):
         )
         try:
             result = _evaluate_with_diagnostics(
-                topic, article, retry_brief, _retry_openrouter_chat, attempt=2, post_type=post_type
+                topic, article, retry_brief, _retry_openrouter_chat, attempt=attempt, post_type=post_type
             )
             # Let recoverable semantic rejections use the bounded decision-retry path.
         except Exception as retry_error:
@@ -507,8 +510,9 @@ def _run_pipeline(topic, article, editorial_brief="", post_type=None):
         return result
 
     retry_brief = _retry_brief(editorial_brief, result["rejection_reason"], post_type)
+    attempt += 1
     print(
-        f"PIPELINE event=retry trigger=decision_reject attempt=2 "
+        f"PIPELINE event=retry trigger=decision_reject attempt={attempt} "
         f"stage={result.get('stage', 'unknown')} reason={result.get('rejection_reason', 'unknown')}"
     )
     try:
@@ -517,7 +521,7 @@ def _run_pipeline(topic, article, editorial_brief="", post_type=None):
         # would make the recovery retry incapable of correcting the failed gate.
         fact_result_override = None if fact_check_retry else result.get("fact_status")
         retry_kwargs = {
-            "attempt": 2,
+            "attempt": attempt,
             "post_type": post_type,
             "fact_check_retry": fact_check_retry,
         }
