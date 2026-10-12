@@ -357,6 +357,19 @@ def _write_pipeline_report(result):
 
 def _retry_brief(editorial_brief, error, post_type=None):
     message = str(error).lower()
+    if (
+        "fact confidence is too low" in message
+        or "fact confidence is below" in message
+        or "central claim is unverified" in message
+        or "missing supporting evidence" in message
+    ):
+        return (
+            f"{editorial_brief} "
+            "FACT CHECK RETRY: reassess each claim from the supplied source material. "
+            "Use the 0-10 confidence scale consistently with the claim status. Never keep VERIFIED "
+            "when the evidence does not support the full claim, and never assign zero confidence to a "
+            "claim that remains VERIFIED. Do not inflate confidence to pass the gate."
+        ).strip()
     if "angles are repetitive" in message or "expected at least 8 angles" in message:
         return (
             f"{editorial_brief} "
@@ -408,6 +421,7 @@ def _evaluate_with_diagnostics(
     attempt,
     post_type=None,
     fact_result_override=None,
+    fact_check_retry=False,
 ):
     kwargs = {
         "editorial_brief": editorial_brief,
@@ -415,6 +429,8 @@ def _evaluate_with_diagnostics(
     }
     if fact_result_override is not None:
         kwargs["fact_result_override"] = fact_result_override
+    if fact_check_retry:
+        kwargs["fact_check_retry"] = True
     result = evaluate_topic(
         topic,
         [article],
@@ -445,7 +461,7 @@ def _run_pipeline(topic, article, editorial_brief="", post_type=None):
                 _retry_openrouter_chat if _is_retryable_provider_error(first_error) else bot.openrouter_chat_json,
                 attempt=2, post_type=post_type,
             )
-            return result
+            # Let recoverable semantic rejections use the bounded decision-retry path.
         except Exception as retry_error:
             print(
                 f"PIPELINE event=final_outcome outcome=FAILURE stage=validation_or_provider "
@@ -471,7 +487,7 @@ def _run_pipeline(topic, article, editorial_brief="", post_type=None):
             result = _evaluate_with_diagnostics(
                 topic, article, retry_brief, _retry_openrouter_chat, attempt=2, post_type=post_type
             )
-            return result
+            # Let recoverable semantic rejections use the bounded decision-retry path.
         except Exception as retry_error:
             print(
                 f"PIPELINE event=final_outcome outcome=FAILURE stage=provider "
@@ -496,10 +512,14 @@ def _run_pipeline(topic, article, editorial_brief="", post_type=None):
         f"stage={result.get('stage', 'unknown')} reason={result.get('rejection_reason', 'unknown')}"
     )
     try:
-        fact_result_override = result.get("fact_status")
+        fact_check_retry = result.get("stage") == "fact_check"
+        # A rejected fact check must be recomputed from sources; reusing its result
+        # would make the recovery retry incapable of correcting the failed gate.
+        fact_result_override = None if fact_check_retry else result.get("fact_status")
         retry_kwargs = {
             "attempt": 2,
             "post_type": post_type,
+            "fact_check_retry": fact_check_retry,
         }
         if fact_result_override is not None:
             retry_kwargs["fact_result_override"] = fact_result_override
