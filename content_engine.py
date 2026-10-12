@@ -588,6 +588,15 @@ def evaluate_topic(
     else:
         fact_result, claims = validate_fact_result(fact_result_override)
     fact_ok, fact_confidence, fact_reason = factuality_gate(claims)
+    # A VERIFIED claim with confidence 0 is internally inconsistent. Reassess it once
+    # with the explicit fact-check retry prompt before applying the fail-closed gate.
+    if not fact_ok and not fact_check_retry and any(
+        claim["status"] == "VERIFIED" and claim["confidence"] == 0 for claim in claims
+    ):
+        fact_result, claims = validate_fact_result(
+            run_llm_json(openrouter_chat, build_fact_prompt(topic, sources, retry=True))
+        )
+        fact_ok, fact_confidence, fact_reason = factuality_gate(claims)
     if not fact_ok:
         return {"topic": topic, "post_type": normalized_type, "editorial_brief": editorial_brief, "fact_status": fact_result, "fact_confidence": fact_confidence, "fact_gate": fact_reason, "angles": [], "decision": "REJECT"}
 
