@@ -136,13 +136,15 @@ class StrategyRunnerTests(unittest.TestCase):
         }
         expected = {"decision": "PUBLISH"}
         first_error = content_engine.PipelineError("Unknown factual status: ''")
-        with patch.object(
+        output = io.StringIO()
+        with redirect_stdout(output), patch.object(
             strategy_runner, "evaluate_topic", side_effect=[first_error, rejected, expected]
         ) as evaluator:
             result = strategy_runner._run_pipeline("Topic", {"title": "Story"}, "Format: opinion.")
 
         self.assertEqual(result, expected)
         self.assertEqual(evaluator.call_count, 3)
+        self.assertIn("trigger=decision_reject attempt=3", output.getvalue())
         retry_kwargs = evaluator.call_args_list[2].kwargs
         self.assertTrue(retry_kwargs["fact_check_retry"])
         self.assertNotIn("fact_result_override", retry_kwargs)
