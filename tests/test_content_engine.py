@@ -127,6 +127,27 @@ class ContentEngineTests(unittest.TestCase):
         self.assertIn("FACT-CHECK RETRY", retry_prompt)
         self.assertIn("Do not reuse prior confidence scores", retry_prompt)
 
+    def test_verified_claim_with_zero_confidence_gets_one_explicit_fact_retry(self):
+        bad_result = {"claims": [{
+            "claim": "The source says the product launched.",
+            "status": "VERIFIED",
+            "evidence": "The supplied source says the product launched.",
+            "confidence": 0,
+            "central": True,
+        }]}
+        with patch("content_engine.run_llm_json", side_effect=[bad_result, bad_result]) as model:
+            result = evaluate_topic(
+                "The product launched.",
+                [{"title": "Source", "description": "The product launched.", "url": "https://example.com"}],
+                lambda prompt: "{}",
+                post_type="RELATABLE",
+            )
+
+        self.assertEqual(model.call_count, 2)
+        self.assertIn("FACT-CHECK RETRY", model.call_args_list[1].args[1])
+        self.assertEqual(result["decision"], "REJECT")
+        self.assertEqual(result["fact_confidence"], 0.0)
+
     def test_factuality_confidence_ignores_opinion_and_prediction_confidence(self):
         claims = [
             {"claim": "Verified claim", "status": "VERIFIED", "confidence": 9, "evidence": "Source", "central": True},
