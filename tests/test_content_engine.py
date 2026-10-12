@@ -11,6 +11,7 @@ from content_engine import (
     QUALITY_WEIGHTS,
     build_angle_prompt,
     build_draft_prompt,
+    build_fact_prompt,
     extract_json,
     factuality_gate,
     final_decision,
@@ -115,6 +116,16 @@ class ContentEngineTests(unittest.TestCase):
         }])
         self.assertFalse(ok)
         self.assertIn("evidence", reason.lower())
+
+    def test_fact_prompt_defines_confidence_consistency_and_retry_guidance(self):
+        sources = [{"title": "Source", "description": "Supported fact.", "url": "https://example.com/source"}]
+        prompt = build_fact_prompt("Supported fact", sources)
+        self.assertIn("numeric score from 0 to 10", prompt)
+        self.assertIn("never label a claim VERIFIED with confidence 0", prompt)
+
+        retry_prompt = build_fact_prompt("Supported fact", sources, retry=True)
+        self.assertIn("FACT-CHECK RETRY", retry_prompt)
+        self.assertIn("Do not reuse prior confidence scores", retry_prompt)
 
     def test_factuality_confidence_ignores_opinion_and_prediction_confidence(self):
         claims = [
