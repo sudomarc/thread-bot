@@ -4,7 +4,6 @@
     "budget_disparity",
     "audit_dread",
     "compliance_theater",
-    "one_person_team",
     "untested_backups",
     "own_phishing_test",
     "relatable_tag",
@@ -21,10 +20,10 @@
     "beta_tester_unpaid",
     "password_hypocrisy",
     "imposter_syndrome",
-    "cert_vs_reality"
+    "cert_vs_reality",
+    "one_person_team"
   ],
   "recent_post_titles": [
-    "Unpaid beta tester syndrome hits hard",
     "Sanmar Group backs AltEons to drive 1.5 GW renewable growth",
     "Free PS5 Live TV rolls out in the U.S. and Canada",
     "Smart toothbrush claims to map every plaque spot",
@@ -83,7 +82,8 @@
     "Open source or owned? Should all AI co‑scientist tools be open‑source, or does the shared blackboard contract protect intellectual property?",
     "'Me: I'll only use AI for 5 minutes.' -> Ends up writing a massive Pulumi stack for a dual-cloud AI platform, but still logs into the cloud portal using the same password as your old forum account.",
     "Using an AI-converted blog post to warn about the silent targeting of artists and mathematicians is the ultimate meta-irony, as the AI is the very force displacing both roles.",
-    "Should AI‑generated code be subject to the same licensing liability as human‑written code?"
+    "Should AI‑generated code be subject to the same licensing liability as human‑written code?",
+    "The irony of asking a developer to do IT, security, support, and coding, and then giving them an AI to write a single comment line—saving 2 seconds but breaking the entire architecture."
   ],
   "seen_article_urls": [
     "https://torrentfreak.com/take-two-expands-gta-6-leak-hunt-with-dmca-subpoenas/",
@@ -267,13 +267,14 @@
     "https://pypi.org/project/pennsieve-ai-utils",
     "https://pypi.org/project/eai-platform-infra/0.5.23",
     "https://terrytao.wordpress.com/2026/10/15/why-are-we-even-doing-all-this",
-    "https://mihaisplace.com/blog/ai-can-write-the-code-who-verifies-it"
+    "https://mihaisplace.com/blog/ai-can-write-the-code-who-verifies-it",
+    "https://www.xda-developers.com/red-dead-redemption-2-is-eight-years-old-and-it-still-looks-better-than-almost-everything-released-this-year"
   ],
-  "last_run_at": "2026-10-18T18:36:39.393098+00:00",
+  "last_run_at": "2026-10-19T22:12:42.113685+00:00",
   "schema_version": 2,
-  "strategy_cursor": 11,
+  "strategy_cursor": 12,
   "strategy_last_format": "humor",
-  "strategy_last_run_at": "2026-10-18T18:36:39.392855+00:00",
+  "strategy_last_run_at": "2026-10-19T22:12:42.113479+00:00",
   "strategy_targets": {
     "views": "20,000-30,000 / 30 days",
     "spectators": "12,000+ / 30 days",
@@ -283,9 +284,9 @@
   },
   "last_pipeline_decision": "PUBLISH",
   "last_pipeline_scores": {
-    "idea_score": 85.5,
-    "quality_score": 88.0,
-    "final_score": 86.6,
+    "idea_score": 92.5,
+    "quality_score": 92.5,
+    "final_score": 92.5,
     "fact_confidence": 1.0
   },
   "recent_content_topics": [
@@ -298,7 +299,8 @@
     "pennsieve-ai-utils added to PyPI",
     "eai-platform-infra 0.5.23",
     "Why are we even doing all this?",
-    "AI Can Write the Code. Who Verifies It?"
+    "AI Can Write the Code. Who Verifies It?",
+    "Red Dead Redemption 2 is eight years old, and it still looks better than almost everything released this year"
   ],
   "strategy_mix": {
     "builder_experience": 8,
@@ -311,9 +313,11 @@
   "recent_post_types": [
     "RELATABLE",
     "RELATABLE",
+    "RELATABLE",
     "RELATABLE"
   ],
   "recent_engagement_patterns": [
+    "RECOGNITION_HUMOR",
     "RECOGNITION_HUMOR",
     "RECOGNITION_HUMOR",
     "RECOGNITION_HUMOR"
