@@ -24,7 +24,6 @@
     "one_person_team"
   ],
   "recent_post_titles": [
-    "Smart toothbrush claims to map every plaque spot",
     "India's auto makers race to lock down the supply chain",
     "India balances China and Russia within BRICS",
     "Four detained after army armoury weapons vanish",
@@ -83,7 +82,8 @@
     "Should AI‑generated code be subject to the same licensing liability as human‑written code?",
     "The irony of asking a developer to do IT, security, support, and coding, and then giving them an AI to write a single comment line—saving 2 seconds but breaking the entire architecture.",
     "The real breakthrough of pulumi-xyz 1.0.0a1793128350 isn't managing xyz resources—it's that AI can now generate production-ready Pulumi configs from a single prompt, flipping the builder archetype entirely",
-    "The AI gold rush is being built in closets, not skyscrapers."
+    "The AI gold rush is being built in closets, not skyscrapers.",
+    "Should AI systems be held legally liable for transport accidents, shifting blame from ministers to the technology itself?"
   ],
   "seen_article_urls": [
     "https://torrentfreak.com/take-two-expands-gta-6-leak-hunt-with-dmca-subpoenas/",
@@ -270,13 +270,14 @@
     "https://mihaisplace.com/blog/ai-can-write-the-code-who-verifies-it",
     "https://www.xda-developers.com/red-dead-redemption-2-is-eight-years-old-and-it-still-looks-better-than-almost-everything-released-this-year",
     "https://pypi.org/project/pulumi-xyz/1.0.0a1793128350",
-    "https://biztoc.com/x/7a058f165b24d5d7"
+    "https://biztoc.com/x/7a058f165b24d5d7",
+    "https://www.dw.com/en/spain-transport-minister-offers-resignation-in-wake-of-train-accident/a-79848097"
   ],
-  "last_run_at": "2026-10-30T21:52:45.991297+00:00",
+  "last_run_at": "2026-11-04T20:43:55.284809+00:00",
   "schema_version": 2,
-  "strategy_cursor": 14,
+  "strategy_cursor": 15,
   "strategy_last_format": "opinion_observation",
-  "strategy_last_run_at": "2026-10-30T21:52:45.991123+00:00",
+  "strategy_last_run_at": "2026-11-04T20:43:55.284560+00:00",
   "strategy_targets": {
     "views": "20,000-30,000 / 30 days",
     "spectators": "12,000+ / 30 days",
@@ -287,9 +288,9 @@
   "last_pipeline_decision": "PUBLISH",
   "last_pipeline_scores": {
     "idea_score": 86.0,
-    "quality_score": 90.0,
-    "final_score": 87.8,
-    "fact_confidence": 1.0
+    "quality_score": 85.0,
+    "final_score": 85.6,
+    "fact_confidence": 0.9
   },
   "recent_content_topics": [
     "iPhone Duoは2026年に折りたたみスマホ市場で25％のシェアを獲得するとの予測",
@@ -304,7 +305,8 @@
     "AI Can Write the Code. Who Verifies It?",
     "Red Dead Redemption 2 is eight years old, and it still looks better than almost everything released this year",
     "pulumi-xyz 1.0.0a1793128350",
-    "Bay Area draws nearly half of AI office demand, with San Francisco ‘back on top,’ VTS reports"
+    "Bay Area draws nearly half of AI office demand, with San Francisco ‘back on top,’ VTS reports",
+    "Spain transport minister offers resignation in wake of train accident"
   ],
   "strategy_mix": {
     "builder_experience": 8,
@@ -320,6 +322,7 @@
     "RELATABLE",
     "RELATABLE",
     "OPINION",
+    "OPINION",
     "OPINION"
   ],
   "recent_engagement_patterns": [
@@ -327,6 +330,7 @@
     "RECOGNITION_HUMOR",
     "RECOGNITION_HUMOR",
     "RECOGNITION_HUMOR",
+    "POSITION",
     "POSITION",
     "POSITION"
   ],
